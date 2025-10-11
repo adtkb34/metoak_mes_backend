@@ -1,0 +1,1 @@
+ALTER TABLE mo_lens_assembly ADD COLUMN position int COMMENT '层级';

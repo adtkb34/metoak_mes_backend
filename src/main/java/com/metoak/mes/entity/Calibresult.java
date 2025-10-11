@@ -1,0 +1,579 @@
+package com.metoak.mes.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.metoak.mes.common.annotate.FieldCode;
+import io.swagger.annotations.ApiModel;
+import lombok.Data;
+
+import java.io.Serializable;
+
+/**
+ * <p>
+ * 
+ * </p>
+ *
+ * @author xukaiwen
+ * @since 2024-10-14 09:43:16
+ */
+@Data
+@ApiModel(value = "Calibresult对象", description = "")
+public class Calibresult implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
+
+    private Long moProcessStepProductionResultId;
+
+    @TableField("CameraSN")
+    @FieldCode(no = "001", type = "val")
+    private String cameraSN;
+
+    @TableField("TimeStamp")
+    @FieldCode(no = "002", type = "val")
+    private String timeStamp;
+
+    @TableField("LeftSharpness")
+    @FieldCode(no = "003", type = "val")
+    private Double leftSharpness;
+
+    @TableField("RightSharpness")
+    @FieldCode(no = "004", type = "val")
+    private Double rightSharpness;
+
+    @TableField("Simor_validPattern")
+    @FieldCode(no = "005", type = "val")
+    private Double simorValidPattern;
+
+    @TableField("Simor_mean_reprojection_error")
+    @FieldCode(no = "006", type = "val")
+    private Double simorMeanReprojectionError;
+
+    @TableField("Simor_mean_left_reprojection_error")
+    @FieldCode(no = "007", type = "val")
+    private Double simorMeanLeftReprojectionError;
+
+    @TableField("Simor_mean_right_reprojection_error")
+    @FieldCode(no = "008", type = "val")
+    private Double simorMeanRightReprojectionError;
+
+    @TableField("Simor_max_left_reprojection_error")
+    @FieldCode(no = "009", type = "val")
+    private Double simorMaxLeftReprojectionError;
+
+    @TableField("Simor_max_right_reprojection_error")
+    @FieldCode(no = "010", type = "val")
+    private Double simorMaxRightReprojectionError;
+
+    @TableField("Simor_amplify_ratio")
+    @FieldCode(no = "011", type = "val")
+    private Double simorAmplifyRatio;
+
+    @TableField("Simor_left_trim")
+    @FieldCode(no = "012", type = "val")
+    private Double simorLeftTrim;
+
+    @TableField("Simor_right_trim")
+    @FieldCode(no = "013", type = "val")
+    private Double simorRightTrim;
+
+    @TableField("Simor_fov_h")
+    @FieldCode(no = "014", type = "val")
+    private Double simorFovH;
+
+    @TableField("Simor_fov_v")
+    @FieldCode(no = "015", type = "val")
+    private Double simorFovV;
+
+    @TableField("Simor_simor_calc_result")
+    @FieldCode(no = "016", type = "val")
+    private Double simorSimorCalcResult;
+
+    @TableField("ISP_validPattern")
+    @FieldCode(no = "017", type = "val")
+    private Double ispValidPattern;
+
+    @TableField("ISP_mean_reprojection_error")
+    @FieldCode(no = "018", type = "val")
+    private Double ispMeanReprojectionError;
+
+    @TableField("ISP_mean_left_reprojection_error")
+    @FieldCode(no = "019", type = "val")
+    private Double ispMeanLeftReprojectionError;
+
+    @TableField("ISP_mean_right_reprojection_error")
+    @FieldCode(no = "020", type = "val")
+    private Double ispMeanRightReprojectionError;
+
+    @TableField("ISP_max_left_reprojection_error")
+    @FieldCode(no = "021", type = "val")
+    private Double ispMaxLeftReprojectionError;
+
+    @TableField("ISP_max_right_reprojection_error")
+    @FieldCode(no = "022", type = "val")
+    private Double ispMaxRightReprojectionError;
+
+    @TableField("ISP_amplify_ratio")
+    @FieldCode(no = "023", type = "val")
+    private Double ispAmplifyRatio;
+
+    @TableField("ISP_left_trim")
+    @FieldCode(no = "024", type = "val")
+    private Double ispLeftTrim;
+
+    @TableField("ISP_right_trim")
+    @FieldCode(no = "025", type = "val")
+    private Double ispRightTrim;
+
+    @TableField("ISP_fov_h")
+    @FieldCode(no = "026", type = "val")
+    private Double ispFovH;
+
+    @TableField("ISP_fov_v")
+    @FieldCode(no = "027", type = "val")
+    private Double ispFovV;
+
+    @TableField("ISP_simor_calc_result")
+    @FieldCode(no = "028", type = "val")
+    private Double ispSimorCalcResult;
+
+    @TableField("ISP_RectifyVerticalOffset")
+    @FieldCode(no = "029", type = "val")
+    private Double ispRectifyVerticalOffset;
+
+    @TableField("Simor_left_fx")
+    @FieldCode(no = "030", type = "val")
+    private Double simorLeftFx;
+
+    @TableField("Simor_left_fy")
+    @FieldCode(no = "031", type = "val")
+    private Double simorLeftFy;
+
+    @TableField("Simor_left_cx")
+    @FieldCode(no = "032", type = "val")
+    private Double simorLeftCx;
+
+    @TableField("Simor_left_cy")
+    @FieldCode(no = "033", type = "val")
+    private Double simorLeftCy;
+
+    @TableField("Simor_left_k1")
+    @FieldCode(no = "034", type = "val")
+    private Double simorLeftK1;
+
+    @TableField("Simor_left_k2")
+    @FieldCode(no = "035", type = "val")
+    private Double simorLeftK2;
+
+    @TableField("Simor_left_k3")
+    @FieldCode(no = "036", type = "val")
+    private Double simorLeftK3;
+
+    @TableField("Simor_left_p1")
+    @FieldCode(no = "037", type = "val")
+    private Double simorLeftP1;
+
+    @TableField("Simor_left_p2")
+    @FieldCode(no = "038", type = "val")
+    private Double simorLeftP2;
+
+    @TableField("Simor_right_fx")
+    @FieldCode(no = "039", type = "val")
+    private Double simorRightFx;
+
+    @TableField("Simor_right_fy")
+    @FieldCode(no = "040", type = "val")
+    private Double simorRightFy;
+
+    @TableField("Simor_right_cx")
+    @FieldCode(no = "041", type = "val")
+    private Double simorRightCx;
+
+    @TableField("Simor_right_cy")
+    @FieldCode(no = "042", type = "val")
+    private Double simorRightCy;
+
+    @TableField("Simor_right_k1")
+    @FieldCode(no = "043", type = "val")
+    private Double simorRightK1;
+
+    @TableField("Simor_right_k2")
+    @FieldCode(no = "044", type = "val")
+    private Double simorRightK2;
+
+    @TableField("Simor_right_k3")
+    @FieldCode(no = "045", type = "val")
+    private Double simorRightK3;
+
+    @TableField("Simor_right_p1")
+    @FieldCode(no = "046", type = "val")
+    private Double simorRightP1;
+
+    @TableField("Simor_right_p2")
+    @FieldCode(no = "047", type = "val")
+    private Double simorRightP2;
+
+    @TableField("Simor_width")
+    @FieldCode(no = "048", type = "val")
+    private Double simorWidth;
+
+    @TableField("Simor_height")
+    @FieldCode(no = "049", type = "val")
+    private Double simorHeight;
+
+    @TableField("Simor_bxf")
+    @FieldCode(no = "050", type = "val")
+    private Double simorBxf;
+
+    @TableField("Simor_baseline")
+    @FieldCode(no = "051", type = "val")
+    private Double simorBaseline;
+
+    @TableField("Simor_focus")
+    @FieldCode(no = "052", type = "val")
+    private Double simorFocus;
+
+    @TableField("Simor_cx")
+    @FieldCode(no = "053", type = "val")
+    private Double simorCx;
+
+    @TableField("Simor_cy")
+    @FieldCode(no = "054", type = "val")
+    private Double simorCy;
+
+    @TableField("Simor_out_width")
+    @FieldCode(no = "055", type = "val")
+    private Double simorOutWidth;
+
+    @TableField("simor_out_height")
+    @FieldCode(no = "056", type = "val")
+    private Double simorOutHeight;
+
+    @TableField("simor_r0")
+    @FieldCode(no = "057", type = "val")
+    private Double simorR0;
+
+    @TableField("simor_r1")
+    @FieldCode(no = "058", type = "val")
+    private Double simorR1;
+
+    @TableField("simor_r2")
+    @FieldCode(no = "059", type = "val")
+    private Double simorR2;
+
+    @TableField("simor_t0")
+    @FieldCode(no = "060", type = "val")
+    private Double simorT0;
+
+    @TableField("simor_t1")
+    @FieldCode(no = "061", type = "val")
+    private Double simorT1;
+
+    @TableField("simor_t2")
+    @FieldCode(no = "062", type = "val")
+    private Double simorT2;
+
+    @TableField("simor_left_r0")
+    @FieldCode(no = "063", type = "val")
+    private Double simorLeftR0;
+
+    @TableField("simor_left_r1")
+    @FieldCode(no = "064", type = "val")
+    private Double simorLeftR1;
+
+    @TableField("simor_left_r2")
+    @FieldCode(no = "065", type = "val")
+    private Double simorLeftR2;
+
+    @TableField("simor_right_r0")
+    @FieldCode(no = "066", type = "val")
+    private Double simorRightR0;
+
+    @TableField("simor_right_r1")
+    @FieldCode(no = "067", type = "val")
+    private Double simorRightR1;
+
+    @TableField("simor_right_r2")
+    @FieldCode(no = "068", type = "val")
+    private Double simorRightR2;
+
+    @TableField("simor_virtual_width")
+    @FieldCode(no = "069", type = "val")
+    private Double simorVirtualWidth;
+
+    @TableField("simor_virtual_height")
+    @FieldCode(no = "070", type = "val")
+    private Double simorVirtualHeight;
+
+    @TableField("simor_roi_x")
+    @FieldCode(no = "071", type = "val")
+    private Double simorRoiX;
+
+    @TableField("simor_roi_y")
+    @FieldCode(no = "072", type = "val")
+    private Double simorRoiY;
+
+    @TableField("isp_left_fx")
+    @FieldCode(no = "073", type = "val")
+    private Double ispLeftFx;
+
+    @TableField("isp_left_fy")
+    @FieldCode(no = "074", type = "val")
+    private Double ispLeftFy;
+
+    @TableField("isp_left_cx")
+    @FieldCode(no = "075", type = "val")
+    private Double ispLeftCx;
+
+    @TableField("isp_left_cy")
+    @FieldCode(no = "076", type = "val")
+    private Double ispLeftCy;
+
+    @TableField("isp_left_k1")
+    @FieldCode(no = "077", type = "val")
+    private Double ispLeftK1;
+
+    @TableField("isp_left_k2")
+    @FieldCode(no = "078", type = "val")
+    private Double ispLeftK2;
+
+    @TableField("isp_left_k3")
+    @FieldCode(no = "079", type = "val")
+    private Double ispLeftK3;
+
+    @TableField("isp_left_k4")
+    @FieldCode(no = "132", type = "val")
+    private Double ispLeftK4;
+
+    @TableField("isp_left_k5")
+    @FieldCode(no = "133", type = "val")
+    private Double ispLeftK5;
+
+    @TableField("isp_left_k6")
+    @FieldCode(no = "134", type = "val")
+    private Double ispLeftK6;
+
+    @TableField("isp_left_p1")
+    @FieldCode(no = "080", type = "val")
+    private Double ispLeftP1;
+
+    @TableField("isp_left_p2")
+    @FieldCode(no = "081", type = "val")
+    private Double ispLeftP2;
+
+    @TableField("isp_right_fx")
+    @FieldCode(no = "082", type = "val")
+    private Double ispRightFx;
+
+    @TableField("isp_right_fy")
+    @FieldCode(no = "083", type = "val")
+    private Double ispRightFy;
+
+    @TableField("isp_right_cx")
+    @FieldCode(no = "084", type = "val")
+    private Double ispRightCx;
+
+    @TableField("isp_right_cy")
+    @FieldCode(no = "085", type = "val")
+    private Double ispRightCy;
+
+    @TableField("isp_right_k1")
+    @FieldCode(no = "086", type = "val")
+    private Double ispRightK1;
+
+    @TableField("isp_right_k2")
+    @FieldCode(no = "087", type = "val")
+    private Double ispRightK2;
+
+    @TableField("isp_right_k3")
+    @FieldCode(no = "088", type = "val")
+    private Double ispRightK3;
+
+    @TableField("isp_right_k4")
+    @FieldCode(no = "135", type = "val")
+    private Double ispRightK4;
+
+    @TableField("isp_right_k5")
+    @FieldCode(no = "136", type = "val")
+    private Double ispRightK5;
+
+    @TableField("isp_right_k6")
+    @FieldCode(no = "137", type = "val")
+    private Double ispRightK6;
+
+    @TableField("isp_right_p1")
+    @FieldCode(no = "089", type = "val")
+    private Double ispRightP1;
+
+    @TableField("isp_right_p2")
+    @FieldCode(no = "090", type = "val")
+    private Double ispRightP2;
+
+    @TableField("isp_width")
+    @FieldCode(no = "091", type = "val")
+    private Double ispWidth;
+
+    @TableField("isp_height")
+    @FieldCode(no = "092", type = "val")
+    private Double ispHeight;
+
+    @TableField("isp_bxf")
+    @FieldCode(no = "093", type = "val")
+    private Double ispBxf;
+
+    @TableField("isp_baseline")
+    @FieldCode(no = "094", type = "val")
+    private Double ispBaseline;
+
+    @TableField("isp_focus")
+    @FieldCode(no = "095", type = "val")
+    private Double ispFocus;
+
+    @TableField("isp_cx")
+    @FieldCode(no = "096", type = "val")
+    private Double ispCx;
+
+    @TableField("isp_cy")
+    @FieldCode(no = "097", type = "val")
+    private Double ispCy;
+
+    @TableField("isp_out_width")
+    @FieldCode(no = "098", type = "val")
+    private Double ispOutWidth;
+
+    @TableField("isp_out_height")
+    @FieldCode(no = "099", type = "val")
+    private Double ispOutHeight;
+
+    @TableField("isp_r0")
+    @FieldCode(no = "100", type = "val")
+    private Double ispR0;
+
+    @TableField("isp_r1")
+    @FieldCode(no = "101", type = "val")
+    private Double ispR1;
+
+    @TableField("isp_r2")
+    @FieldCode(no = "102", type = "val")
+    private Double ispR2;
+
+    @TableField("isp_t0")
+    @FieldCode(no = "103", type = "val")
+    private Double ispT0;
+
+    @TableField("isp_t1")
+    @FieldCode(no = "104", type = "val")
+    private Double ispT1;
+
+    @TableField("isp_t2")
+    @FieldCode(no = "105", type = "val")
+    private Double ispT2;
+
+    @TableField("isp_left_r0")
+    @FieldCode(no = "106", type = "val")
+    private Double ispLeftR0;
+
+    @TableField("isp_left_r1")
+    @FieldCode(no = "107", type = "val")
+    private Double ispLeftR1;
+
+    @TableField("isp_left_r2")
+    @FieldCode(no = "108", type = "val")
+    private Double ispLeftR2;
+
+    @TableField("isp_right_r0")
+    @FieldCode(no = "109", type = "val")
+    private Double ispRightR0;
+
+    @TableField("isp_right_r1")
+    @FieldCode(no = "110", type = "val")
+    private Double ispRightR1;
+
+    @TableField("isp_right_r2")
+    @FieldCode(no = "111", type = "val")
+    private Double ispRightR2;
+
+    @TableField("isp_virtual_width")
+    @FieldCode(no = "112", type = "val")
+    private Double ispVirtualWidth;
+
+    @TableField("isp_virtual_height")
+    @FieldCode(no = "113", type = "val")
+    private Double ispVirtualHeight;
+
+    @TableField("isp_roi_x")
+    @FieldCode(no = "114", type = "val")
+    private Double ispRoiX;
+
+    @TableField("isp_roi_y")
+    @FieldCode(no = "115", type = "val")
+    private Double ispRoiY;
+
+    @TableField("simor_ref_fx")
+    @FieldCode(no = "116", type = "val")
+    private Double simorRefFx;
+
+    @TableField("simor_ref_fy")
+    @FieldCode(no = "117", type = "val")
+    private Double simorRefFy;
+
+    @TableField("simor_ref_cx")
+    @FieldCode(no = "118", type = "val")
+    private Double simorRefCx;
+
+    @TableField("simor_ref_cy")
+    @FieldCode(no = "119", type = "val")
+    private Double simorRefCy;
+
+    @TableField("simor_ref_k1")
+    @FieldCode(no = "120", type = "val")
+    private Double simorRefK1;
+
+    @TableField("simor_ref_k2")
+    @FieldCode(no = "121", type = "val")
+    private Double simorRefK2;
+
+    @TableField("simor_ref_k3")
+    @FieldCode(no = "122", type = "val")
+    private Double simorRefK3;
+
+    @TableField("simor_ref_p1")
+    @FieldCode(no = "123", type = "val")
+    private Double simorRefP1;
+
+    @TableField("simor_ref_p2")
+    @FieldCode(no = "124", type = "val")
+    private Double simorRefP2;
+
+    @TableField("simor_ref_width")
+    @FieldCode(no = "125", type = "val")
+    private Double simorRefWidth;
+
+    @TableField("simor_ref_height")
+    @FieldCode(no = "126", type = "val")
+    private Double simorRefHeight;
+
+    @TableField("LeftCenterOffsetX")
+    @FieldCode(no = "127", type = "val")
+    private Integer leftCenterOffsetX;
+
+    @TableField("LeftCenterOffsetY")
+    @FieldCode(no = "128", type = "val")
+    private Integer leftCenterOffsetY;
+
+    @TableField("RightCenterOffsetX")
+    @FieldCode(no = "129", type = "val")
+    private Integer rightCenterOffsetX;
+
+    @TableField("RightCenterOffsetY")
+    @FieldCode(no = "130", type = "val")
+    private Integer rightCenterOffsetY;
+//
+    @TableField("Station")
+    @FieldCode(no = "131", type = "val")
+    private Integer station;
+
+}

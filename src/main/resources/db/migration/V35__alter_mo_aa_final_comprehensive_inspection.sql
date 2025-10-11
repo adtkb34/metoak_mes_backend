@@ -1,0 +1,1 @@
+alter table mo_aa_final_comprehensive_inspection modify column image_quality_color varchar(250) DEFAULT NULL COMMENT '出图质量'

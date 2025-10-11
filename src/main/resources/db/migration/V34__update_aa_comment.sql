@@ -1,0 +1,1 @@
+alter table mo_auto_adjust_st08 MODIFY COLUMN `mtf_center_value` float(10,4) DEFAULT NULL COMMENT '中心MTF平均数值';

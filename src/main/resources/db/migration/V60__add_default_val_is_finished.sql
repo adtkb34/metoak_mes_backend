@@ -1,0 +1,1 @@
+ALTER TABLE transfer_box MODIFY COLUMN is_finished TINYINT(1) DEFAULT 0 COMMENT '是否结束';

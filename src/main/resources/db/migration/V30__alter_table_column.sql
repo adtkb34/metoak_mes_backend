@@ -1,0 +1,2 @@
+ALTER TABLE mo_beam_appearance_inspection RENAME COLUMN bonding_surface_height_diff_usl TO surface_height_diff_usl;
+ALTER TABLE mo_beam_appearance_inspection RENAME COLUMN bonding_surface_to_beam_diff_usl TO surface_to_beam_diff_usl;

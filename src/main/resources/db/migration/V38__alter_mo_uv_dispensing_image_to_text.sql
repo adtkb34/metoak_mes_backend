@@ -1,0 +1,1 @@
+ALTER TABLE mo_uv_dispensing modify column image_path text COMMENT '图片路径';

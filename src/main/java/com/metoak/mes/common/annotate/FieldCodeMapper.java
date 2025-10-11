@@ -5,15 +5,19 @@ import com.metoak.mes.enums.DefaultValueEnum;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 
 public class FieldCodeMapper {
 
     public static void applyAttrListToObject(Object obj, List<AttrKeyValDto> dtoList) {
+        if (obj == null || dtoList == null) {
+            return;
+        }
+
         Class<?> clazz = obj.getClass();
         Field[] fields = clazz.getDeclaredFields();
 
@@ -25,25 +29,110 @@ public class FieldCodeMapper {
             typeValueMap.put("spec", dto.getSpec());
 
             for (Field field : fields) {
-                if (!field.isAnnotationPresent(FieldCode.class)) continue;
+                if (!field.isAnnotationPresent(FieldCode.class)) {
+                    continue;
+                }
 
                 FieldCode ann = field.getAnnotation(FieldCode.class);
-                if (ann.no().equals(dto.getNo())) {
-                    String rawValue = typeValueMap.get(ann.type());
-                    if (rawValue != null && !rawValue.isEmpty()) {
-                        try {
-                            field.setAccessible(true);
-                            field.set(obj, convertToFieldType(rawValue, field.getType()));
-                        } catch (IllegalAccessException e) {
-                            throw new RuntimeException("字段设置失败: " + field.getName(), e);
-                        }
-                    }
+                if (!ann.no().equals(dto.getNo())) {
+                    continue;
+                }
+
+                String rawValue = typeValueMap.get(ann.type());
+                if (rawValue == null || rawValue.isEmpty()) {
+                    continue;
+                }
+
+                try {
+                    field.setAccessible(true);
+                    field.set(obj, convertToFieldType(rawValue, field.getType()));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException("字段设置失败: " + field.getName(), e);
                 }
             }
         }
     }
 
+    public static List<AttrKeyValDto> extractAttrListFromObject(Object obj) {
+        if (obj == null) {
+            return List.of();
+        }
 
+        Map<String, AttrKeyValDto> grouped = new LinkedHashMap<>();
+        Class<?> clazz = obj.getClass();
+
+        for (Field field : clazz.getDeclaredFields()) {
+            if (!field.isAnnotationPresent(FieldCode.class)) {
+                continue;
+            }
+
+            FieldCode annotation = field.getAnnotation(FieldCode.class);
+            AttrKeyValDto dto = grouped.computeIfAbsent(annotation.no(), no -> {
+                AttrKeyValDto attr = new AttrKeyValDto();
+                attr.setNo(no);
+                attr.setKey(annotation.name());
+                if (annotation.index() != Integer.MIN_VALUE) {
+                    attr.setIdx(String.valueOf(annotation.index()));
+                }
+                return attr;
+            });
+
+            Object raw = readField(field, obj);
+            if (raw != null) {
+                String value = stringify(raw);
+                switch (annotation.type()) {
+                    case "val" -> dto.setVal(value);
+                    case "lsl" -> dto.setLsl(value);
+                    case "usl" -> dto.setUsl(value);
+                    case "spec" -> dto.setSpec(value);
+                    case "result" -> dto.setResult(value);
+                    default -> {
+                        // ignore unsupported type
+                    }
+                }
+            }
+
+            if (annotation.hasPosition()) {
+                dto.setPosition(readPosition(obj));
+            } else if (annotation.position() != Integer.MIN_VALUE) {
+                dto.setPosition(String.valueOf(annotation.position()));
+            } else if (dto.getPosition() == null) {
+                dto.setPosition(null);
+            }
+        }
+
+        return new ArrayList<>(grouped.values());
+    }
+
+    private static Object readField(Field field, Object obj) {
+        try {
+            field.setAccessible(true);
+            return field.get(obj);
+        } catch (IllegalAccessException e) {
+            return null;
+        }
+    }
+
+    private static String readPosition(Object obj) {
+        try {
+            Field positionField = obj.getClass().getDeclaredField("position");
+            positionField.setAccessible(true);
+            Object position = positionField.get(obj);
+            return position == null ? null : stringify(position);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return null;
+        }
+    }
+
+    private static String stringify(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof BigDecimal decimal) {
+            return decimal.stripTrailingZeros().toPlainString();
+        }
+        return String.valueOf(value);
+    }
 
     // 数值允许的最小值和最大值
     private static final BigDecimal MIN_VALUE = new BigDecimal("-99999999");
@@ -71,23 +160,20 @@ public class FieldCodeMapper {
                     );
                 }
 
-                // 类型转换 + 保留两位小数
                 if (type == Integer.class || type == int.class) return decimal.intValue();
                 if (type == Long.class || type == long.class) return decimal.longValue();
-                if (type == Float.class || type == float.class)
-                    return decimal.floatValue();
-                if (type == Double.class || type == double.class)
-                    return decimal.doubleValue();
-                if (type == BigDecimal.class)
-                    return decimal;
+                if (type == Float.class || type == float.class) return decimal.floatValue();
+                if (type == Double.class || type == double.class) return decimal.doubleValue();
+                if (type == BigDecimal.class) return decimal;
             }
 
-            // 字符串类型
-            if (type == String.class) return val;
+            if (type == String.class) {
+                return val;
+            }
 
-            // 布尔类型：支持 "1" / "true" / "TRUE"
-            if (type == Boolean.class || type == boolean.class)
+            if (type == Boolean.class || type == boolean.class) {
                 return val.equals("1") || val.equalsIgnoreCase("true");
+            }
 
         } catch (Exception e) {
             System.err.printf("⚠️ 类型转换失败：值=%s → %s，原因：%s%n", val, type.getSimpleName(), e.getMessage());

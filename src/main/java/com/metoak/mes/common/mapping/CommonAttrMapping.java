@@ -49,5 +49,29 @@ public class CommonAttrMapping {
             }
         }
     }
+
+    public static void mapEntityFieldsToDto(Object source, Object target, Map<String, String> fieldMap) {
+        Class<?> sourceClass = source.getClass();
+
+        for (Map.Entry<String, String> entry : fieldMap.entrySet()) {
+            String sourceFieldName = entry.getKey();
+            String targetFieldName = entry.getValue();
+
+            try {
+                Field sourceField = sourceClass.getDeclaredField(sourceFieldName);
+                sourceField.setAccessible(true);
+                Object sourceVal = sourceField.get(source);
+
+                if (sourceVal != null) {
+                    Field targetField = target.getClass().getDeclaredField(targetFieldName);
+                    targetField.setAccessible(true);
+                    targetField.set(target, String.valueOf(sourceVal));
+                }
+            } catch (Exception e) {
+                System.err.printf("⚠️ 反向映射失败：%s → %s%n", sourceFieldName, targetFieldName);
+                e.printStackTrace();
+            }
+        }
+    }
 }
 

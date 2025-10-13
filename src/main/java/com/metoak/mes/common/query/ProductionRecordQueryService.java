@@ -27,7 +27,7 @@ public class ProductionRecordQueryService {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public <T> List<ProductionRecordDto> queryMethod1(DatabaseConfig config, Class<T> entityClass) {
+    public <T> List<ProductionRecordDto> queryMethod1(DatabaseConfig config, Class<T> entityClass, int positionOffset) {
         Objects.requireNonNull(config, "Database config must not be null");
         Objects.requireNonNull(entityClass, "Entity class must not be null");
 
@@ -71,9 +71,9 @@ public class ProductionRecordQueryService {
             List<ProductionRecordDto> results = new ArrayList<>();
             for (Long resultId : order) {
                 if (resultId == null) {
-                    results.add(buildDtoFromEntities(nullResultGroup, jdbcTemplate, null));
+                    results.add(buildDtoFromEntities(nullResultGroup, jdbcTemplate, null, positionOffset));
                 } else {
-                    results.add(buildDtoFromEntities(groupedByResultId.get(resultId), jdbcTemplate, resultId));
+                    results.add(buildDtoFromEntities(groupedByResultId.get(resultId), jdbcTemplate, resultId, positionOffset));
                 }
             }
 
@@ -81,7 +81,7 @@ public class ProductionRecordQueryService {
         }
     }
 
-    private <T> ProductionRecordDto buildDtoFromEntities(List<T> entities, JdbcTemplate jdbcTemplate, Long resultId) {
+    private <T> ProductionRecordDto buildDtoFromEntities(List<T> entities, JdbcTemplate jdbcTemplate, Long resultId, int positionOffset) {
         ProductionRecordDto dto = new ProductionRecordDto();
         T first = entities.get(0);
         CommonAttrMapping.mapEntityFieldsToDto(first, dto, CommonAttrMapping.FIELD_TO_FIELD);
@@ -116,7 +116,7 @@ public class ProductionRecordQueryService {
             for (AttrKeyValDto attr : attrs) {
                 String originalPosition = attr.getPosition();
                 CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
-                attr.setPosition(originalPosition);
+                attr.setPosition(applyPositionOffset(originalPosition, positionOffset));
             }
             attrKeyValDtos.addAll(attrs);
         }
@@ -124,6 +124,19 @@ public class ProductionRecordQueryService {
         dto.setAttrKeyVals(attrKeyValDtos);
         System.out.println(dto);
         return dto;
+    }
+
+    private String applyPositionOffset(String position, int positionOffset) {
+        if (position == null || position.isEmpty()) {
+            return position;
+        }
+
+        try {
+            int numericPosition = Integer.parseInt(position);
+            return String.valueOf(numericPosition + positionOffset);
+        } catch (NumberFormatException ex) {
+            return position;
+        }
     }
 
     private Long extractResultId(Object entity) {

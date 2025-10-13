@@ -28,12 +28,13 @@ public class ProductionRecordQueryController {
     @GetMapping
     @Operation(summary = "生产记录查询方法1")
 //    @RequestBody @Valid ProductionRecordQueryRequest request
-    public Result<List<ProductionRecordDto>> queryMethod1() {
+    public Result<List<ProductionRecordDto>> queryMethod1(@RequestParam(defaultValue = "0") int positionOffset) {
 //        Class<?> entityClass = resolveEntityClass(request.getEntityClassName());
         DatabaseConfig readonlyuser = DatabaseConfig.builder().url("jdbc:mysql://172.24.81.104:3306/mo_mes_db").username("root").password("momeshou").build();
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod1(
                 readonlyuser,
-                MoAutoAdjustSt08.class
+                MoAutoAdjustSt08.class,
+                positionOffset
         );
         return Result.ok(dtos);
     }

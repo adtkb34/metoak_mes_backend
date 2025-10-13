@@ -16,18 +16,21 @@ import org.springframework.stereotype.Component;
 import javax.swing.plaf.IconUIResource;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class ProductionRecordQueryService {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public <T> List<ProductionRecordDto> queryMethod1(DatabaseConfig config, Class<T> entityClass, int positionOffset) {
+    public <T> List<ProductionRecordDto> queryMethod1(DatabaseConfig config, Class<T> entityClass, int positionOffset, String[] attrNos) {
         Objects.requireNonNull(config, "Database config must not be null");
         Objects.requireNonNull(entityClass, "Entity class must not be null");
 
@@ -35,6 +38,8 @@ public class ProductionRecordQueryService {
         if (tableName == null) {
             throw new IllegalArgumentException("实体缺少@TableName注解: " + entityClass.getName());
         }
+
+        Set<String> attrNoFilter = buildAttrNoFilter(attrNos);
 
         try (HikariDataSource dataSource = buildDataSource(config)) {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
@@ -71,9 +76,9 @@ public class ProductionRecordQueryService {
             List<ProductionRecordDto> results = new ArrayList<>();
             for (Long resultId : order) {
                 if (resultId == null) {
-                    results.add(buildDtoFromEntities(nullResultGroup, jdbcTemplate, null, positionOffset));
+                    results.add(buildDtoFromEntities(nullResultGroup, jdbcTemplate, null, positionOffset, attrNoFilter));
                 } else {
-                    results.add(buildDtoFromEntities(groupedByResultId.get(resultId), jdbcTemplate, resultId, positionOffset));
+                    results.add(buildDtoFromEntities(groupedByResultId.get(resultId), jdbcTemplate, resultId, positionOffset, attrNoFilter));
                 }
             }
 
@@ -81,7 +86,18 @@ public class ProductionRecordQueryService {
         }
     }
 
-    private <T> ProductionRecordDto buildDtoFromEntities(List<T> entities, JdbcTemplate jdbcTemplate, Long resultId, int positionOffset) {
+    private Set<String> buildAttrNoFilter(String[] attrNos) {
+        if (attrNos == null) {
+            return Collections.emptySet();
+        }
+        return Arrays.stream(attrNos)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+    }
+
+    private <T> ProductionRecordDto buildDtoFromEntities(List<T> entities, JdbcTemplate jdbcTemplate, Long resultId, int positionOffset, Set<String> attrNoFilter) {
         ProductionRecordDto dto = new ProductionRecordDto();
         T first = entities.get(0);
         CommonAttrMapping.mapEntityFieldsToDto(first, dto, CommonAttrMapping.FIELD_TO_FIELD);
@@ -118,12 +134,21 @@ public class ProductionRecordQueryService {
                 CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
                 attr.setPosition(applyPositionOffset(originalPosition, positionOffset));
             }
-            attrKeyValDtos.addAll(attrs);
+            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrNoFilter));
         }
 
         dto.setAttrKeyVals(attrKeyValDtos);
         System.out.println(dto);
         return dto;
+    }
+
+    private List<AttrKeyValDto> filterAttrKeyVals(List<AttrKeyValDto> attrs, Set<String> attrNoFilter) {
+        if (attrNoFilter == null || attrNoFilter.isEmpty()) {
+            return attrs;
+        }
+        return attrs.stream()
+                .filter(attr -> attrNoFilter.contains(attr.getNo()))
+                .collect(Collectors.toList());
     }
 
     private String applyPositionOffset(String position, int positionOffset) {

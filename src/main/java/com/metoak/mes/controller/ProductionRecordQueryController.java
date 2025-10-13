@@ -36,7 +36,10 @@ public class ProductionRecordQueryController {
             @RequestParam(required = false) int origin,
             @RequestParam(required = false) int device,
             @RequestParam(required = false) int station,
-            @RequestParam(required = false) int position
+            @RequestParam(required = false) int position,
+            @RequestParam(required = false) String timeField,
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endTime
     ) {
 //        Class<?> entityClass = resolveEntityClass(request.getEntityClassName());
         DatabaseConfig readonlyuser;
@@ -51,13 +54,18 @@ public class ProductionRecordQueryController {
                     readonlyuser,
                     MoAutoAdjustSt08.class,
                     positionOffset,
-                    attrNos
+                    attrNos,
+                    timeField,
+                    startTime,
+                    endTime
             );
         } else if (device == 1) {
             dtos = productionRecordQueryService.queryMethod2(
                     readonlyuser,
                     positionOffset,
-                    attrNos
+                    attrNos,
+                    startTime,
+                    endTime
             );
         }
         return Result.ok(dtos);
@@ -67,13 +75,17 @@ public class ProductionRecordQueryController {
     @Operation(summary = "生产记录查询方法2（ST07）")
     public Result<List<ProductionRecordDto>> queryMethod2(
             @RequestParam(defaultValue = "0") int positionOffset,
-            @RequestParam(required = false) String[] attrNos
+            @RequestParam(required = false) String[] attrNos,
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endTime
     ) {
         DatabaseConfig readonlyuser = DatabaseConfig.builder().url("jdbc:mysql://172.24.81.104:3306/mo_mes_db").username("root").password("momeshou").build();
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod2(
                 readonlyuser,
                 positionOffset,
-                attrNos
+                attrNos,
+                startTime,
+                endTime
         );
         return Result.ok(dtos);
     }

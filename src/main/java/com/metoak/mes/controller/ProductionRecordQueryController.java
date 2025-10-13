@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -31,16 +32,34 @@ public class ProductionRecordQueryController {
 //    @RequestBody @Valid ProductionRecordQueryRequest request
     public Result<List<ProductionRecordDto>> queryMethod1(
             @RequestParam(defaultValue = "0") int positionOffset,
-            @RequestParam(required = false) String[] attrNos
+            @RequestParam(required = false) String[] attrNos,
+            @RequestParam(required = false) int origin,
+            @RequestParam(required = false) int device,
+            @RequestParam(required = false) int station,
+            @RequestParam(required = false) int position
     ) {
 //        Class<?> entityClass = resolveEntityClass(request.getEntityClassName());
-        DatabaseConfig readonlyuser = DatabaseConfig.builder().url("jdbc:mysql://172.24.81.104:3306/mo_mes_db").username("root").password("momeshou").build();
-        List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod1(
-                readonlyuser,
-                MoAutoAdjustSt08.class,
-                positionOffset,
-                attrNos
-        );
+        DatabaseConfig readonlyuser;
+        if (origin == 1) {
+            readonlyuser = DatabaseConfig.builder().url("jdbc:mysql://11.11.11.13:3306/mo_mes_db").username("root").password("momeshou").build();
+        } else {
+            readonlyuser = DatabaseConfig.builder().url("jdbc:mysql://192.168.188.11:3306/mo_mes_db").username("root").password("momeshou").build();
+        }
+        List<ProductionRecordDto> dtos = Collections.emptyList();
+        if (device == 2 || device == 3) {
+            dtos = productionRecordQueryService.queryMethod1(
+                    readonlyuser,
+                    MoAutoAdjustSt08.class,
+                    positionOffset,
+                    attrNos
+            );
+        } else if (device == 1) {
+            dtos = productionRecordQueryService.queryMethod2(
+                    readonlyuser,
+                    positionOffset,
+                    attrNos
+            );
+        }
         return Result.ok(dtos);
     }
 

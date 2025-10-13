@@ -45,7 +45,7 @@ public class ProductionRecordQueryService {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
             List<T> entities = jdbcTemplate.query(
-                    "SELECT * FROM " + tableName.value() + " where id > 686731 and id < 686740",
+                    "SELECT * FROM " + tableName.value(),
                     new BeanPropertyRowMapper<>(entityClass)
             );
 
@@ -100,7 +100,7 @@ public class ProductionRecordQueryService {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
             List<MoAutoAdjustSt07> entities = jdbcTemplate.query(
-                    "SELECT * FROM " + tableName.value() + " where id > 686731 and id < 686740",
+                    "SELECT * FROM " + tableName.value(),
                     new BeanPropertyRowMapper<>(MoAutoAdjustSt07.class)
             );
 
@@ -291,8 +291,8 @@ public class ProductionRecordQueryService {
 
         String normalized = side.trim().toLowerCase();
         return switch (normalized) {
-            case "left", "l" -> "1";
-            case "right", "r" -> "右";
+            case "left", "l" -> "0";
+            case "right", "r" -> "1";
             default -> side;
         };
     }

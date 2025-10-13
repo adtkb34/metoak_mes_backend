@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/mes/v1/production-record-query")
 @Tag(name = "生产记录查询")
@@ -26,13 +28,13 @@ public class ProductionRecordQueryController {
 
     @PostMapping("/method1")
     @Operation(summary = "生产记录查询方法1")
-    public Result<ProductionRecordDto> queryMethod1(@RequestBody @Valid ProductionRecordQueryRequest request) {
+    public Result<List<ProductionRecordDto>> queryMethod1(@RequestBody @Valid ProductionRecordQueryRequest request) {
         Class<?> entityClass = resolveEntityClass(request.getEntityClassName());
-        ProductionRecordDto dto = productionRecordQueryService.queryMethod1(
+        List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod1(
                 request.getDatabaseConfig(),
                 entityClass
         );
-        return Result.ok(dto);
+        return Result.ok(dtos);
     }
 
     private Class<?> resolveEntityClass(String className) {

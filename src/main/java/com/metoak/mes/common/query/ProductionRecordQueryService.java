@@ -15,7 +15,10 @@ import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Component
@@ -23,7 +26,7 @@ public class ProductionRecordQueryService {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public <T> ProductionRecordDto queryMethod1(DatabaseConfig config, Class<T> entityClass) {
+    public <T> List<ProductionRecordDto> queryMethod1(DatabaseConfig config, Class<T> entityClass) {
         Objects.requireNonNull(config, "Database config must not be null");
         Objects.requireNonNull(entityClass, "Entity class must not be null");
 
@@ -41,71 +44,84 @@ public class ProductionRecordQueryService {
             );
 
             if (entities.isEmpty()) {
-                return null;
+                return Collections.emptyList();
             }
 
-            ProductionRecordDto dto = new ProductionRecordDto();
+            Map<Long, List<T>> groupedByResultId = new LinkedHashMap<>();
+            List<T> nullResultGroup = new ArrayList<>();
+            List<Long> order = new ArrayList<>();
 
-            List<T> relevantEntities = filterEntitiesByResultId(entities);
-            T first = relevantEntities.get(0);
-            CommonAttrMapping.mapEntityFieldsToDto(first, dto, CommonAttrMapping.FIELD_TO_FIELD);
-
-            Long resultId = extractResultId(first);
-            if (resultId != null) {
-                List<MoProcessStepProductionResult> processResults = jdbcTemplate.query(
-                        "SELECT * FROM mo_process_step_production_result WHERE id = ?",
-                        new BeanPropertyRowMapper<>(MoProcessStepProductionResult.class),
-                        resultId
-                );
-
-                if (!processResults.isEmpty()) {
-                    MoProcessStepProductionResult result = processResults.get(0);
-                    dto.setProductSn(result.getProductSn());
-                    dto.setProductBatchNo(result.getProductBatchNo());
-                    dto.setStepType(result.getStepType());
-                    dto.setStepTypeNo(result.getStepTypeNo());
-                    dto.setErrorNo(result.getErrorCode() == null ? null : String.valueOf(result.getErrorCode()));
-                    dto.setError(result.getNgReason());
-                    dto.setDeviceNo(result.getStationNum() == null ? null : String.valueOf(result.getStationNum()));
-                    dto.setOperator(result.getOperator());
-                    dto.setSoftwareTool(result.getSoftwareTool());
-                    dto.setSoftwareToolVersion(result.getSoftwareToolVersion());
-                    dto.setStartTime(result.getStartTime() == null ? null : result.getStartTime().format(DATE_TIME_FORMATTER));
-                    dto.setEndTime(result.getEndTime() == null ? null : result.getEndTime().format(DATE_TIME_FORMATTER));
+            for (T entity : entities) {
+                Long resultId = extractResultId(entity);
+                if (resultId == null) {
+                    if (nullResultGroup.isEmpty()) {
+                        order.add(null);
+                    }
+                    nullResultGroup.add(entity);
+                } else {
+                    if (!groupedByResultId.containsKey(resultId)) {
+                        groupedByResultId.put(resultId, new ArrayList<>());
+                        order.add(resultId);
+                    }
+                    groupedByResultId.get(resultId).add(entity);
                 }
             }
 
-            List<AttrKeyValDto> attrKeyValDtos = new ArrayList<>();
-            for (T entity : relevantEntities) {
-                List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity);
-                for (AttrKeyValDto attr : attrs) {
-                    String originalPosition = attr.getPosition();
-                    CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
-                    attr.setPosition(originalPosition);
+            List<ProductionRecordDto> results = new ArrayList<>();
+            for (Long resultId : order) {
+                if (resultId == null) {
+                    results.add(buildDtoFromEntities(nullResultGroup, jdbcTemplate, null));
+                } else {
+                    results.add(buildDtoFromEntities(groupedByResultId.get(resultId), jdbcTemplate, resultId));
                 }
-                attrKeyValDtos.addAll(attrs);
             }
 
-            dto.setAttrKeyVals(attrKeyValDtos);
-            return dto;
+            return results;
         }
     }
 
-    private <T> List<T> filterEntitiesByResultId(List<T> entities) {
-        Long resultId = extractResultId(entities.get(0));
-        if (resultId == null) {
-            return entities;
-        }
+    private <T> ProductionRecordDto buildDtoFromEntities(List<T> entities, JdbcTemplate jdbcTemplate, Long resultId) {
+        ProductionRecordDto dto = new ProductionRecordDto();
+        T first = entities.get(0);
+        CommonAttrMapping.mapEntityFieldsToDto(first, dto, CommonAttrMapping.FIELD_TO_FIELD);
 
-        List<T> relevantEntities = new ArrayList<>();
-        for (T entity : entities) {
-            Long currentId = extractResultId(entity);
-            if (Objects.equals(currentId, resultId)) {
-                relevantEntities.add(entity);
+        if (resultId != null) {
+            List<MoProcessStepProductionResult> processResults = jdbcTemplate.query(
+                    "SELECT * FROM mo_process_step_production_result WHERE id = ?",
+                    new BeanPropertyRowMapper<>(MoProcessStepProductionResult.class),
+                    resultId
+            );
+
+            if (!processResults.isEmpty()) {
+                MoProcessStepProductionResult result = processResults.get(0);
+                dto.setProductSn(result.getProductSn());
+                dto.setProductBatchNo(result.getProductBatchNo());
+                dto.setStepType(result.getStepType());
+                dto.setStepTypeNo(result.getStepTypeNo());
+                dto.setErrorNo(result.getErrorCode() == null ? null : String.valueOf(result.getErrorCode()));
+                dto.setError(result.getNgReason());
+                dto.setDeviceNo(result.getStationNum() == null ? null : String.valueOf(result.getStationNum()));
+                dto.setOperator(result.getOperator());
+                dto.setSoftwareTool(result.getSoftwareTool());
+                dto.setSoftwareToolVersion(result.getSoftwareToolVersion());
+                dto.setStartTime(result.getStartTime() == null ? null : result.getStartTime().format(DATE_TIME_FORMATTER));
+                dto.setEndTime(result.getEndTime() == null ? null : result.getEndTime().format(DATE_TIME_FORMATTER));
             }
         }
 
-        return relevantEntities.isEmpty() ? entities : relevantEntities;
+        List<AttrKeyValDto> attrKeyValDtos = new ArrayList<>();
+        for (T entity : entities) {
+            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity);
+            for (AttrKeyValDto attr : attrs) {
+                String originalPosition = attr.getPosition();
+                CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
+                attr.setPosition(originalPosition);
+            }
+            attrKeyValDtos.addAll(attrs);
+        }
+
+        dto.setAttrKeyVals(attrKeyValDtos);
+        return dto;
     }
 
     private Long extractResultId(Object entity) {

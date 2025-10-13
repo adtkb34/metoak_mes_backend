@@ -1,10 +1,12 @@
 package com.metoak.mes.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import com.metoak.mes.common.annotate.FieldCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -31,116 +33,168 @@ public class MoAutoAdjustSt07 implements Serializable {
     @ApiModelProperty("左侧镜头或右侧镜头")
     private String side;
 
+    @TableField(exist = false)
+    private String position;
+
     @ApiModelProperty("收到数据的时间")
     private LocalDateTime addTime;
 
     @ApiModelProperty("中心MTF平均数值，实际测试值")
+    @FieldCode(no = "010", type = "val", hasPosition = true)
     private Double mtfCenterValue;
 
     @ApiModelProperty("规格下限")
+    @FieldCode(no = "010", type = "lsl", hasPosition = true)
     private Double mtfCenterLsl;
 
     @ApiModelProperty("规格上限")
+    @FieldCode(no = "010", type = "usl", hasPosition = true)
     private Double mtfCenterUsl;
 
+    @FieldCode(no = "013", type = "val", hasPosition = true)
     @ApiModelProperty("左上MTF平均数值")
     private Double mtfLeftupValue;
 
+    @FieldCode(no = "013", type = "lsl", hasPosition = true)
     private Double mtfLeftupLsl;
 
+    @FieldCode(no = "013", type = "usl", hasPosition = true)
     private Double mtfLeftupUsl;
 
+    @FieldCode(no = "016", type = "val", hasPosition = true)
     private Double mtfRightupValue;
 
+    @FieldCode(no = "016", type = "lsl", hasPosition = true)
     private Double mtfRightupLsl;
 
+    @FieldCode(no = "016", type = "usl", hasPosition = true)
     private Double mtfRightupUsl;
 
+    @FieldCode(no = "019", type = "val", hasPosition = true)
     private Double mtfLeftdownValue;
 
+    @FieldCode(no = "019", type = "lsl", hasPosition = true)
     private Double mtfLeftdownLsl;
 
+    @FieldCode(no = "019", type = "usl", hasPosition = true)
     private Double mtfLeftdownUsl;
 
+    @FieldCode(no = "022", type = "val", hasPosition = true)
     private Double mtfRightdownValue;
 
+    @FieldCode(no = "022", type = "lsl", hasPosition = true)
     private Double mtfRightdownLsl;
 
+    @FieldCode(no = "022", type = "usl", hasPosition = true)
     private Double mtfRightdownUsl;
 
+    @FieldCode(no = "024", type = "val", hasPosition = true)
     private Double mtfCornerDiffValue;
 
+    @FieldCode(no = "024", type = "lsl", hasPosition = true)
     private Double mtfCornerDiffLsl;
 
+    @FieldCode(no = "024", type = "usl", hasPosition = true)
     private Double mtfCornerDiffUsl;
 
+    @FieldCode(no = "028", type = "val", hasPosition = true)
     private String imagePath;
 
     @ApiModelProperty("松开夹爪检查，中心MTF平均数值，实际测试值")
+    @FieldCode(no = "031", type = "val", hasPosition = true)
     private Double mtfCenterValue2;
 
     @ApiModelProperty("规格下限")
+    @FieldCode(no = "031", type = "lsl", hasPosition = true)
     private Double mtfCenterLsl2;
 
     @ApiModelProperty("规格上限")
+    @FieldCode(no = "031", type = "usl", hasPosition = true)
     private Double mtfCenterUsl2;
 
+    @FieldCode(no = "032", type = "val", hasPosition = true)
     private Double mtfLeftupValue2;
 
+    @FieldCode(no = "032", type = "lsl", hasPosition = true)
     private Double mtfLeftupLsl2;
 
+    @FieldCode(no = "032", type = "usl", hasPosition = true)
     private Double mtfLeftupUsl2;
 
+    @FieldCode(no = "033", type = "val", hasPosition = true)
     private Double mtfRightupValue2;
 
+    @FieldCode(no = "033", type = "lsl", hasPosition = true)
     private Double mtfRightupLsl2;
 
+    @FieldCode(no = "033", type = "usl", hasPosition = true)
     private Double mtfRightupUsl2;
 
+    @FieldCode(no = "034", type = "val", hasPosition = true)
     private Double mtfLeftdownValue2;
 
+    @FieldCode(no = "034", type = "lsl", hasPosition = true)
     private Double mtfLeftdownLsl2;
 
+    @FieldCode(no = "034", type = "usl", hasPosition = true)
     private Double mtfLeftdownUsl2;
 
+    @FieldCode(no = "035", type = "val", hasPosition = true)
     private Double mtfRightdownValue2;
 
+    @FieldCode(no = "035", type = "lsl", hasPosition = true)
     private Double mtfRightdownLsl2;
 
+    @FieldCode(no = "035", type = "usl", hasPosition = true)
     private Double mtfRightdownUsl2;
 
+    @FieldCode(no = "036", type = "val", hasPosition = true)
     private Double mtfCornerDiffValue2;
 
+    @FieldCode(no = "036", type = "lsl", hasPosition = true)
     private Double mtfCornerDiffLsl2;
 
+    @FieldCode(no = "036", type = "usl", hasPosition = true)
     private Double mtfCornerDiffUsl2;
 
+    @FieldCode(no = "038", type = "val", hasPosition = true)
     private String imagePath2;
 
     private Long taskid;
 
     private Integer typeNum;
 
+    @FieldCode(no = "002", type = "val", hasPosition = true)
     private Double ocXOffset;
 
+    @FieldCode(no = "002", type = "usl", hasPosition = true)
     private Double ocXOffsetUpperSpec;
 
+    @FieldCode(no = "004", type = "usl", hasPosition = true)
     private Double ocYOffsetUpperSpec;
 
+    @FieldCode(no = "004", type = "val", hasPosition = true)
     private Double ocYOffset;
 
+    @FieldCode(no = "006", type = "val", hasPosition = true)
     private Double codXOffset;
 
+    @FieldCode(no = "008", type = "val", hasPosition = true)
     private Double codYOffset;
 
+    @FieldCode(no = "006", type = "usl", hasPosition = true)
     private Double codXOffsetUpperSpec;
 
+    @FieldCode(no = "008", type = "usl", hasPosition = true)
     private Double codYOffsetUpperSpec;
 
+    @FieldCode(no = "025", type = "val", hasPosition = true)
     private Double mtfRangeOffset;
 
+    @FieldCode(no = "025", type = "usl", hasPosition = true)
     private Double mtfRangeOffsetUpperSpec;
 
+    @FieldCode(no = "025", type = "lsl", hasPosition = true)
     private Double mtfRangeOffsetLowerSpec;
 
     public Long getId() {
@@ -165,6 +219,14 @@ public class MoAutoAdjustSt07 implements Serializable {
 
     public void setSide(String side) {
         this.side = side;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     public LocalDateTime getAddTime() {
@@ -589,6 +651,7 @@ public class MoAutoAdjustSt07 implements Serializable {
             "id = " + id +
             ", beamSn = " + beamSn +
             ", side = " + side +
+            ", position = " + position +
             ", addTime = " + addTime +
             ", mtfCenterValue = " + mtfCenterValue +
             ", mtfCenterLsl = " + mtfCenterLsl +

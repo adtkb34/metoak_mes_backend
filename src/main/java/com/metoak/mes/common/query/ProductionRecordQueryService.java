@@ -6,6 +6,7 @@ import com.metoak.mes.common.config.DatabaseConfig;
 import com.metoak.mes.common.mapping.CommonAttrMapping;
 import com.metoak.mes.dto.AttrKeyValDto;
 import com.metoak.mes.dto.ProductionRecordDto;
+import com.metoak.mes.entity.MoAutoAdjustSt07;
 import com.metoak.mes.entity.MoProcessStepProductionResult;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -13,7 +14,6 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.swing.plaf.IconUIResource;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,6 +81,55 @@ public class ProductionRecordQueryService {
         }
     }
 
+    public List<ProductionRecordDto> queryMethod2(DatabaseConfig config, int positionOffset) {
+        Objects.requireNonNull(config, "Database config must not be null");
+
+        try (HikariDataSource dataSource = buildDataSource(config)) {
+            JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+
+            List<MoAutoAdjustSt07> entities = jdbcTemplate.query(
+                    "SELECT * FROM mo_auto_adjust_st07",
+                    new BeanPropertyRowMapper<>(MoAutoAdjustSt07.class)
+            );
+
+            if (entities.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            Map<Long, List<MoAutoAdjustSt07>> groupedByTaskId = new LinkedHashMap<>();
+            List<MoAutoAdjustSt07> nullTaskGroup = new ArrayList<>();
+            List<Long> order = new ArrayList<>();
+
+            for (MoAutoAdjustSt07 entity : entities) {
+                entity.setPosition(determinePosition(entity.getSide()));
+                Long taskId = entity.getTaskid();
+                if (taskId == null) {
+                    if (nullTaskGroup.isEmpty()) {
+                        order.add(null);
+                    }
+                    nullTaskGroup.add(entity);
+                } else {
+                    if (!groupedByTaskId.containsKey(taskId)) {
+                        groupedByTaskId.put(taskId, new ArrayList<>());
+                        order.add(taskId);
+                    }
+                    groupedByTaskId.get(taskId).add(entity);
+                }
+            }
+
+            List<ProductionRecordDto> results = new ArrayList<>();
+            for (Long taskId : order) {
+                List<MoAutoAdjustSt07> group = taskId == null ? nullTaskGroup : groupedByTaskId.get(taskId);
+                if (group == null || group.isEmpty()) {
+                    continue;
+                }
+                results.add(buildDtoFromEntities(group, jdbcTemplate, taskId, positionOffset));
+            }
+
+            return results;
+        }
+    }
+
     private <T> ProductionRecordDto buildDtoFromEntities(List<T> entities, JdbcTemplate jdbcTemplate, Long resultId, int positionOffset) {
         ProductionRecordDto dto = new ProductionRecordDto();
         T first = entities.get(0);
@@ -137,6 +186,26 @@ public class ProductionRecordQueryService {
         } catch (NumberFormatException ex) {
             return position;
         }
+    }
+
+    private String determinePosition(String side) {
+        if (side == null) {
+            return null;
+        }
+
+        String trimmed = side.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+
+        String lower = trimmed.toLowerCase();
+        if ("left".equals(lower) || "l".equals(lower) || "左".equals(trimmed)) {
+            return "1";
+        }
+        if ("right".equals(lower) || "r".equals(lower) || "右".equals(trimmed)) {
+            return "右";
+        }
+        return trimmed;
     }
 
     private Long extractResultId(Object entity) {

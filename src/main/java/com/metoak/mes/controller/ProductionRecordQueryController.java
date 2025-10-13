@@ -39,6 +39,17 @@ public class ProductionRecordQueryController {
         return Result.ok(dtos);
     }
 
+    @GetMapping("/st07")
+    @Operation(summary = "生产记录查询方法2")
+    public Result<List<ProductionRecordDto>> queryMethod2(@RequestParam(defaultValue = "0") int positionOffset) {
+        DatabaseConfig readonlyuser = DatabaseConfig.builder().url("jdbc:mysql://172.24.81.104:3306/mo_mes_db").username("root").password("momeshou").build();
+        List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod2(
+                readonlyuser,
+                positionOffset
+        );
+        return Result.ok(dtos);
+    }
+
     private Class<?> resolveEntityClass(String className) {
         if (!StringUtils.hasText(className)) {
             throw new IllegalArgumentException("实体类名称不能为空");

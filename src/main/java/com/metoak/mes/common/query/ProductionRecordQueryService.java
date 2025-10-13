@@ -7,6 +7,7 @@ import com.metoak.mes.common.mapping.CommonAttrMapping;
 import com.metoak.mes.dto.AttrKeyValDto;
 import com.metoak.mes.dto.ProductionRecordDto;
 import com.metoak.mes.entity.MoAutoAdjustSt07;
+import com.metoak.mes.entity.MoAutoAdjustSt08;
 import com.metoak.mes.entity.MoProcessStepProductionResult;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -31,13 +32,54 @@ public class ProductionRecordQueryService {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
+    public List<ProductionRecordDto> queryMethod(String[] attrNos,
+                                                int origin,
+                                                int device,
+                                                int station,
+                                                int position,
+                                                String startTime,
+                                                String endTime,
+                                                int count) {
+        DatabaseConfig databaseConfig = buildDatabaseConfig(origin);
+
+        int positionOffset = 0;
+        if (device == 1 || device == 2) {
+            positionOffset = 1;
+        }
+
+        if (device == 2 || device == 3) {
+            return queryMethod1(
+                    databaseConfig,
+                    MoAutoAdjustSt08.class,
+                    positionOffset,
+                    attrNos,
+                    "add_time",
+                    startTime,
+                    endTime,
+                    count
+            );
+        } else if (device == 1) {
+            return queryMethod2(
+                    databaseConfig,
+                    positionOffset,
+                    attrNos,
+                    startTime,
+                    endTime,
+                    count
+            );
+        }
+
+        return Collections.emptyList();
+    }
+
     public <T> List<ProductionRecordDto> queryMethod1(DatabaseConfig config,
                                                      Class<T> entityClass,
                                                      int positionOffset,
                                                      String[] attrNos,
                                                      String timeField,
                                                      String startTime,
-                                                     String endTime) {
+                                                     String endTime,
+                                                     int count) {
         Objects.requireNonNull(config, "Database config must not be null");
         Objects.requireNonNull(entityClass, "Entity class must not be null");
 
@@ -53,7 +95,12 @@ public class ProductionRecordQueryService {
 
             StringBuilder sql = new StringBuilder("SELECT * FROM ").append(tableName.value());
             List<Object> params = new ArrayList<>();
-            appendTimeFilter(sql, params, timeField, startTime, endTime);
+            String normalizedTimeField = normalizeTimeField(timeField);
+            boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
+            if (!hasTimeFilter && normalizedTimeField != null) {
+                sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
+                params.add(count);
+            }
 
             List<T> entities = jdbcTemplate.query(
                     sql.toString(),
@@ -102,7 +149,8 @@ public class ProductionRecordQueryService {
                                                  int positionOffset,
                                                  String[] attrNos,
                                                  String startTime,
-                                                 String endTime) {
+                                                 String endTime,
+                                                 int count) {
         Objects.requireNonNull(config, "Database config must not be null");
 
         TableName tableName = MoAutoAdjustSt07.class.getAnnotation(TableName.class);
@@ -117,7 +165,12 @@ public class ProductionRecordQueryService {
 
             StringBuilder sql = new StringBuilder("SELECT * FROM ").append(tableName.value());
             List<Object> params = new ArrayList<>();
-            appendTimeFilter(sql, params, "add_time", startTime, endTime);
+            String normalizedTimeField = normalizeTimeField("add_time");
+            boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
+            if (!hasTimeFilter && normalizedTimeField != null) {
+                sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
+                params.add(count);
+            }
 
             List<MoAutoAdjustSt07> entities = jdbcTemplate.query(
                     sql.toString(),
@@ -164,36 +217,44 @@ public class ProductionRecordQueryService {
         }
     }
 
-    private void appendTimeFilter(StringBuilder sql, List<Object> params, String timeField, String startTime, String endTime) {
-        if (!StringUtils.hasText(timeField)) {
-            return;
-        }
-
-        String normalizedField = timeField.trim();
-        if (!StringUtils.hasText(normalizedField)) {
-            return;
-        }
-        if (!normalizedField.matches("[a-zA-Z0-9_]+")) {
-            throw new IllegalArgumentException("非法时间字段: " + timeField);
+    private boolean appendTimeFilter(StringBuilder sql, List<Object> params, String timeField, String startTime, String endTime) {
+        if (timeField == null) {
+            return false;
         }
 
         boolean hasStart = StringUtils.hasText(startTime);
         boolean hasEnd = StringUtils.hasText(endTime);
         if (!hasStart && !hasEnd) {
-            return;
+            return false;
         }
 
         sql.append(" WHERE ");
         List<String> conditions = new ArrayList<>();
         if (hasStart) {
-            conditions.add(normalizedField + " >= ?");
+            conditions.add(timeField + " >= ?");
             params.add(startTime);
         }
         if (hasEnd) {
-            conditions.add(normalizedField + " <= ?");
+            conditions.add(timeField + " <= ?");
             params.add(endTime);
         }
         sql.append(String.join(" AND ", conditions));
+        return true;
+    }
+
+    private String normalizeTimeField(String timeField) {
+        if (!StringUtils.hasText(timeField)) {
+            return null;
+        }
+
+        String normalizedField = timeField.trim();
+        if (!StringUtils.hasText(normalizedField)) {
+            return null;
+        }
+        if (!normalizedField.matches("[a-zA-Z0-9_]+")) {
+            throw new IllegalArgumentException("非法时间字段: " + timeField);
+        }
+        return normalizedField;
     }
 
     private Set<String> buildAttrNoFilter(String[] attrNos) {
@@ -348,6 +409,22 @@ public class ProductionRecordQueryService {
             case "right", "r" -> "1";
             default -> side;
         };
+    }
+
+    private DatabaseConfig buildDatabaseConfig(int origin) {
+        if (origin == 1) {
+            return DatabaseConfig.builder()
+                    .url("jdbc:mysql://11.11.11.13:3306/mo_mes_db")
+                    .username("root")
+                    .password("momeshou")
+                    .build();
+        }
+
+        return DatabaseConfig.builder()
+                .url("jdbc:mysql://192.168.188.11:3306/mo_mes_db")
+                .username("root")
+                .password("momeshou")
+                .build();
     }
 
     private HikariDataSource buildDataSource(DatabaseConfig config) {

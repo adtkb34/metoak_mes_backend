@@ -6,6 +6,7 @@ import com.metoak.mes.common.config.DatabaseConfig;
 import com.metoak.mes.common.mapping.CommonAttrMapping;
 import com.metoak.mes.dto.AttrKeyValDto;
 import com.metoak.mes.dto.ProductionRecordDto;
+import com.metoak.mes.entity.MoAutoAdjustSt07;
 import com.metoak.mes.entity.MoProcessStepProductionResult;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -13,7 +14,6 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.swing.plaf.IconUIResource;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,6 +86,63 @@ public class ProductionRecordQueryService {
         }
     }
 
+    public List<ProductionRecordDto> queryMethod2(DatabaseConfig config, int positionOffset, String[] attrNos) {
+        Objects.requireNonNull(config, "Database config must not be null");
+
+        TableName tableName = MoAutoAdjustSt07.class.getAnnotation(TableName.class);
+        if (tableName == null) {
+            throw new IllegalArgumentException("MoAutoAdjustSt07实体缺少@TableName注解");
+        }
+
+        Set<String> attrNoFilter = buildAttrNoFilter(attrNos);
+
+        try (HikariDataSource dataSource = buildDataSource(config)) {
+            JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+
+            List<MoAutoAdjustSt07> entities = jdbcTemplate.query(
+                    "SELECT * FROM " + tableName.value() + " where id > 686731 and id < 686740",
+                    new BeanPropertyRowMapper<>(MoAutoAdjustSt07.class)
+            );
+
+            if (entities.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            Map<Long, List<MoAutoAdjustSt07>> groupedByTaskId = new LinkedHashMap<>();
+            List<MoAutoAdjustSt07> nullTaskGroup = new ArrayList<>();
+            List<Long> order = new ArrayList<>();
+
+            for (MoAutoAdjustSt07 entity : entities) {
+                entity.setPosition(resolvePositionFromSide(entity.getSide()));
+
+                Long taskId = entity.getTaskid();
+                if (taskId == null) {
+                    if (nullTaskGroup.isEmpty()) {
+                        order.add(null);
+                    }
+                    nullTaskGroup.add(entity);
+                } else {
+                    if (!groupedByTaskId.containsKey(taskId)) {
+                        groupedByTaskId.put(taskId, new ArrayList<>());
+                        order.add(taskId);
+                    }
+                    groupedByTaskId.get(taskId).add(entity);
+                }
+            }
+
+            List<ProductionRecordDto> results = new ArrayList<>();
+            for (Long taskId : order) {
+                if (taskId == null) {
+                    results.add(buildDtoFromSt07Entities(nullTaskGroup, jdbcTemplate, null, positionOffset, attrNoFilter));
+                } else {
+                    results.add(buildDtoFromSt07Entities(groupedByTaskId.get(taskId), jdbcTemplate, taskId, positionOffset, attrNoFilter));
+                }
+            }
+
+            return results;
+        }
+    }
+
     private Set<String> buildAttrNoFilter(String[] attrNos) {
         if (attrNos == null) {
             return Collections.emptySet();
@@ -142,6 +199,54 @@ public class ProductionRecordQueryService {
         return dto;
     }
 
+    private ProductionRecordDto buildDtoFromSt07Entities(List<MoAutoAdjustSt07> entities, JdbcTemplate jdbcTemplate, Long taskId, int positionOffset, Set<String> attrNoFilter) {
+        ProductionRecordDto dto = new ProductionRecordDto();
+        MoAutoAdjustSt07 first = entities.get(0);
+        CommonAttrMapping.mapEntityFieldsToDto(first, dto, CommonAttrMapping.FIELD_TO_FIELD);
+
+        if (taskId != null) {
+            List<MoProcessStepProductionResult> processResults = jdbcTemplate.query(
+                    "SELECT * FROM mo_process_step_production_result WHERE id = ?",
+                    new BeanPropertyRowMapper<>(MoProcessStepProductionResult.class),
+                    taskId
+            );
+
+            if (!processResults.isEmpty()) {
+                MoProcessStepProductionResult result = processResults.get(0);
+                dto.setProductSn(result.getProductSn());
+                dto.setProductBatchNo(result.getProductBatchNo());
+                dto.setStepType(result.getStepType());
+                dto.setStepTypeNo(result.getStepTypeNo());
+                dto.setErrorNo(result.getErrorCode() == null ? null : String.valueOf(result.getErrorCode()));
+                dto.setError(result.getNgReason());
+                dto.setDeviceNo(result.getStationNum() == null ? null : String.valueOf(result.getStationNum()));
+                dto.setOperator(result.getOperator());
+                dto.setSoftwareTool(result.getSoftwareTool());
+                dto.setSoftwareToolVersion(result.getSoftwareToolVersion());
+                dto.setStartTime(result.getStartTime() == null ? null : result.getStartTime().format(DATE_TIME_FORMATTER));
+                dto.setEndTime(result.getEndTime() == null ? null : result.getEndTime().format(DATE_TIME_FORMATTER));
+            }
+        }
+
+        List<AttrKeyValDto> attrKeyValDtos = new ArrayList<>();
+        for (MoAutoAdjustSt07 entity : entities) {
+            if (entity.getPosition() == null) {
+                entity.setPosition(resolvePositionFromSide(entity.getSide()));
+            }
+
+            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity);
+            for (AttrKeyValDto attr : attrs) {
+                String originalPosition = attr.getPosition();
+                CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
+                attr.setPosition(applyPositionOffset(originalPosition, positionOffset));
+            }
+            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrNoFilter));
+        }
+
+        dto.setAttrKeyVals(attrKeyValDtos);
+        return dto;
+    }
+
     private List<AttrKeyValDto> filterAttrKeyVals(List<AttrKeyValDto> attrs, Set<String> attrNoFilter) {
         if (attrNoFilter == null || attrNoFilter.isEmpty()) {
             return attrs;
@@ -177,6 +282,19 @@ public class ProductionRecordQueryService {
             throw new IllegalStateException("无法获取moProcessStepProductionResultId", e);
         }
         return null;
+    }
+
+    private String resolvePositionFromSide(String side) {
+        if (side == null) {
+            return null;
+        }
+
+        String normalized = side.trim().toLowerCase();
+        return switch (normalized) {
+            case "left", "l" -> "1";
+            case "right", "r" -> "右";
+            default -> side;
+        };
     }
 
     private HikariDataSource buildDataSource(DatabaseConfig config) {

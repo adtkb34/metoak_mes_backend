@@ -1,17 +1,16 @@
 package com.metoak.mes.controller;
 
+import com.metoak.mes.common.config.DatabaseConfig;
 import com.metoak.mes.common.result.Result;
 import com.metoak.mes.common.query.ProductionRecordQueryService;
 import com.metoak.mes.dto.ProductionRecordDto;
 import com.metoak.mes.dto.ProductionRecordQueryRequest;
+import com.metoak.mes.entity.MoAutoAdjustSt08;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,13 +25,15 @@ public class ProductionRecordQueryController {
         this.productionRecordQueryService = productionRecordQueryService;
     }
 
-    @PostMapping("/method1")
+    @GetMapping
     @Operation(summary = "生产记录查询方法1")
-    public Result<List<ProductionRecordDto>> queryMethod1(@RequestBody @Valid ProductionRecordQueryRequest request) {
-        Class<?> entityClass = resolveEntityClass(request.getEntityClassName());
+//    @RequestBody @Valid ProductionRecordQueryRequest request
+    public Result<List<ProductionRecordDto>> queryMethod1() {
+//        Class<?> entityClass = resolveEntityClass(request.getEntityClassName());
+        DatabaseConfig readonlyuser = DatabaseConfig.builder().url("jdbc:mysql://172.24.81.104:3306/mo_mes_db").username("root").password("momeshou").build();
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod1(
-                request.getDatabaseConfig(),
-                entityClass
+                readonlyuser,
+                MoAutoAdjustSt08.class
         );
         return Result.ok(dtos);
     }

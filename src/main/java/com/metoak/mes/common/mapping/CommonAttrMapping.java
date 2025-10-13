@@ -69,7 +69,7 @@ public class CommonAttrMapping {
                 }
             } catch (Exception e) {
                 System.err.printf("⚠️ 反向映射失败：%s → %s%n", sourceFieldName, targetFieldName);
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
     }

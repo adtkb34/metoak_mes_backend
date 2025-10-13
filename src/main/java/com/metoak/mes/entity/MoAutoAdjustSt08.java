@@ -56,87 +56,87 @@ public class MoAutoAdjustSt08 implements Serializable {
     private LocalDateTime addTime;
 
     private Long moProcessStepProductionResultId;
-    @FieldCode(no = "002", type = "val")
+    @FieldCode(no = "002", type = "val", hasPosition = true)
     @ApiModelProperty("X偏移量")
     private Float ocXOffset;
 
-    @FieldCode(no = "002", type = "usl")
+    @FieldCode(no = "002", type = "usl", hasPosition = true)
     @ApiModelProperty("X偏移量上限规格值")
     private Float ocXOffsetUsl;
 
-    @FieldCode(no = "004", type = "val")
+    @FieldCode(no = "004", type = "val", hasPosition = true)
     @ApiModelProperty("Y偏移量")
     private Float ocYOffset;
 
-    @FieldCode(no = "004", type = "usl")
+    @FieldCode(no = "004", type = "usl", hasPosition = true)
     @ApiModelProperty("Y偏移量上限规格值")
     private Float ocYOffsetUsl;
 
-    @FieldCode(no = "006", type = "val")
+    @FieldCode(no = "006", type = "val", hasPosition = true)
     @ApiModelProperty("COD X偏移量")
     private Float codXOffset;
 
-    @FieldCode(no = "006", type = "usl")
+    @FieldCode(no = "006", type = "usl", hasPosition = true)
     @ApiModelProperty("COD X偏移量上限规格值")
     private Float codXOffsetUsl;
 
-    @FieldCode(no = "008", type = "val")
+    @FieldCode(no = "008", type = "val", hasPosition = true)
     @ApiModelProperty("COD Y偏移量")
     private Float codYOffset;
 
-    @FieldCode(no = "008", type = "usl")
+    @FieldCode(no = "008", type = "usl", hasPosition = true)
     @ApiModelProperty("COD Y偏移量上限规格值")
     private Float codYOffsetUsl;
 
-    @FieldCode(no = "010", type = "val")
+    @FieldCode(no = "010", type = "val", hasPosition = true)
     @ApiModelProperty("中心MTF平均数值，实际测试值")
     private Double mtfCenterValue;
 
-    @FieldCode(no = "010", type = "lsl")
+    @FieldCode(no = "010", type = "lsl", hasPosition = true)
     @ApiModelProperty("中心MTF平均数值，规格下限")
     private Double mtfCenterLsl;
 
-    @FieldCode(no = "013", type = "val")
+    @FieldCode(no = "013", type = "val", hasPosition = true)
     @ApiModelProperty("左上MTF平均数值")
     private Double mtfLeftupValue;
 
-    @FieldCode(no = "013", type = "lsl")
+    @FieldCode(no = "013", type = "lsl", hasPosition = true)
     @ApiModelProperty("左上MTF平均数值，规格下限")
     private Double mtfLeftupLsl;
 
-    @FieldCode(no = "016", type = "val")
+    @FieldCode(no = "016", type = "val", hasPosition = true)
     @ApiModelProperty("右上MTF平均数值")
     private Double mtfRightupValue;
 
-    @FieldCode(no = "016", type = "lsl")
+    @FieldCode(no = "016", type = "lsl", hasPosition = true)
     @ApiModelProperty("右上MTF平均数值，规格下限")
     private Double mtfRightupLsl;
 
-    @FieldCode(no = "019", type = "val")
+    @FieldCode(no = "019", type = "val", hasPosition = true)
     @ApiModelProperty("左下MTF平均数值")
     private Double mtfLeftdownValue;
 
-    @FieldCode(no = "019", type = "lsl")
+    @FieldCode(no = "019", type = "lsl", hasPosition = true)
     @ApiModelProperty("左下MTF平均数值，规格下限")
     private Double mtfLeftdownLsl;
 
-    @FieldCode(no = "022", type = "val")
+    @FieldCode(no = "022", type = "val", hasPosition = true)
     @ApiModelProperty("右下MTF平均数值")
     private Double mtfRightdownValue;
 
-    @FieldCode(no = "022", type = "lsl")
+    @FieldCode(no = "022", type = "lsl", hasPosition = true)
     @ApiModelProperty("右下MTF平均数值，规格下限")
     private Double mtfRightdownLsl;
 
-    @FieldCode(no = "025", type = "val")
+    @FieldCode(no = "025", type = "val", hasPosition = true)
     @ApiModelProperty("MTF范围偏移")
     private Float mtfRangeOffset;
 
-    @FieldCode(no = "025", type = "usl")
+    @FieldCode(no = "025", type = "usl", hasPosition = true)
     @ApiModelProperty("MTF范围偏移上限规格值")
     private Float mtfRangeOffsetUsl;
 
-    @FieldCode(no = "028", type = "val")
+    @FieldCode(no = "028", type = "val", hasPosition = true)
     @ApiModelProperty("图像路径")
     private String imagePath;
 
@@ -148,43 +148,43 @@ public class MoAutoAdjustSt08 implements Serializable {
     @ApiModelProperty("AA夹爪抓取压力规格")
     private Float aaClawGripPressureSpec;
 
-    @FieldCode(no = "031", type = "val")
+    @FieldCode(no = "031", type = "val", hasPosition = true)
     @ApiModelProperty("释放爪与UV固化MTF中心差")
     private Float releaseClawMinusUvCuredMtfCenterDiff;
 
-    @FieldCode(no = "031", type = "usl")
+    @FieldCode(no = "031", type = "usl", hasPosition = true)
     @ApiModelProperty("释放爪与UV固化MTF中心差上限规格值")
     private Float releaseClawMinusUvCuredMtfCenterDiffUsl;
 
-    @FieldCode(no = "032", type = "val")
+    @FieldCode(no = "032", type = "val", hasPosition = true)
     @ApiModelProperty("释放爪与UV固化MTF左上差")
     private Float releaseClawMinusUvCuredMtfTlDiff;
 
-    @FieldCode(no = "032", type = "usl")
+    @FieldCode(no = "032", type = "usl", hasPosition = true)
     @ApiModelProperty("释放爪与UV固化MTF左上差上限规格值")
     private Float releaseClawMinusUvCuredMtfTlDiffUsl;
 
-    @FieldCode(no = "033", type = "val")
+    @FieldCode(no = "033", type = "val", hasPosition = true)
     @ApiModelProperty("释放爪与UV固化MTF右上差")
     private Float releaseClawMinusUvCuredMtfTrDiff;
 
-    @FieldCode(no = "033", type = "usl")
+    @FieldCode(no = "033", type = "usl", hasPosition = true)
     @ApiModelProperty("释放爪与UV固化MTF右上差上限规格值")
     private Float releaseClawMinusUvCuredMtfTrDiffUsl;
 
-    @FieldCode(no = "034", type = "val")
+    @FieldCode(no = "034", type = "val", hasPosition = true)
     @ApiModelProperty("释放爪与UV固化MTF左下差")
     private Float releaseClawMinusUvCuredMtfBlDiff;
 
-    @FieldCode(no = "034", type = "usl")
+    @FieldCode(no = "034", type = "usl", hasPosition = true)
     @ApiModelProperty("释放爪与UV固化MTF左下差上限规格值")
     private Float releaseClawMinusUvCuredMtfBlDiffUsl;
 
-    @FieldCode(no = "035", type = "val")
+    @FieldCode(no = "035", type = "val", hasPosition = true)
     @ApiModelProperty("释放爪与UV固化MTF右下差")
     private Float releaseClawMinusUvCuredMtfBrDiff;
 
-    @FieldCode(no = "035", type = "usl")
+    @FieldCode(no = "035", type = "usl", hasPosition = true)
     @ApiModelProperty("释放爪与UV固化MTF右下差上限规格值")
     private Float releaseClawMinusUvCuredMtfBrDiffUsl;//    private Long taskid;
 //
@@ -221,17 +221,17 @@ public class MoAutoAdjustSt08 implements Serializable {
     private BigDecimal testCardHeightSpec;
 
     /* =========== 白场脏污 =========== */
-    @FieldCode(no = "042", type = "val")
+    @FieldCode(no = "042", type = "val", hasPosition = true)
     private Float whiteFieldDirt;                // 白场脏污
 
-    @FieldCode(no = "042", type = "usl")
+    @FieldCode(no = "042", type = "usl", hasPosition = true)
     private Float whiteFieldDirtUsl;             // 白场脏污-上限
 
     /* =========== 黑场暗点 =========== */
-    @FieldCode(no = "043", type = "val")
+    @FieldCode(no = "043", type = "val", hasPosition = true)
     private Float blackFieldDarkSpot;            // 黑场暗点
 
-    @FieldCode(no = "043", type = "usl")
+    @FieldCode(no = "043", type = "usl", hasPosition = true)
     private Float blackFieldDarkSpotUsl;         // 黑场暗点-上限
 
     @FieldCode(no = "044", type = "val")

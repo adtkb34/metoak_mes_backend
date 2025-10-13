@@ -54,6 +54,7 @@ public class FieldCodeMapper {
     }
 
     public static List<AttrKeyValDto> extractAttrListFromObject(Object obj) {
+        System.out.println(obj);
         if (obj == null) {
             return List.of();
         }
@@ -80,6 +81,8 @@ public class FieldCodeMapper {
             Object raw = readField(field, obj);
             if (raw != null) {
                 String value = stringify(raw);
+                System.out.print(dto.getNo() + ": ");
+                System.out.println(value);
                 switch (annotation.type()) {
                     case "val" -> dto.setVal(value);
                     case "lsl" -> dto.setLsl(value);

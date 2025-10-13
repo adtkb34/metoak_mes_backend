@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.swing.plaf.IconUIResource;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +40,7 @@ public class ProductionRecordQueryService {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
             List<T> entities = jdbcTemplate.query(
-                    "SELECT * FROM " + tableName.value(),
+                    "SELECT * FROM " + tableName.value() + " where id > 686731 and id < 686740",
                     new BeanPropertyRowMapper<>(entityClass)
             );
 
@@ -121,6 +122,7 @@ public class ProductionRecordQueryService {
         }
 
         dto.setAttrKeyVals(attrKeyValDtos);
+        System.out.println(dto);
         return dto;
     }
 

@@ -5,6 +5,7 @@ import com.metoak.mes.common.result.Result;
 import com.metoak.mes.common.query.ProductionRecordQueryService;
 import com.metoak.mes.dto.ProductionRecordDto;
 import com.metoak.mes.dto.ProductionRecordQueryRequest;
+import com.metoak.mes.entity.MoAutoAdjustSt07;
 import com.metoak.mes.entity.MoAutoAdjustSt08;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,6 +38,21 @@ public class ProductionRecordQueryController {
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod1(
                 readonlyuser,
                 MoAutoAdjustSt08.class,
+                positionOffset,
+                attrNos
+        );
+        return Result.ok(dtos);
+    }
+
+    @GetMapping("/st07")
+    @Operation(summary = "生产记录查询方法2（ST07）")
+    public Result<List<ProductionRecordDto>> queryMethod2(
+            @RequestParam(defaultValue = "0") int positionOffset,
+            @RequestParam(required = false) String[] attrNos
+    ) {
+        DatabaseConfig readonlyuser = DatabaseConfig.builder().url("jdbc:mysql://172.24.81.104:3306/mo_mes_db").username("root").password("momeshou").build();
+        List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod2(
+                readonlyuser,
                 positionOffset,
                 attrNos
         );

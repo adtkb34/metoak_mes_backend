@@ -1,6 +1,9 @@
 package com.metoak.mes.common.query;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.metoak.mes.common.annotate.FieldCode;
 import com.metoak.mes.common.annotate.FieldCodeMapper;
 import com.metoak.mes.common.config.DatabaseConfig;
 import com.metoak.mes.common.mapping.CommonAttrMapping;
@@ -16,6 +19,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,7 +98,8 @@ public class ProductionRecordQueryService {
         try (HikariDataSource dataSource = buildDataSource(config)) {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-            StringBuilder sql = new StringBuilder("SELECT * FROM ").append(tableName.value());
+            String selectColumns = buildSelectColumns(entityClass, attrNoFilter);
+            StringBuilder sql = new StringBuilder("SELECT ").append(selectColumns).append(" FROM ").append(tableName.value());
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField(timeField);
             boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
@@ -163,7 +169,8 @@ public class ProductionRecordQueryService {
         try (HikariDataSource dataSource = buildDataSource(config)) {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-            StringBuilder sql = new StringBuilder("SELECT * FROM ").append(tableName.value());
+            String selectColumns = buildSelectColumns(MoAutoAdjustSt07.class, attrNoFilter);
+            StringBuilder sql = new StringBuilder("SELECT ").append(selectColumns).append(" FROM ").append(tableName.value());
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField("add_time");
             boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
@@ -266,6 +273,95 @@ public class ProductionRecordQueryService {
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toSet());
+    }
+
+    private <T> String buildSelectColumns(Class<T> entityClass, Set<String> attrNoFilter) {
+        if (attrNoFilter == null || attrNoFilter.isEmpty()) {
+            return "*";
+        }
+
+        List<String> columns = new ArrayList<>();
+        for (Field field : entityClass.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+
+            TableField tableField = field.getAnnotation(TableField.class);
+            if (tableField != null && !tableField.exist()) {
+                continue;
+            }
+
+            boolean includeField = !field.isAnnotationPresent(FieldCode.class);
+            if (!includeField) {
+                FieldCode fieldCode = field.getAnnotation(FieldCode.class);
+                includeField = attrNoFilter.contains(fieldCode.no());
+            }
+
+            if (!includeField) {
+                continue;
+            }
+
+            String columnName = resolveColumnName(field);
+            columns.add(buildColumnWithAlias(columnName, field.getName()));
+        }
+
+        if (columns.isEmpty()) {
+            return "*";
+        }
+
+        return String.join(", ", columns);
+    }
+
+    private String buildColumnWithAlias(String columnName, String fieldName) {
+        if (columnName.equalsIgnoreCase(fieldName)) {
+            return columnName;
+        }
+        return columnName + " AS " + fieldName;
+    }
+
+    private String resolveColumnName(Field field) {
+        TableField tableField = field.getAnnotation(TableField.class);
+        if (tableField != null && StringUtils.hasText(tableField.value())) {
+            return tableField.value();
+        }
+
+        TableId tableId = field.getAnnotation(TableId.class);
+        if (tableId != null && StringUtils.hasText(tableId.value())) {
+            return tableId.value();
+        }
+
+        return camelToSnake(field.getName());
+    }
+
+    private String camelToSnake(String value) {
+        if (!StringUtils.hasText(value)) {
+            return value;
+        }
+
+        StringBuilder builder = new StringBuilder(value.length() + 5);
+        for (int i = 0; i < value.length(); i++) {
+            char ch = value.charAt(i);
+            if (Character.isUpperCase(ch)) {
+                boolean hasPrev = i > 0;
+                boolean hasNext = i + 1 < value.length();
+                boolean shouldAppendUnderscore = false;
+                if (hasPrev) {
+                    char prev = value.charAt(i - 1);
+                    shouldAppendUnderscore = Character.isLowerCase(prev) || Character.isDigit(prev);
+                }
+                if (!shouldAppendUnderscore && hasNext) {
+                    char next = value.charAt(i + 1);
+                    shouldAppendUnderscore = Character.isLowerCase(next);
+                }
+                if (shouldAppendUnderscore) {
+                    builder.append('_');
+                }
+                builder.append(Character.toLowerCase(ch));
+            } else {
+                builder.append(ch);
+            }
+        }
+        return builder.toString();
     }
 
     private <T> ProductionRecordDto buildDtoFromEntities(List<T> entities, JdbcTemplate jdbcTemplate, Long resultId, int positionOffset, Set<String> attrNoFilter) {

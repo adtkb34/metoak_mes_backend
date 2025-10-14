@@ -39,14 +39,14 @@ public class ProductionRecordQueryService {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     public List<ProductionRecordDto> queryMethod(String[] attrKeys,
-                                                int origin,
-                                                int device,
-                                                int station,
-                                                String position,
+                                                 Integer origin,
+                                                 Integer device,
+                                                 Integer station,
+                                                 Integer position,
                                                 String stage,
                                                 String startTime,
                                                 String endTime,
-                                                int count) {
+                                                 Integer count) {
         DatabaseConfig databaseConfig = buildDatabaseConfig(origin);
 
         int positionOffset = 0;
@@ -60,7 +60,7 @@ public class ProductionRecordQueryService {
                     MoAutoAdjustSt08.class,
                     positionOffset,
                     attrKeys,
-                    position,
+                    String.valueOf(position - positionOffset),
                     stage,
                     "add_time",
                     startTime,
@@ -72,7 +72,7 @@ public class ProductionRecordQueryService {
                     databaseConfig,
                     positionOffset,
                     attrKeys,
-                    position,
+                    String.valueOf(position),
                     stage,
                     startTime,
                     endTime,
@@ -85,14 +85,14 @@ public class ProductionRecordQueryService {
 
     public <T> List<ProductionRecordDto> queryMethod1(DatabaseConfig config,
                                                      Class<T> entityClass,
-                                                     int positionOffset,
+                                                     Integer positionOffset,
                                                      String[] attrKeys,
                                                      String position,
                                                      String stage,
                                                      String timeField,
                                                      String startTime,
                                                      String endTime,
-                                                     int count) {
+                                                      Integer count) {
         Objects.requireNonNull(config, "Database config must not be null");
         Objects.requireNonNull(entityClass, "Entity class must not be null");
 
@@ -162,13 +162,13 @@ public class ProductionRecordQueryService {
     }
 
     public List<ProductionRecordDto> queryMethod2(DatabaseConfig config,
-                                                 int positionOffset,
+                                                  Integer positionOffset,
                                                  String[] attrKeys,
                                                  String position,
                                                  String stage,
                                                  String startTime,
                                                  String endTime,
-                                                 int count) {
+                                                  Integer count) {
         Objects.requireNonNull(config, "Database config must not be null");
 
         TableName tableName = MoAutoAdjustSt07.class.getAnnotation(TableName.class);
@@ -187,7 +187,7 @@ public class ProductionRecordQueryService {
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField("add_time");
             boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
-            appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage);
+            appendStagePositionFilter(sql, params, hasTimeFilter, "side", Objects.equals(position, "1") ? "left" : "right", "stage", stage);
             if (!hasTimeFilter && normalizedTimeField != null) {
                 sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
                 params.add(count);

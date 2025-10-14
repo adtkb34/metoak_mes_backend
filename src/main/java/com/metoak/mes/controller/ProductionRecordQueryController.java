@@ -29,12 +29,12 @@ public class ProductionRecordQueryController {
 //    @RequestBody @Valid ProductionRecordQueryRequest request
     public Result<List<ProductionRecordDto>> queryMethod1(
             @RequestParam(required = false) String[] attrKeys,
-            @RequestParam(required = false) int origin,
-            @RequestParam(required = false) int device,
-            @RequestParam(required = false) int station,
-            @RequestParam(required = false) String position,
+            @RequestParam(required = false) Integer origin,
+            @RequestParam(required = false) Integer device,
+            @RequestParam(required = false) Integer station,
+            @RequestParam(required = false) Integer position,
             @RequestParam(required = false) String stage,
-            @RequestParam int count,
+            @RequestParam Integer count,
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime
     ) {
@@ -57,12 +57,12 @@ public class ProductionRecordQueryController {
 //    @RequestBody @Valid ProductionRecordQueryRequest request
     public Result<List<String>> spc(
             @RequestParam(required = false) String[] attrKeys,
-            @RequestParam(required = false) int origin,
-            @RequestParam(required = false) int device,
-            @RequestParam(required = false) int station,
-            @RequestParam(required = false) String position,
+            @RequestParam(required = false) Integer origin,
+            @RequestParam(required = false) Integer device,
+            @RequestParam(required = false) Integer station,
+            @RequestParam(required = false) Integer position,
             @RequestParam(required = false) String stage,
-            @RequestParam int count,
+            @RequestParam Integer count,
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime
     ) {

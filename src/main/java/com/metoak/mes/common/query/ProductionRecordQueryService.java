@@ -48,7 +48,7 @@ public class ProductionRecordQueryService {
                                                  Integer count,
                                                  String stepTypeNo) {
         OriginEnum originEnum = OriginEnum.fromCode(Objects.requireNonNull(origin, "origin must not be null"));
-        DeviceEnum deviceEnum = DeviceEnum.fromCode(Objects.requireNonNull(device, "device must not be null"));
+        DeviceEnum deviceEnum = device != null ? DeviceEnum.fromCode(device) : null;
 
         DatabaseConfig databaseConfig = buildDatabaseConfig(originEnum);
 
@@ -67,6 +67,7 @@ public class ProductionRecordQueryService {
             );
         } else {
             Class<?> serviceClass = determineServiceClass(stepTypeNo);
+            if (serviceClass == null) return Collections.emptyList();
             return queryMethod1(
                     databaseConfig,
                     serviceClass,
@@ -81,7 +82,7 @@ public class ProductionRecordQueryService {
             );
         }
 
-        return Collections.emptyList();
+//        return Collections.emptyList();
     }
 
     private Class<?> determineServiceClass(String stepTypeNo) {
@@ -92,12 +93,7 @@ public class ProductionRecordQueryService {
             }
         }
 
-        ProcessMappingRegistry.ProcessMapping defaultMapping = ProcessMappingRegistry.get(StepMappingEnum.AUTO_ADJUST.getCode());
-        if (defaultMapping != null && defaultMapping.getServiceClass() != null) {
-            return defaultMapping.getServiceClass();
-        }
-
-        return IMoAutoAdjustSt08Service.class;
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -213,7 +209,7 @@ public class ProductionRecordQueryService {
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField(timeField);
             boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
-            appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage.toString());
+            appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage != null ? stage.toString() : null);
             if (!hasTimeFilter && normalizedTimeField != null) {
                 sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
                 params.add(count);

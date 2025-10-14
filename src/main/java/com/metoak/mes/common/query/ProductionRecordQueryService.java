@@ -22,15 +22,7 @@ import org.springframework.util.StringUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -43,7 +35,7 @@ public class ProductionRecordQueryService {
                                                  Integer device,
                                                  Integer station,
                                                  Integer position,
-                                                String stage,
+                                                 Integer stage,
                                                 String startTime,
                                                 String endTime,
                                                  Integer count) {
@@ -88,7 +80,7 @@ public class ProductionRecordQueryService {
                                                      Integer positionOffset,
                                                      String[] attrKeys,
                                                      String position,
-                                                     String stage,
+                                                      Integer stage,
                                                      String timeField,
                                                      String startTime,
                                                      String endTime,
@@ -112,7 +104,7 @@ public class ProductionRecordQueryService {
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField(timeField);
             boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
-            appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage);
+            appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage.toString());
             if (!hasTimeFilter && normalizedTimeField != null) {
                 sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
                 params.add(count);
@@ -165,7 +157,7 @@ public class ProductionRecordQueryService {
                                                   Integer positionOffset,
                                                  String[] attrKeys,
                                                  String position,
-                                                 String stage,
+                                                  Integer stage,
                                                  String startTime,
                                                  String endTime,
                                                   Integer count) {
@@ -187,7 +179,7 @@ public class ProductionRecordQueryService {
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField("add_time");
             boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
-            appendStagePositionFilter(sql, params, hasTimeFilter, "side", Objects.equals(position, "1") ? "left" : "right", "stage", stage);
+            appendStagePositionFilter(sql, params, hasTimeFilter, "side", Objects.equals(position, "1") ? "left" : "right", null, null);
             if (!hasTimeFilter && normalizedTimeField != null) {
                 sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
                 params.add(count);
@@ -230,7 +222,35 @@ public class ProductionRecordQueryService {
                 if (taskId == null) {
                     results.add(buildDtoFromSt07Entities(nullTaskGroup, jdbcTemplate, null, positionOffset, attrKeyFilter, attrNoToColumns));
                 } else {
-                    results.add(buildDtoFromSt07Entities(groupedByTaskId.get(taskId), jdbcTemplate, taskId, positionOffset, attrKeyFilter, attrNoToColumns));
+                    List<MoAutoAdjustSt07> objects = new ArrayList<>();
+
+                    List<MoAutoAdjustSt07> list = groupedByTaskId.get(taskId);
+                    list.sort(Comparator.comparing(MoAutoAdjustSt07::getId).reversed());
+                    int size = list.size();
+                    if (stage != null) {
+                        if (position == null) {
+                            int idx1 = 6 - stage * 2;
+                            int idx2 = 7 - stage * 2;
+                            if (idx1 >= 0 && idx1 < size) {
+                                objects.add(list.get(idx1));
+                            }
+                            if (idx2 >= 0 && idx2 < size) {
+                                objects.add(list.get(idx2));
+                            }
+                        } else {
+                            int idx = 3 - stage;
+                            if (idx >= 0 && idx < size) {
+                                objects.add(list.get(idx));
+                            }
+                        }
+                    } else {
+                        objects = list;
+                    }
+
+                    if (!objects.isEmpty()) {
+                        results.add(buildDtoFromSt07Entities(objects, jdbcTemplate, taskId, positionOffset, attrKeyFilter, attrNoToColumns));
+                    }
+
                 }
             }
 
@@ -426,7 +446,6 @@ public class ProductionRecordQueryService {
         }
 
         dto.setAttrKeyVals(attrKeyValDtos);
-        System.out.println(dto);
         return dto;
     }
 

@@ -33,7 +33,7 @@ public class ProductionRecordQueryController {
             @RequestParam(required = false) Integer device,
             @RequestParam(required = false) Integer station,
             @RequestParam(required = false) Integer position,
-            @RequestParam(required = false) String stage,
+            @RequestParam(required = false) Integer stage,
             @RequestParam Integer count,
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime
@@ -61,7 +61,7 @@ public class ProductionRecordQueryController {
             @RequestParam(required = false) Integer device,
             @RequestParam(required = false) Integer station,
             @RequestParam(required = false) Integer position,
-            @RequestParam(required = false) String stage,
+            @RequestParam(required = false) Integer stage,
             @RequestParam Integer count,
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime

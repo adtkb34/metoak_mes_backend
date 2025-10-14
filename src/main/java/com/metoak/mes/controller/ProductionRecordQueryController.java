@@ -47,7 +47,8 @@ public class ProductionRecordQueryController {
                 stage,
                 startTime,
                 endTime,
-                count
+                count,
+                null
         );
         return Result.ok(dtos);
     }
@@ -64,7 +65,8 @@ public class ProductionRecordQueryController {
             @RequestParam(required = false) Integer stage,
             @RequestParam Integer count,
             @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime
+            @RequestParam(required = false) String endTime,
+            @RequestParam String stepTypeNo
     ) {
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod(
                 attrKeys,
@@ -75,7 +77,8 @@ public class ProductionRecordQueryController {
                 stage,
                 startTime,
                 endTime,
-                count
+                count,
+                stepTypeNo
         );
 
         List<String> values = dtos.stream()

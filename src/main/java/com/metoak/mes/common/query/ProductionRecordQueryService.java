@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -37,11 +38,12 @@ public class ProductionRecordQueryService {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public List<ProductionRecordDto> queryMethod(String[] attrNos,
+    public List<ProductionRecordDto> queryMethod(String[] attrKeys,
                                                 int origin,
                                                 int device,
                                                 int station,
-                                                int position,
+                                                String position,
+                                                String stage,
                                                 String startTime,
                                                 String endTime,
                                                 int count) {
@@ -57,7 +59,9 @@ public class ProductionRecordQueryService {
                     databaseConfig,
                     MoAutoAdjustSt08.class,
                     positionOffset,
-                    attrNos,
+                    attrKeys,
+                    position,
+                    stage,
                     "add_time",
                     startTime,
                     endTime,
@@ -67,7 +71,9 @@ public class ProductionRecordQueryService {
             return queryMethod2(
                     databaseConfig,
                     positionOffset,
-                    attrNos,
+                    attrKeys,
+                    position,
+                    stage,
                     startTime,
                     endTime,
                     count
@@ -80,7 +86,9 @@ public class ProductionRecordQueryService {
     public <T> List<ProductionRecordDto> queryMethod1(DatabaseConfig config,
                                                      Class<T> entityClass,
                                                      int positionOffset,
-                                                     String[] attrNos,
+                                                     String[] attrKeys,
+                                                     String position,
+                                                     String stage,
                                                      String timeField,
                                                      String startTime,
                                                      String endTime,
@@ -93,17 +101,19 @@ public class ProductionRecordQueryService {
             throw new IllegalArgumentException("实体缺少@TableName注解: " + entityClass.getName());
         }
 
-        Set<String> attrNoFilter = buildAttrNoFilter(attrNos);
+        Set<String> attrKeyFilter = buildAttrKeyFilter(attrKeys);
+        Map<String, Set<String>> attrNoToColumns = buildAttrNoToColumnMap(entityClass);
 
         try (HikariDataSource dataSource = buildDataSource(config)) {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-            String selectColumns = buildSelectColumns(entityClass, attrNoFilter);
+            String selectColumns = buildSelectColumns(entityClass, attrKeyFilter);
             StringBuilder sql = new StringBuilder("SELECT ").append(selectColumns).append(" FROM ").append(tableName.value());
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField(timeField);
             boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
-            if (!hasTimeFilter && normalizedTimeField != null) {
+            boolean hasStagePositionFilter = appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage);
+            if (!hasTimeFilter && !hasStagePositionFilter && normalizedTimeField != null) {
                 sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
                 params.add(count);
             }
@@ -141,9 +151,9 @@ public class ProductionRecordQueryService {
             List<ProductionRecordDto> results = new ArrayList<>();
             for (Long resultId : order) {
                 if (resultId == null) {
-                    results.add(buildDtoFromEntities(nullResultGroup, jdbcTemplate, null, positionOffset, attrNoFilter));
+                    results.add(buildDtoFromEntities(nullResultGroup, jdbcTemplate, null, positionOffset, attrKeyFilter, attrNoToColumns));
                 } else {
-                    results.add(buildDtoFromEntities(groupedByResultId.get(resultId), jdbcTemplate, resultId, positionOffset, attrNoFilter));
+                    results.add(buildDtoFromEntities(groupedByResultId.get(resultId), jdbcTemplate, resultId, positionOffset, attrKeyFilter, attrNoToColumns));
                 }
             }
 
@@ -153,7 +163,9 @@ public class ProductionRecordQueryService {
 
     public List<ProductionRecordDto> queryMethod2(DatabaseConfig config,
                                                  int positionOffset,
-                                                 String[] attrNos,
+                                                 String[] attrKeys,
+                                                 String position,
+                                                 String stage,
                                                  String startTime,
                                                  String endTime,
                                                  int count) {
@@ -164,17 +176,19 @@ public class ProductionRecordQueryService {
             throw new IllegalArgumentException("MoAutoAdjustSt07实体缺少@TableName注解");
         }
 
-        Set<String> attrNoFilter = buildAttrNoFilter(attrNos);
+        Set<String> attrKeyFilter = buildAttrKeyFilter(attrKeys);
+        Map<String, Set<String>> attrNoToColumns = buildAttrNoToColumnMap(MoAutoAdjustSt07.class);
 
         try (HikariDataSource dataSource = buildDataSource(config)) {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-            String selectColumns = buildSelectColumns(MoAutoAdjustSt07.class, attrNoFilter);
+            String selectColumns = buildSelectColumns(MoAutoAdjustSt07.class, attrKeyFilter);
             StringBuilder sql = new StringBuilder("SELECT ").append(selectColumns).append(" FROM ").append(tableName.value());
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField("add_time");
             boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
-            if (!hasTimeFilter && normalizedTimeField != null) {
+            boolean hasStagePositionFilter = appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage);
+            if (!hasTimeFilter && !hasStagePositionFilter && normalizedTimeField != null) {
                 sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
                 params.add(count);
             }
@@ -214,9 +228,9 @@ public class ProductionRecordQueryService {
             List<ProductionRecordDto> results = new ArrayList<>();
             for (Long taskId : order) {
                 if (taskId == null) {
-                    results.add(buildDtoFromSt07Entities(nullTaskGroup, jdbcTemplate, null, positionOffset, attrNoFilter));
+                    results.add(buildDtoFromSt07Entities(nullTaskGroup, jdbcTemplate, null, positionOffset, attrKeyFilter, attrNoToColumns));
                 } else {
-                    results.add(buildDtoFromSt07Entities(groupedByTaskId.get(taskId), jdbcTemplate, taskId, positionOffset, attrNoFilter));
+                    results.add(buildDtoFromSt07Entities(groupedByTaskId.get(taskId), jdbcTemplate, taskId, positionOffset, attrKeyFilter, attrNoToColumns));
                 }
             }
 
@@ -264,19 +278,20 @@ public class ProductionRecordQueryService {
         return normalizedField;
     }
 
-    private Set<String> buildAttrNoFilter(String[] attrNos) {
-        if (attrNos == null) {
+    private Set<String> buildAttrKeyFilter(String[] attrKeys) {
+        if (attrKeys == null) {
             return Collections.emptySet();
         }
-        return Arrays.stream(attrNos)
+        return Arrays.stream(attrKeys)
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
+                .map(String::toLowerCase)
                 .collect(Collectors.toSet());
     }
 
-    private <T> String buildSelectColumns(Class<T> entityClass, Set<String> attrNoFilter) {
-        if (attrNoFilter == null || attrNoFilter.isEmpty()) {
+    private <T> String buildSelectColumns(Class<T> entityClass, Set<String> attrKeyFilter) {
+        if (attrKeyFilter == null || attrKeyFilter.isEmpty()) {
             return "*";
         }
 
@@ -291,17 +306,18 @@ public class ProductionRecordQueryService {
                 continue;
             }
 
-            boolean includeField = !field.isAnnotationPresent(FieldCode.class);
-            if (!includeField) {
-                FieldCode fieldCode = field.getAnnotation(FieldCode.class);
-                includeField = attrNoFilter.contains(fieldCode.no());
+            String columnName = resolveColumnName(field);
+            boolean includeField;
+            if (field.isAnnotationPresent(FieldCode.class)) {
+                includeField = attrKeyFilter.contains(columnName.toLowerCase());
+            } else {
+                includeField = true;
             }
 
             if (!includeField) {
                 continue;
             }
 
-            String columnName = resolveColumnName(field);
             columns.add(buildColumnWithAlias(columnName, field.getName()));
         }
 
@@ -364,7 +380,12 @@ public class ProductionRecordQueryService {
         return builder.toString();
     }
 
-    private <T> ProductionRecordDto buildDtoFromEntities(List<T> entities, JdbcTemplate jdbcTemplate, Long resultId, int positionOffset, Set<String> attrNoFilter) {
+    private <T> ProductionRecordDto buildDtoFromEntities(List<T> entities,
+                                                        JdbcTemplate jdbcTemplate,
+                                                        Long resultId,
+                                                        int positionOffset,
+                                                        Set<String> attrKeyFilter,
+                                                        Map<String, Set<String>> attrNoToColumns) {
         ProductionRecordDto dto = new ProductionRecordDto();
         T first = entities.get(0);
         CommonAttrMapping.mapEntityFieldsToDto(first, dto, CommonAttrMapping.FIELD_TO_FIELD);
@@ -401,7 +422,7 @@ public class ProductionRecordQueryService {
                 CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
                 attr.setPosition(applyPositionOffset(originalPosition, positionOffset));
             }
-            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrNoFilter));
+            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrKeyFilter, attrNoToColumns));
         }
 
         dto.setAttrKeyVals(attrKeyValDtos);
@@ -409,7 +430,12 @@ public class ProductionRecordQueryService {
         return dto;
     }
 
-    private ProductionRecordDto buildDtoFromSt07Entities(List<MoAutoAdjustSt07> entities, JdbcTemplate jdbcTemplate, Long taskId, int positionOffset, Set<String> attrNoFilter) {
+    private ProductionRecordDto buildDtoFromSt07Entities(List<MoAutoAdjustSt07> entities,
+                                                        JdbcTemplate jdbcTemplate,
+                                                        Long taskId,
+                                                        int positionOffset,
+                                                        Set<String> attrKeyFilter,
+                                                        Map<String, Set<String>> attrNoToColumns) {
         ProductionRecordDto dto = new ProductionRecordDto();
         MoAutoAdjustSt07 first = entities.get(0);
         CommonAttrMapping.mapEntityFieldsToDto(first, dto, CommonAttrMapping.FIELD_TO_FIELD);
@@ -450,20 +476,84 @@ public class ProductionRecordQueryService {
                 CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
                 attr.setPosition(applyPositionOffset(originalPosition, positionOffset));
             }
-            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrNoFilter));
+            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrKeyFilter, attrNoToColumns));
         }
 
         dto.setAttrKeyVals(attrKeyValDtos);
         return dto;
     }
 
-    private List<AttrKeyValDto> filterAttrKeyVals(List<AttrKeyValDto> attrs, Set<String> attrNoFilter) {
-        if (attrNoFilter == null || attrNoFilter.isEmpty()) {
+    private List<AttrKeyValDto> filterAttrKeyVals(List<AttrKeyValDto> attrs,
+                                                  Set<String> attrKeyFilter,
+                                                  Map<String, Set<String>> attrNoToColumns) {
+        if (attrKeyFilter == null || attrKeyFilter.isEmpty()) {
+            return attrs;
+        }
+        if (attrNoToColumns == null || attrNoToColumns.isEmpty()) {
             return attrs;
         }
         return attrs.stream()
-                .filter(attr -> attrNoFilter.contains(attr.getNo()))
+                .filter(attr -> {
+                    Set<String> columns = attrNoToColumns.get(attr.getNo());
+                    if (columns == null || columns.isEmpty()) {
+                        return false;
+                    }
+                    for (String column : columns) {
+                        if (attrKeyFilter.contains(column.toLowerCase())) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })
                 .collect(Collectors.toList());
+    }
+
+    private <T> Map<String, Set<String>> buildAttrNoToColumnMap(Class<T> entityClass) {
+        Map<String, Set<String>> mapping = new LinkedHashMap<>();
+        for (Field field : entityClass.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+
+            FieldCode fieldCode = field.getAnnotation(FieldCode.class);
+            if (fieldCode == null) {
+                continue;
+            }
+
+            TableField tableField = field.getAnnotation(TableField.class);
+            if (tableField != null && !tableField.exist()) {
+                continue;
+            }
+
+            String columnName = resolveColumnName(field).toLowerCase();
+            mapping.computeIfAbsent(fieldCode.no(), key -> new LinkedHashSet<>()).add(columnName);
+        }
+        return mapping;
+    }
+
+    private boolean appendStagePositionFilter(StringBuilder sql,
+                                              List<Object> params,
+                                              boolean hasExistingCondition,
+                                              String positionColumn,
+                                              String positionValue,
+                                              String stageColumn,
+                                              String stageValue) {
+        boolean hasPosition = StringUtils.hasText(positionValue);
+        boolean hasStage = StringUtils.hasText(stageValue);
+        if (!hasPosition || !hasStage) {
+            return false;
+        }
+
+        if (!hasExistingCondition) {
+            sql.append(" WHERE ");
+        } else {
+            sql.append(" AND ");
+        }
+
+        sql.append(positionColumn).append(" = ? AND ").append(stageColumn).append(" = ?");
+        params.add(positionValue);
+        params.add(stageValue);
+        return true;
     }
 
     private String applyPositionOffset(String position, int positionOffset) {

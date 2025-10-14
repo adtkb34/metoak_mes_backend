@@ -28,21 +28,23 @@ public class ProductionRecordQueryController {
     @Operation(summary = "生产记录查询方法1")
 //    @RequestBody @Valid ProductionRecordQueryRequest request
     public Result<List<ProductionRecordDto>> queryMethod1(
-            @RequestParam(required = false) String[] attrNos,
+            @RequestParam(required = false) String[] attrKeys,
             @RequestParam(required = false) int origin,
             @RequestParam(required = false) int device,
             @RequestParam(required = false) int station,
-            @RequestParam(required = false) int position,
+            @RequestParam(required = false) String position,
+            @RequestParam(required = false) String stage,
             @RequestParam int count,
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime
     ) {
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod(
-                attrNos,
+                attrKeys,
                 origin,
                 device,
                 station,
                 position,
+                stage,
                 startTime,
                 endTime,
                 count
@@ -54,22 +56,23 @@ public class ProductionRecordQueryController {
     @Operation(summary = "SPC")
 //    @RequestBody @Valid ProductionRecordQueryRequest request
     public Result<List<String>> spc(
-            @RequestParam(required = false) String[] attrNos,
+            @RequestParam(required = false) String[] attrKeys,
             @RequestParam(required = false) int origin,
             @RequestParam(required = false) int device,
             @RequestParam(required = false) int station,
-            @RequestParam(required = false) int position,
-            @RequestParam(required = false) int stage,
+            @RequestParam(required = false) String position,
+            @RequestParam(required = false) String stage,
             @RequestParam int count,
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime
     ) {
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod(
-                attrNos,
+                attrKeys,
                 origin,
                 device,
                 station,
                 position,
+                stage,
                 startTime,
                 endTime,
                 count

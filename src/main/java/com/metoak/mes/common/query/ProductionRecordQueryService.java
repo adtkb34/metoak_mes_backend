@@ -3,17 +3,20 @@ package com.metoak.mes.common.query;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.metoak.mes.common.annotate.FieldCode;
 import com.metoak.mes.common.annotate.FieldCodeMapper;
 import com.metoak.mes.common.config.DatabaseConfig;
 import com.metoak.mes.common.mapping.CommonAttrMapping;
+import com.metoak.mes.common.mapping.ProcessMappingRegistry;
 import com.metoak.mes.dto.AttrKeyValDto;
 import com.metoak.mes.dto.ProductionRecordDto;
 import com.metoak.mes.entity.MoAutoAdjustSt07;
-import com.metoak.mes.entity.MoAutoAdjustSt08;
 import com.metoak.mes.entity.MoProcessStepProductionResult;
 import com.metoak.mes.enums.DeviceEnum;
 import com.metoak.mes.enums.OriginEnum;
+import com.metoak.mes.enums.StepMappingEnum;
+import com.metoak.mes.service.IMoAutoAdjustSt08Service;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -23,6 +26,8 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,9 +43,10 @@ public class ProductionRecordQueryService {
                                                  Integer station,
                                                  Integer position,
                                                  Integer stage,
-                                                String startTime,
-                                                String endTime,
-                                                 Integer count) {
+                                                 String startTime,
+                                                 String endTime,
+                                                 Integer count,
+                                                 String stepTypeNo) {
         OriginEnum originEnum = OriginEnum.fromCode(Objects.requireNonNull(origin, "origin must not be null"));
         DeviceEnum deviceEnum = DeviceEnum.fromCode(Objects.requireNonNull(device, "device must not be null"));
 
@@ -60,9 +66,10 @@ public class ProductionRecordQueryService {
                     count
             );
         } else {
+            Class<?> serviceClass = determineServiceClass(stepTypeNo);
             return queryMethod1(
                     databaseConfig,
-                    MoAutoAdjustSt08.class,
+                    serviceClass,
                     positionOffset,
                     attrKeys,
                     String.valueOf(position - positionOffset),
@@ -77,8 +84,103 @@ public class ProductionRecordQueryService {
         return Collections.emptyList();
     }
 
+    private Class<?> determineServiceClass(String stepTypeNo) {
+        if (StringUtils.hasText(stepTypeNo)) {
+            ProcessMappingRegistry.ProcessMapping mapping = ProcessMappingRegistry.get(stepTypeNo);
+            if (mapping != null && mapping.getServiceClass() != null) {
+                return mapping.getServiceClass();
+            }
+        }
+
+        ProcessMappingRegistry.ProcessMapping defaultMapping = ProcessMappingRegistry.get(StepMappingEnum.AUTO_ADJUST.getCode());
+        if (defaultMapping != null && defaultMapping.getServiceClass() != null) {
+            return defaultMapping.getServiceClass();
+        }
+
+        return IMoAutoAdjustSt08Service.class;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> Class<T> resolveEntityClass(Class<?> serviceClass) {
+        Class<?> entityClass = resolveEntityClassInternal(serviceClass);
+        if (entityClass == null) {
+            return null;
+        }
+        return (Class<T>) entityClass;
+    }
+
+    private Class<?> resolveEntityClassInternal(Class<?> serviceClass) {
+        if (serviceClass == null) {
+            return null;
+        }
+
+        for (Type genericInterface : serviceClass.getGenericInterfaces()) {
+            Class<?> entityClass = resolveEntityClassFromType(genericInterface);
+            if (entityClass != null) {
+                return entityClass;
+            }
+        }
+
+        Type genericSuperclass = serviceClass.getGenericSuperclass();
+        Class<?> entityClass = resolveEntityClassFromType(genericSuperclass);
+        if (entityClass != null) {
+            return entityClass;
+        }
+
+        Class<?> superclass = serviceClass.getSuperclass();
+        if (superclass != null && superclass != Object.class) {
+            entityClass = resolveEntityClassInternal(superclass);
+            if (entityClass != null) {
+                return entityClass;
+            }
+        }
+
+        for (Class<?> interfaceClass : serviceClass.getInterfaces()) {
+            entityClass = resolveEntityClassInternal(interfaceClass);
+            if (entityClass != null) {
+                return entityClass;
+            }
+        }
+
+        return null;
+    }
+
+    private Class<?> resolveEntityClassFromType(Type type) {
+        if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            Type rawType = parameterizedType.getRawType();
+            if (rawType instanceof Class && IService.class.isAssignableFrom((Class<?>) rawType)) {
+                Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                if (actualTypeArguments.length > 0) {
+                    Type entityType = actualTypeArguments[0];
+                    if (entityType instanceof Class) {
+                        return (Class<?>) entityType;
+                    }
+                }
+            }
+
+            if (rawType instanceof Class) {
+                Class<?> entityClass = resolveEntityClassInternal((Class<?>) rawType);
+                if (entityClass != null) {
+                    return entityClass;
+                }
+            }
+
+            for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
+                Class<?> entityClass = resolveEntityClassFromType(actualTypeArgument);
+                if (entityClass != null) {
+                    return entityClass;
+                }
+            }
+        } else if (type instanceof Class) {
+            return resolveEntityClassInternal((Class<?>) type);
+        }
+
+        return null;
+    }
+
     public <T> List<ProductionRecordDto> queryMethod1(DatabaseConfig config,
-                                                     Class<T> entityClass,
+                                                     Class<?> serviceClass,
                                                      Integer positionOffset,
                                                      String[] attrKeys,
                                                      String position,
@@ -88,7 +190,12 @@ public class ProductionRecordQueryService {
                                                      String endTime,
                                                       Integer count) {
         Objects.requireNonNull(config, "Database config must not be null");
-        Objects.requireNonNull(entityClass, "Entity class must not be null");
+        Objects.requireNonNull(serviceClass, "Service class must not be null");
+
+        Class<T> entityClass = resolveEntityClass(serviceClass);
+        if (entityClass == null) {
+            throw new IllegalArgumentException("无法从服务类解析实体类型: " + serviceClass.getName());
+        }
 
         TableName tableName = entityClass.getAnnotation(TableName.class);
         if (tableName == null) {

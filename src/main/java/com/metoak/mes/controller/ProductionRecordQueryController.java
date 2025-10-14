@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 @RestController
@@ -90,6 +89,7 @@ public class ProductionRecordQueryController {
             if (dto == null) {
                 continue;
             }
+            String resultFlag = determineResultFlag(dto.getErrorNo());
             List<AttrKeyValDto> attrKeyVals = dto.getAttrKeyVals();
             if (attrKeyVals == null) {
                 continue;
@@ -102,7 +102,6 @@ public class ProductionRecordQueryController {
                 if (value == null) {
                     continue;
                 }
-                String resultFlag = normalizeResult(attr.getResult());
                 categorized.get(resultFlag).add(value);
             }
         }
@@ -110,18 +109,14 @@ public class ProductionRecordQueryController {
         return Result.ok(categorized);
     }
 
-    private String normalizeResult(String result) {
-        if (result == null) {
-            return "OK";
-        }
-        String trimmed = result.trim();
-        if (trimmed.isEmpty()) {
-            return "OK";
-        }
-        String upper = trimmed.toUpperCase(Locale.ROOT);
-        if (!upper.equals("OK") && !upper.equals("NG")) {
+    private String determineResultFlag(String errorNo) {
+        if (errorNo == null) {
             return "NG";
         }
-        return upper;
+        String trimmed = errorNo.trim();
+        if (trimmed.isEmpty()) {
+            return "NG";
+        }
+        return "0".equals(trimmed) ? "OK" : "NG";
     }
 }

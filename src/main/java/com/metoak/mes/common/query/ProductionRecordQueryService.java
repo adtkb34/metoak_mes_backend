@@ -12,6 +12,8 @@ import com.metoak.mes.dto.ProductionRecordDto;
 import com.metoak.mes.entity.MoAutoAdjustSt07;
 import com.metoak.mes.entity.MoAutoAdjustSt08;
 import com.metoak.mes.entity.MoProcessStepProductionResult;
+import com.metoak.mes.enums.DeviceEnum;
+import com.metoak.mes.enums.OriginEnum;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -39,14 +41,14 @@ public class ProductionRecordQueryService {
                                                 String startTime,
                                                 String endTime,
                                                  Integer count) {
-        DatabaseConfig databaseConfig = buildDatabaseConfig(origin);
+        OriginEnum originEnum = OriginEnum.fromCode(Objects.requireNonNull(origin, "origin must not be null"));
+        DeviceEnum deviceEnum = DeviceEnum.fromCode(Objects.requireNonNull(device, "device must not be null"));
 
-        int positionOffset = 0;
-        if (device == 1 || device == 2) {
-            positionOffset = 1;
-        }
+        DatabaseConfig databaseConfig = buildDatabaseConfig(originEnum);
 
-        if (device == 2 || device == 3) {
+        int positionOffset = deviceEnum.requiresPositionOffset() ? 1 : 0;
+
+        if (deviceEnum.usesMoAutoAdjustSt08()) {
             return queryMethod1(
                     databaseConfig,
                     MoAutoAdjustSt08.class,
@@ -59,7 +61,7 @@ public class ProductionRecordQueryService {
                     endTime,
                     count
             );
-        } else if (device == 1) {
+        } else if (deviceEnum == DeviceEnum.GUANGHAOJIE) {
             return queryMethod2(
                     databaseConfig,
                     positionOffset,
@@ -624,8 +626,8 @@ public class ProductionRecordQueryService {
         };
     }
 
-    private DatabaseConfig buildDatabaseConfig(int origin) {
-        if (origin == 1) {
+    private DatabaseConfig buildDatabaseConfig(OriginEnum origin) {
+        if (origin == OriginEnum.SUZHOU) {
             return DatabaseConfig.builder()
                     .url("jdbc:mysql://11.11.11.13:3306/mo_mes_db")
                     .username("root")

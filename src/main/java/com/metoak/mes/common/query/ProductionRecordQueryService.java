@@ -11,6 +11,7 @@ import com.metoak.mes.common.mapping.CommonAttrMapping;
 import com.metoak.mes.common.mapping.ProcessMappingRegistry;
 import com.metoak.mes.dto.AttrKeyValDto;
 import com.metoak.mes.dto.ProductionRecordDto;
+import com.metoak.mes.entity.MoAutoAdjustInfo;
 import com.metoak.mes.entity.MoAutoAdjustSt07;
 import com.metoak.mes.entity.MoProcessStepProductionResult;
 import com.metoak.mes.enums.DeviceEnum;
@@ -28,6 +29,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -607,6 +610,16 @@ public class ProductionRecordQueryService {
             }
         }
 
+        MoAutoAdjustInfo autoAdjustInfo = findClosestAutoAdjustInfo(jdbcTemplate, entities);
+        if (autoAdjustInfo != null) {
+            if (autoAdjustInfo.getErrorCode() != null) {
+                dto.setErrorNo(String.valueOf(autoAdjustInfo.getErrorCode()));
+            }
+            if (StringUtils.hasText(autoAdjustInfo.getNgReason())) {
+                dto.setError(autoAdjustInfo.getNgReason());
+            }
+        }
+
         List<AttrKeyValDto> attrKeyValDtos = new ArrayList<>();
         for (MoAutoAdjustSt07 entity : entities) {
             if (entity.getPosition() == null) {
@@ -624,6 +637,87 @@ public class ProductionRecordQueryService {
 
         dto.setAttrKeyVals(attrKeyValDtos);
         return dto;
+    }
+
+    private MoAutoAdjustInfo findClosestAutoAdjustInfo(JdbcTemplate jdbcTemplate, List<MoAutoAdjustSt07> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return null;
+        }
+
+        String beamSn = entities.stream()
+                .map(MoAutoAdjustSt07::getBeamSn)
+                .filter(StringUtils::hasText)
+                .findFirst()
+                .orElse(null);
+
+        if (!StringUtils.hasText(beamSn)) {
+            return null;
+        }
+
+        List<MoAutoAdjustInfo> infos = jdbcTemplate.query(
+                "SELECT * FROM mo_auto_adjust_info WHERE beam_sn = ?",
+                new BeanPropertyRowMapper<>(MoAutoAdjustInfo.class),
+                beamSn
+        );
+
+        if (infos.isEmpty()) {
+            return null;
+        }
+
+        List<LocalDateTime> referenceTimes = entities.stream()
+                .map(MoAutoAdjustSt07::getAddTime)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        List<MoAutoAdjustInfo> infosWithTime = infos.stream()
+                .filter(info -> resolveInfoTime(info) != null)
+                .collect(Collectors.toList());
+
+        if (referenceTimes.isEmpty()) {
+            if (!infosWithTime.isEmpty()) {
+                return infosWithTime.stream()
+                        .max(Comparator.comparing(this::resolveInfoTime))
+                        .orElse(infos.get(0));
+            }
+            return infos.get(0);
+        }
+
+        if (!infosWithTime.isEmpty()) {
+            return infosWithTime.stream()
+                    .min(Comparator.comparingLong(info -> calculateMinimumTimeDifferenceMillis(info, referenceTimes)))
+                    .orElse(infos.get(0));
+        }
+
+        return infos.get(0);
+    }
+
+    private long calculateMinimumTimeDifferenceMillis(MoAutoAdjustInfo info, List<LocalDateTime> referenceTimes) {
+        LocalDateTime infoTime = resolveInfoTime(info);
+        if (infoTime == null || referenceTimes == null || referenceTimes.isEmpty()) {
+            return Long.MAX_VALUE;
+        }
+
+        long minDiff = Long.MAX_VALUE;
+        for (LocalDateTime referenceTime : referenceTimes) {
+            if (referenceTime == null) {
+                continue;
+            }
+            long diff = Duration.between(referenceTime, infoTime).abs().toMillis();
+            if (diff < minDiff) {
+                minDiff = diff;
+            }
+        }
+        return minDiff;
+    }
+
+    private LocalDateTime resolveInfoTime(MoAutoAdjustInfo info) {
+        if (info == null) {
+            return null;
+        }
+        if (info.getOperationTime() != null) {
+            return info.getOperationTime();
+        }
+        return info.getAddTime();
     }
 
     private List<AttrKeyValDto> filterAttrKeyVals(List<AttrKeyValDto> attrs,

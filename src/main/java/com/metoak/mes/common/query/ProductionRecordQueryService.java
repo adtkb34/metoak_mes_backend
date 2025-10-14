@@ -112,8 +112,8 @@ public class ProductionRecordQueryService {
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField(timeField);
             boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
-            boolean hasStagePositionFilter = appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage);
-            if (!hasTimeFilter && !hasStagePositionFilter && normalizedTimeField != null) {
+            appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage);
+            if (!hasTimeFilter && normalizedTimeField != null) {
                 sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
                 params.add(count);
             }
@@ -187,8 +187,8 @@ public class ProductionRecordQueryService {
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField("add_time");
             boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
-            boolean hasStagePositionFilter = appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage);
-            if (!hasTimeFilter && !hasStagePositionFilter && normalizedTimeField != null) {
+            appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage);
+            if (!hasTimeFilter && normalizedTimeField != null) {
                 sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
                 params.add(count);
             }
@@ -540,7 +540,7 @@ public class ProductionRecordQueryService {
                                               String stageValue) {
         boolean hasPosition = StringUtils.hasText(positionValue);
         boolean hasStage = StringUtils.hasText(stageValue);
-        if (!hasPosition || !hasStage) {
+        if (!hasPosition && !hasStage) {
             return false;
         }
 
@@ -550,9 +550,17 @@ public class ProductionRecordQueryService {
             sql.append(" AND ");
         }
 
-        sql.append(positionColumn).append(" = ? AND ").append(stageColumn).append(" = ?");
-        params.add(positionValue);
-        params.add(stageValue);
+        List<String> conditions = new ArrayList<>();
+        if (hasPosition) {
+            conditions.add(positionColumn + " = ?");
+            params.add(positionValue);
+        }
+        if (hasStage) {
+            conditions.add(stageColumn + " = ?");
+            params.add(stageValue);
+        }
+
+        sql.append(String.join(" AND ", conditions));
         return true;
     }
 

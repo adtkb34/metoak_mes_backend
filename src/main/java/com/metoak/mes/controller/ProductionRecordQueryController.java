@@ -8,10 +8,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Locale;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/mes/v1/production-record-query")
@@ -36,7 +37,8 @@ public class ProductionRecordQueryController {
             @RequestParam(required = false) Integer stage,
             @RequestParam Integer count,
             @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime
+            @RequestParam(required = false) String endTime,
+            @RequestParam String stepTypeNo
     ) {
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod(
                 attrKeys,
@@ -48,7 +50,7 @@ public class ProductionRecordQueryController {
                 startTime,
                 endTime,
                 count,
-                null
+                stepTypeNo
         );
         return Result.ok(dtos);
     }
@@ -56,7 +58,7 @@ public class ProductionRecordQueryController {
     @GetMapping("spc")
     @Operation(summary = "SPC")
 //    @RequestBody @Valid ProductionRecordQueryRequest request
-    public Result<List<String>> spc(
+    public Result<Map<String, List<String>>> spc(
             @RequestParam(required = false) String[] attrKeys,
             @RequestParam(required = false) Integer origin,
             @RequestParam(required = false) Integer device,
@@ -80,20 +82,46 @@ public class ProductionRecordQueryController {
                 count,
                 stepTypeNo
         );
+        Map<String, List<String>> categorized = new LinkedHashMap<>();
+        categorized.put("OK", new ArrayList<>());
+        categorized.put("NG", new ArrayList<>());
 
-        List<String> values = dtos.stream()
-                .filter(Objects::nonNull)
-                .flatMap(dto -> {
-                    List<AttrKeyValDto> attrKeyVals = dto.getAttrKeyVals();
-                    if (attrKeyVals == null) {
-                        return Stream.empty();
-                    }
-                    return attrKeyVals.stream();
-                })
-                .map(AttrKeyValDto::getVal)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        for (ProductionRecordDto dto : dtos) {
+            if (dto == null) {
+                continue;
+            }
+            List<AttrKeyValDto> attrKeyVals = dto.getAttrKeyVals();
+            if (attrKeyVals == null) {
+                continue;
+            }
+            for (AttrKeyValDto attr : attrKeyVals) {
+                if (attr == null) {
+                    continue;
+                }
+                String value = attr.getVal();
+                if (value == null) {
+                    continue;
+                }
+                String resultFlag = normalizeResult(attr.getResult());
+                categorized.get(resultFlag).add(value);
+            }
+        }
 
-        return Result.ok(values);
+        return Result.ok(categorized);
+    }
+
+    private String normalizeResult(String result) {
+        if (result == null) {
+            return "OK";
+        }
+        String trimmed = result.trim();
+        if (trimmed.isEmpty()) {
+            return "OK";
+        }
+        String upper = trimmed.toUpperCase(Locale.ROOT);
+        if (!upper.equals("OK") && !upper.equals("NG")) {
+            return "NG";
+        }
+        return upper;
     }
 }

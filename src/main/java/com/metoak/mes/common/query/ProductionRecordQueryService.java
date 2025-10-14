@@ -73,12 +73,13 @@ public class ProductionRecordQueryService {
                     serviceClass,
                     positionOffset,
                     attrKeys,
-                    String.valueOf(position - positionOffset),
+                    position == null ? null : String.valueOf(position - positionOffset),
                     stage,
                     "add_time",
                     startTime,
                     endTime,
-                    count
+                    count,
+                    stepTypeNo
             );
         }
 
@@ -180,13 +181,15 @@ public class ProductionRecordQueryService {
                                                      Integer positionOffset,
                                                      String[] attrKeys,
                                                      String position,
-                                                      Integer stage,
+                                                     Integer stage,
                                                      String timeField,
                                                      String startTime,
                                                      String endTime,
-                                                      Integer count) {
+                                                     Integer count,
+                                                     String stepTypeNo) {
         Objects.requireNonNull(config, "Database config must not be null");
         Objects.requireNonNull(serviceClass, "Service class must not be null");
+        Objects.requireNonNull(stepTypeNo, "stepTypeNo must not be null");
 
         Class<T> entityClass = resolveEntityClass(serviceClass);
         if (entityClass == null) {
@@ -204,14 +207,31 @@ public class ProductionRecordQueryService {
         try (HikariDataSource dataSource = buildDataSource(config)) {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-            String selectColumns = buildSelectColumns(entityClass, attrKeyFilter);
-            StringBuilder sql = new StringBuilder("SELECT ").append(selectColumns).append(" FROM ").append(tableName.value());
+            String baseAlias = "t";
+            String resultAlias = "r";
+            String selectColumns = qualifyColumns(buildSelectColumns(entityClass, attrKeyFilter), baseAlias);
+            StringBuilder sql = new StringBuilder("SELECT ")
+                    .append(selectColumns)
+                    .append(" FROM ")
+                    .append(tableName.value())
+                    .append(" ")
+                    .append(baseAlias)
+                    .append(" LEFT JOIN mo_process_step_production_result ")
+                    .append(resultAlias)
+                    .append(" ON ")
+                    .append(baseAlias)
+                    .append(".mo_process_step_production_result_id = ")
+                    .append(resultAlias)
+                    .append(".id");
             List<Object> params = new ArrayList<>();
+            appendConditions(sql, Collections.singletonList(resultAlias + ".step_type_no = ?"));
+            params.add(stepTypeNo);
             String normalizedTimeField = normalizeTimeField(timeField);
-            boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
-            appendStagePositionFilter(sql, params, hasTimeFilter, "position", position, "stage", stage != null ? stage.toString() : null);
+            String qualifiedTimeField = normalizedTimeField == null ? null : baseAlias + "." + normalizedTimeField;
+            boolean hasTimeFilter = appendTimeFilter(sql, params, qualifiedTimeField, startTime, endTime);
+            appendStagePositionFilter(sql, params, baseAlias + ".position", position, baseAlias + ".stage", stage != null ? stage.toString() : null);
             if (!hasTimeFilter && normalizedTimeField != null) {
-                sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
+                sql.append(" ORDER BY ").append(qualifiedTimeField).append(" DESC LIMIT ?");
                 params.add(count);
             }
 
@@ -284,7 +304,7 @@ public class ProductionRecordQueryService {
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField("add_time");
             boolean hasTimeFilter = appendTimeFilter(sql, params, normalizedTimeField, startTime, endTime);
-            appendStagePositionFilter(sql, params, hasTimeFilter, "side", Objects.equals(position, "1") ? "left" : "right", null, null);
+            appendStagePositionFilter(sql, params, "side", Objects.equals(position, "1") ? "left" : "right", null, null);
             if (!hasTimeFilter && normalizedTimeField != null) {
                 sql.append(" ORDER BY ").append(normalizedTimeField).append(" DESC LIMIT ?");
                 params.add(count);
@@ -374,7 +394,6 @@ public class ProductionRecordQueryService {
             return false;
         }
 
-        sql.append(" WHERE ");
         List<String> conditions = new ArrayList<>();
         if (hasStart) {
             conditions.add(timeField + " >= ?");
@@ -384,7 +403,7 @@ public class ProductionRecordQueryService {
             conditions.add(timeField + " <= ?");
             params.add(endTime);
         }
-        sql.append(String.join(" AND ", conditions));
+        appendConditions(sql, conditions);
         return true;
     }
 
@@ -657,7 +676,6 @@ public class ProductionRecordQueryService {
 
     private boolean appendStagePositionFilter(StringBuilder sql,
                                               List<Object> params,
-                                              boolean hasExistingCondition,
                                               String positionColumn,
                                               String positionValue,
                                               String stageColumn,
@@ -668,24 +686,96 @@ public class ProductionRecordQueryService {
             return false;
         }
 
-        if (!hasExistingCondition) {
-            sql.append(" WHERE ");
-        } else {
-            sql.append(" AND ");
-        }
-
         List<String> conditions = new ArrayList<>();
         if (hasPosition) {
             conditions.add(positionColumn + " = ?");
             params.add(positionValue);
         }
-        if (hasStage) {
+        if (hasStage && StringUtils.hasText(stageColumn)) {
             conditions.add(stageColumn + " = ?");
             params.add(stageValue);
         }
 
-        sql.append(String.join(" AND ", conditions));
+        appendConditions(sql, conditions);
         return true;
+    }
+
+    private void appendConditions(StringBuilder sql, List<String> conditions) {
+        if (conditions == null) {
+            return;
+        }
+        List<String> filtered = conditions.stream()
+                .filter(StringUtils::hasText)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+        if (filtered.isEmpty()) {
+            return;
+        }
+
+        if (!containsWhere(sql)) {
+            sql.append(" WHERE ");
+        } else {
+            sql.append(" AND ");
+        }
+        sql.append(String.join(" AND ", filtered));
+    }
+
+    private boolean containsWhere(StringBuilder sql) {
+        String sqlStr = sql.toString().toLowerCase(Locale.ROOT);
+        return sqlStr.contains(" where ");
+    }
+
+    private String qualifyColumns(String columns, String tableAlias) {
+        if (!StringUtils.hasText(columns)) {
+            return columns;
+        }
+        if (!StringUtils.hasText(tableAlias)) {
+            return columns;
+        }
+
+        String trimmedColumns = columns.trim();
+        if ("*".equals(trimmedColumns)) {
+            return tableAlias + ".*";
+        }
+
+        String[] parts = trimmedColumns.split(",");
+        List<String> qualified = new ArrayList<>(parts.length);
+        for (String part : parts) {
+            String item = part.trim();
+            if (item.isEmpty()) {
+                continue;
+            }
+
+            int asIndex = indexOfIgnoreCase(item, " as ");
+            if (asIndex >= 0) {
+                String column = item.substring(0, asIndex).trim();
+                String aliasPart = item.substring(asIndex);
+                if (!column.contains(".")) {
+                    column = tableAlias + "." + column;
+                }
+                qualified.add(column + aliasPart);
+            } else {
+                if (!item.contains(".")) {
+                    qualified.add(tableAlias + "." + item);
+                } else {
+                    qualified.add(item);
+                }
+            }
+        }
+
+        if (qualified.isEmpty()) {
+            return tableAlias + ".*";
+        }
+
+        return String.join(", ", qualified);
+    }
+
+    private int indexOfIgnoreCase(String value, String search) {
+        if (value == null || search == null) {
+            return -1;
+        }
+        return value.toLowerCase(Locale.ROOT).indexOf(search.toLowerCase(Locale.ROOT));
     }
 
     private String applyPositionOffset(String position, int positionOffset) {

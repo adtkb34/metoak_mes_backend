@@ -26,13 +26,13 @@ public enum DeviceEnum implements BaseEnum {
         return name;
     }
 
-    public boolean requiresPositionOffset() {
-        return this == GUANGHAOJIE || this == SHUNYU;
-    }
-
-    public boolean usesMoAutoAdjustSt08() {
-        return this == SHUNYU || this == AIWEISHI;
-    }
+//    public boolean requiresPositionOffset() {
+//        return this == GUANGHAOJIE || this == SHUNYU;
+//    }
+//
+//    public boolean usesMoAutoAdjustSt08() {
+//        return this == SHUNYU || this == AIWEISHI;
+//    }
 
     public static DeviceEnum fromCode(int code) {
         return Arrays.stream(values())

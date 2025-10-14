@@ -46,9 +46,20 @@ public class ProductionRecordQueryService {
 
         DatabaseConfig databaseConfig = buildDatabaseConfig(originEnum);
 
-        int positionOffset = deviceEnum.requiresPositionOffset() ? 1 : 0;
+        int positionOffset = originEnum == OriginEnum.SUZHOU ? 1 : 0;
 
-        if (deviceEnum.usesMoAutoAdjustSt08()) {
+        if (deviceEnum == DeviceEnum.GUANGHAOJIE) {
+            return queryMethod2(
+                    databaseConfig,
+                    positionOffset,
+                    attrKeys,
+                    String.valueOf(position),
+                    stage,
+                    startTime,
+                    endTime,
+                    count
+            );
+        } else {
             return queryMethod1(
                     databaseConfig,
                     MoAutoAdjustSt08.class,
@@ -57,17 +68,6 @@ public class ProductionRecordQueryService {
                     String.valueOf(position - positionOffset),
                     stage,
                     "add_time",
-                    startTime,
-                    endTime,
-                    count
-            );
-        } else if (deviceEnum == DeviceEnum.GUANGHAOJIE) {
-            return queryMethod2(
-                    databaseConfig,
-                    positionOffset,
-                    attrKeys,
-                    String.valueOf(position),
-                    stage,
                     startTime,
                     endTime,
                     count

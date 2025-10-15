@@ -34,6 +34,7 @@ import java.lang.reflect.Type;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -706,7 +707,53 @@ public class ProductionRecordQueryService {
                                                                 Map<String, Set<String>> attrNoToColumns,
                                                                 Map<String, CalibrationInfo> calibrationInfoMap,
                                                                 Integer requestedPosition) {
+        ProductionRecordDto dto = new ProductionRecordDto();
+        CommonAttrMapping.mapEntityFieldsToDto(entity, dto, CommonAttrMapping.FIELD_TO_FIELD);
 
+        dto.setStepType(StepMappingEnum.DUAL_TARGET_CALIB.getDescription());
+        dto.setStepTypeNo(StepMappingEnum.DUAL_TARGET_CALIB.getCode());
+
+        String normalizedTimestamp = normalizeTimestampString(entity.getTimeStamp());
+        String isoTimestamp = toIsoDateTime(normalizedTimestamp);
+        dto.setStartTime(isoTimestamp);
+        dto.setEndTime(isoTimestamp);
+
+        Map<String, CalibrationInfo> safeCalibrationInfoMap = calibrationInfoMap == null
+                ? Collections.emptyMap()
+                : calibrationInfoMap;
+        String calibrationKey = buildCalibrationKey(entity.getCameraSN(), normalizedTimestamp);
+        CalibrationInfo calibrationInfo = calibrationKey == null ? null : safeCalibrationInfoMap.get(calibrationKey);
+        if (calibrationInfo != null) {
+            if (calibrationInfo.errorCode != null) {
+                dto.setErrorNo(String.valueOf(calibrationInfo.errorCode));
+            }
+            if (StringUtils.hasText(calibrationInfo.operator)) {
+                dto.setOperator(calibrationInfo.operator);
+                dto.setOperator_(calibrationInfo.operator);
+            }
+        }
+
+        List<AttrKeyValDto> attrKeyValDtos = FieldCodeMapper.extractAttrListFromObject(entity);
+        List<AttrKeyValDto> processedAttrs = new ArrayList<>();
+        String requestedPositionStr = requestedPosition == null ? null : String.valueOf(requestedPosition);
+
+        for (AttrKeyValDto attr : attrKeyValDtos) {
+            String originalPosition = attr.getPosition();
+            CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
+            attr.setPosition(applyPositionOffset(originalPosition, positionOffset));
+
+            if (requestedPositionStr != null) {
+                String attrPosition = attr.getPosition();
+                if (!StringUtils.hasText(attrPosition) || !requestedPositionStr.equals(attrPosition)) {
+                    continue;
+                }
+            }
+
+            processedAttrs.add(attr);
+        }
+
+        List<AttrKeyValDto> filteredAttrs = filterAttrKeyVals(processedAttrs, attrKeyFilter, attrNoToColumns);
+        dto.setAttrKeyVals(filteredAttrs == null ? Collections.emptyList() : filteredAttrs);
 
         return dto;
     }
@@ -887,6 +934,20 @@ public class ProductionRecordQueryService {
             normalized = normalized.substring(0, 19);
         }
         return normalized;
+    }
+
+    private String toIsoDateTime(String normalizedTimestamp) {
+        if (!StringUtils.hasText(normalizedTimestamp)) {
+            return null;
+        }
+
+        String candidate = normalizedTimestamp.replace(' ', 'T');
+        try {
+            LocalDateTime dateTime = LocalDateTime.parse(candidate);
+            return DATE_TIME_FORMATTER.format(dateTime);
+        } catch (DateTimeParseException ex) {
+            return candidate;
+        }
     }
 
     private String buildCalibrationKey(String cameraSn, String timestamp) {

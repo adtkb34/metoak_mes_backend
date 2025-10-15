@@ -68,7 +68,7 @@ public class CommonAttrMapping {
                     targetField.set(target, String.valueOf(sourceVal));
                 }
             } catch (Exception e) {
-                System.err.printf("⚠️ 反向映射失败：%s → %s%n", sourceFieldName, targetFieldName);
+                // System.err.printf("⚠️ 反向映射失败：%s → %s%n", sourceFieldName, targetFieldName);
 //                e.printStackTrace();
             }
         }

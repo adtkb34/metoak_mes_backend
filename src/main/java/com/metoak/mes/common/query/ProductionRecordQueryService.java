@@ -74,6 +74,7 @@ public class ProductionRecordQueryService {
             Class<?> serviceClass = determineServiceClass(stepTypeNo);
             if (serviceClass == null) return Collections.emptyList();
             if (serviceClass == ICalibresultService.class) {
+                System.out.println(11);
                 return queryMethod3(
                         databaseConfig,
                         positionOffset,
@@ -422,22 +423,12 @@ public class ProductionRecordQueryService {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
             String baseAlias = "t";
-            String resultAlias = "r";
             String selectColumns = qualifyColumns(buildSelectColumns(Calibresult.class, attrKeyFilter), baseAlias);
             StringBuilder sql = new StringBuilder("SELECT ")
                     .append(selectColumns)
                     .append(" FROM calibresult ")
-                    .append(baseAlias)
-                    .append(" LEFT JOIN mo_process_step_production_result ")
-                    .append(resultAlias)
-                    .append(" ON ")
-                    .append(baseAlias)
-                    .append(".mo_process_step_production_result_id = ")
-                    .append(resultAlias)
-                    .append(".id");
+                    .append(baseAlias);;
             List<Object> params = new ArrayList<>();
-            appendConditions(sql, Collections.singletonList(resultAlias + ".step_type_no = ?"));
-            params.add(stepTypeNo);
 
             if (station != null) {
                 appendConditions(sql, Collections.singletonList(baseAlias + ".Station = ?"));
@@ -458,52 +449,28 @@ public class ProductionRecordQueryService {
                     new BeanPropertyRowMapper<>(Calibresult.class),
                     params.toArray()
             );
-
             if (entities.isEmpty()) {
                 return Collections.emptyList();
             }
 
             Map<String, CalibrationInfo> calibrationInfoMap = fetchCalibrationInfo(jdbcTemplate, entities);
-
-            Map<Long, List<Calibresult>> groupedByResultId = new LinkedHashMap<>();
-            List<Calibresult> nullResultGroup = new ArrayList<>();
-            List<Long> order = new ArrayList<>();
-
-            for (Calibresult entity : entities) {
-                Long resultId = entity.getMoProcessStepProductionResultId();
-                if (resultId == null) {
-                    if (nullResultGroup.isEmpty()) {
-                        order.add(null);
-                    }
-                    nullResultGroup.add(entity);
-                } else {
-                    if (!groupedByResultId.containsKey(resultId)) {
-                        groupedByResultId.put(resultId, new ArrayList<>());
-                        order.add(resultId);
-                    }
-                    groupedByResultId.get(resultId).add(entity);
-                }
-            }
-
             List<ProductionRecordDto> results = new ArrayList<>();
-            for (Long resultId : order) {
-                List<Calibresult> group = resultId == null ? nullResultGroup : groupedByResultId.get(resultId);
-                if (group == null || group.isEmpty()) {
-                    continue;
-                }
+            System.out.println(entities.size());
+            for (Calibresult item : entities) {
                 ProductionRecordDto dto = buildDtoFromCalibresultEntities(
-                        group,
+                        item,
                         jdbcTemplate,
-                        resultId,
+                        null,
                         positionOffset,
                         attrKeyFilter,
                         attrNoToColumns,
                         calibrationInfoMap,
                         position
                 );
+                System.out.println(dto);
                 results.add(dto);
             }
-
+            System.out.println(sql);
             return results;
         }
     }
@@ -693,7 +660,6 @@ public class ProductionRecordQueryService {
             }
             attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrKeyFilter, attrNoToColumns));
         }
-
         dto.setAttrKeyVals(attrKeyValDtos);
         return dto;
     }
@@ -734,7 +700,7 @@ public class ProductionRecordQueryService {
         return dto;
     }
 
-    private ProductionRecordDto buildDtoFromCalibresultEntities(List<Calibresult> entities,
+    private ProductionRecordDto buildDtoFromCalibresultEntities(Calibresult entity,
                                                                 JdbcTemplate jdbcTemplate,
                                                                 Long resultId,
                                                                 int positionOffset,
@@ -742,29 +708,7 @@ public class ProductionRecordQueryService {
                                                                 Map<String, Set<String>> attrNoToColumns,
                                                                 Map<String, CalibrationInfo> calibrationInfoMap,
                                                                 Integer requestedPosition) {
-        ProductionRecordDto dto = buildDtoFromEntities(entities, jdbcTemplate, resultId, positionOffset, attrKeyFilter, attrNoToColumns);
 
-        Calibresult first = entities.get(0);
-        String key = buildCalibrationKey(first.getCameraSN(), normalizeTimestampString(first.getTimeStamp()));
-        if (key != null) {
-            CalibrationInfo info = calibrationInfoMap.get(key);
-            if (info != null) {
-                if (info.errorCode != null) {
-                    dto.setErrorNo(String.valueOf(info.errorCode));
-                }
-                if (StringUtils.hasText(info.operator) && !StringUtils.hasText(dto.getOperator())) {
-                    dto.setOperator(info.operator);
-                }
-            }
-        }
-
-        if (requestedPosition != null && dto.getAttrKeyVals() != null) {
-            String requestedPositionStr = String.valueOf(requestedPosition);
-            List<AttrKeyValDto> filtered = dto.getAttrKeyVals().stream()
-                    .filter(attr -> requestedPositionStr.equals(attr.getPosition()))
-                    .collect(Collectors.toList());
-            dto.setAttrKeyVals(filtered);
-        }
 
         return dto;
     }

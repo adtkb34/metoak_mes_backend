@@ -66,7 +66,7 @@ public class ProductionRecordQueryService {
                     stage,
                     startTime,
                     endTime,
-                    count
+                    count * 4
             );
         } else {
             Class<?> serviceClass = determineServiceClass(stepTypeNo);
@@ -586,38 +586,11 @@ public class ProductionRecordQueryService {
         MoAutoAdjustSt07 first = entities.get(0);
         CommonAttrMapping.mapEntityFieldsToDto(first, dto, CommonAttrMapping.FIELD_TO_FIELD);
 
-        if (taskId != null) {
-            List<MoProcessStepProductionResult> processResults = jdbcTemplate.query(
-                    "SELECT * FROM mo_process_step_production_result WHERE id = ?",
-                    new BeanPropertyRowMapper<>(MoProcessStepProductionResult.class),
-                    taskId
-            );
-
-            if (!processResults.isEmpty()) {
-                MoProcessStepProductionResult result = processResults.get(0);
-                dto.setProductSn(result.getProductSn());
-                dto.setProductBatchNo(result.getProductBatchNo());
-                dto.setStepType(result.getStepType());
-                dto.setStepTypeNo(result.getStepTypeNo());
-                dto.setErrorNo(result.getErrorCode() == null ? null : String.valueOf(result.getErrorCode()));
-                dto.setError(result.getNgReason());
-                dto.setDeviceNo(result.getStationNum() == null ? null : String.valueOf(result.getStationNum()));
-                dto.setOperator(result.getOperator());
-                dto.setSoftwareTool(result.getSoftwareTool());
-                dto.setSoftwareToolVersion(result.getSoftwareToolVersion());
-                dto.setStartTime(result.getStartTime() == null ? null : result.getStartTime().format(DATE_TIME_FORMATTER));
-                dto.setEndTime(result.getEndTime() == null ? null : result.getEndTime().format(DATE_TIME_FORMATTER));
-            }
-        }
-
         MoAutoAdjustInfo autoAdjustInfo = findClosestAutoAdjustInfo(jdbcTemplate, entities);
         if (autoAdjustInfo != null) {
-            if (autoAdjustInfo.getErrorCode() != null) {
-                dto.setErrorNo(String.valueOf(autoAdjustInfo.getErrorCode()));
-            }
-            if (StringUtils.hasText(autoAdjustInfo.getNgReason())) {
-                dto.setError(autoAdjustInfo.getNgReason());
-            }
+            dto.setProductSn(autoAdjustInfo.getBeamSn());
+            dto.setErrorNo(String.valueOf(autoAdjustInfo.getErrorCode()));
+            dto.setError(autoAdjustInfo.getNgReason());
         }
 
         List<AttrKeyValDto> attrKeyValDtos = new ArrayList<>();

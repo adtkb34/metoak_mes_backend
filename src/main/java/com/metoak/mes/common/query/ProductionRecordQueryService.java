@@ -460,7 +460,6 @@ public class ProductionRecordQueryService {
                 ProductionRecordDto dto = buildDtoFromCalibresultEntities(
                         item,
                         jdbcTemplate,
-                        null,
                         positionOffset,
                         attrKeyFilter,
                         attrNoToColumns,
@@ -702,7 +701,6 @@ public class ProductionRecordQueryService {
 
     private ProductionRecordDto buildDtoFromCalibresultEntities(Calibresult entity,
                                                                 JdbcTemplate jdbcTemplate,
-                                                                Long resultId,
                                                                 int positionOffset,
                                                                 Set<String> attrKeyFilter,
                                                                 Map<String, Set<String>> attrNoToColumns,

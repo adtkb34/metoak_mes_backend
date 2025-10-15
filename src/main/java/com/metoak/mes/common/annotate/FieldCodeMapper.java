@@ -5,11 +5,7 @@ import com.metoak.mes.enums.DefaultValueEnum;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FieldCodeMapper {
 
@@ -53,7 +49,11 @@ public class FieldCodeMapper {
         }
     }
 
-    public static List<AttrKeyValDto> extractAttrListFromObject(Object obj) {
+//    public static List<AttrKeyValDto> extractAttrListFromObject(Object obj) {
+//        return extractAttrListFromObject(obj, null);
+//    }
+
+    public static List<AttrKeyValDto> extractAttrListFromObject(Object obj, Set<String> attrKeyFilter) {
         if (obj == null) {
             return List.of();
         }
@@ -65,8 +65,13 @@ public class FieldCodeMapper {
             if (!field.isAnnotationPresent(FieldCode.class)) {
                 continue;
             }
-
+            if (attrKeyFilter != null) {
+                if (!attrKeyFilter.contains(field.getName().toLowerCase())) {
+                    continue;
+                }
+            }
             FieldCode annotation = field.getAnnotation(FieldCode.class);
+
             AttrKeyValDto dto = grouped.computeIfAbsent(annotation.no(), no -> {
                 AttrKeyValDto attr = new AttrKeyValDto();
                 attr.setNo(no);
@@ -100,7 +105,6 @@ public class FieldCodeMapper {
                 dto.setPosition(null);
             }
         }
-
         return new ArrayList<>(grouped.values());
     }
 

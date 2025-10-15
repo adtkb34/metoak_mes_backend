@@ -456,7 +456,6 @@ public class ProductionRecordQueryService {
 
             Map<String, CalibrationInfo> calibrationInfoMap = fetchCalibrationInfo(jdbcTemplate, entities);
             List<ProductionRecordDto> results = new ArrayList<>();
-            System.out.println(entities.size());
             for (Calibresult item : entities) {
                 ProductionRecordDto dto = buildDtoFromCalibresultEntities(
                         item,
@@ -467,7 +466,6 @@ public class ProductionRecordQueryService {
                         calibrationInfoMap,
                         position
                 );
-                System.out.println(dto);
                 results.add(dto);
             }
             System.out.println(sql);
@@ -652,13 +650,14 @@ public class ProductionRecordQueryService {
 
         List<AttrKeyValDto> attrKeyValDtos = new ArrayList<>();
         for (T entity : entities) {
-            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity);
+            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity, attrKeyFilter);
             for (AttrKeyValDto attr : attrs) {
                 String originalPosition = attr.getPosition();
                 CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
                 attr.setPosition(applyPositionOffset(originalPosition, positionOffset));
             }
-            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrKeyFilter, attrNoToColumns));
+//            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrKeyFilter, attrNoToColumns));
+            attrKeyValDtos.addAll(attrs);
         }
         dto.setAttrKeyVals(attrKeyValDtos);
         return dto;
@@ -687,13 +686,14 @@ public class ProductionRecordQueryService {
                 entity.setPosition(resolvePositionFromSide(entity.getSide()));
             }
 
-            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity);
+            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity, attrKeyFilter);
             for (AttrKeyValDto attr : attrs) {
                 String originalPosition = attr.getPosition();
                 CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
                 attr.setPosition(applyPositionOffset(originalPosition, positionOffset));
             }
-            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrKeyFilter, attrNoToColumns));
+//            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrKeyFilter, attrNoToColumns));
+            attrKeyValDtos.addAll(attrs);
         }
 
         dto.setAttrKeyVals(attrKeyValDtos);
@@ -733,28 +733,9 @@ public class ProductionRecordQueryService {
             }
         }
 
-        List<AttrKeyValDto> attrKeyValDtos = FieldCodeMapper.extractAttrListFromObject(entity);
-        List<AttrKeyValDto> processedAttrs = new ArrayList<>();
-        String requestedPositionStr = requestedPosition == null ? null : String.valueOf(requestedPosition);
+        List<AttrKeyValDto> attrKeyValDtos = FieldCodeMapper.extractAttrListFromObject(entity, attrKeyFilter);
 
-        for (AttrKeyValDto attr : attrKeyValDtos) {
-            String originalPosition = attr.getPosition();
-            CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
-            attr.setPosition(applyPositionOffset(originalPosition, positionOffset));
-
-            if (requestedPositionStr != null) {
-                String attrPosition = attr.getPosition();
-                if (!StringUtils.hasText(attrPosition) || !requestedPositionStr.equals(attrPosition)) {
-                    continue;
-                }
-            }
-
-            processedAttrs.add(attr);
-        }
-
-        List<AttrKeyValDto> filteredAttrs = filterAttrKeyVals(processedAttrs, attrKeyFilter, attrNoToColumns);
-        dto.setAttrKeyVals(filteredAttrs == null ? Collections.emptyList() : filteredAttrs);
-
+        dto.setAttrKeyVals(attrKeyValDtos);
         return dto;
     }
 

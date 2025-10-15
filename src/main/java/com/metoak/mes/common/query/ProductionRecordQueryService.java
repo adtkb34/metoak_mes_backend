@@ -222,7 +222,7 @@ public class ProductionRecordQueryService {
             throw new IllegalArgumentException("实体缺少@TableName注解: " + entityClass.getName());
         }
 
-        Set<String> attrKeyFilter = buildAttrKeyFilter(attrKeys);
+        Set<String> attrNoFilter = buildAttrNoFilter(attrKeys);
         Map<String, Set<String>> attrNoToColumns = buildAttrNoToColumnMap(entityClass);
 
         try (HikariDataSource dataSource = buildDataSource(config)) {
@@ -230,7 +230,7 @@ public class ProductionRecordQueryService {
 
             String baseAlias = "t";
             String resultAlias = "r";
-            String selectColumns = qualifyColumns(buildSelectColumns(entityClass, attrKeyFilter), baseAlias);
+            String selectColumns = qualifyColumns(buildSelectColumns(entityClass, attrNoFilter), baseAlias);
             StringBuilder sql = new StringBuilder("SELECT ")
                     .append(selectColumns)
                     .append(" FROM ")
@@ -289,9 +289,9 @@ public class ProductionRecordQueryService {
             List<ProductionRecordDto> results = new ArrayList<>();
             for (Long resultId : order) {
                 if (resultId == null) {
-                    results.add(buildDtoFromEntities(nullResultGroup, jdbcTemplate, null, positionOffset, attrKeyFilter, attrNoToColumns));
+                    results.add(buildDtoFromEntities(nullResultGroup, jdbcTemplate, null, positionOffset, attrNoFilter, attrNoToColumns));
                 } else {
-                    results.add(buildDtoFromEntities(groupedByResultId.get(resultId), jdbcTemplate, resultId, positionOffset, attrKeyFilter, attrNoToColumns));
+                    results.add(buildDtoFromEntities(groupedByResultId.get(resultId), jdbcTemplate, resultId, positionOffset, attrNoFilter, attrNoToColumns));
                 }
             }
 
@@ -314,13 +314,13 @@ public class ProductionRecordQueryService {
             throw new IllegalArgumentException("MoAutoAdjustSt07实体缺少@TableName注解");
         }
 
-        Set<String> attrKeyFilter = buildAttrKeyFilter(attrKeys);
+        Set<String> attrNoFilter = buildAttrNoFilter(attrKeys);
         Map<String, Set<String>> attrNoToColumns = buildAttrNoToColumnMap(MoAutoAdjustSt07.class);
 
         try (HikariDataSource dataSource = buildDataSource(config)) {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-            String selectColumns = buildSelectColumns(MoAutoAdjustSt07.class, attrKeyFilter);
+            String selectColumns = buildSelectColumns(MoAutoAdjustSt07.class, attrNoFilter);
             StringBuilder sql = new StringBuilder("SELECT ").append(selectColumns).append(" FROM ").append(tableName.value());
             List<Object> params = new ArrayList<>();
             String normalizedTimeField = normalizeTimeField("add_time");
@@ -366,7 +366,7 @@ public class ProductionRecordQueryService {
             List<ProductionRecordDto> results = new ArrayList<>();
             for (Long taskId : order) {
                 if (taskId == null) {
-                    results.add(buildDtoFromSt07Entities(nullTaskGroup, jdbcTemplate, null, positionOffset, attrKeyFilter, attrNoToColumns));
+                    results.add(buildDtoFromSt07Entities(nullTaskGroup, jdbcTemplate, null, positionOffset, attrNoFilter, attrNoToColumns));
                 } else {
                     List<MoAutoAdjustSt07> objects = new ArrayList<>();
 
@@ -394,7 +394,7 @@ public class ProductionRecordQueryService {
                     }
 
                     if (!objects.isEmpty()) {
-                        results.add(buildDtoFromSt07Entities(objects, jdbcTemplate, taskId, positionOffset, attrKeyFilter, attrNoToColumns));
+                        results.add(buildDtoFromSt07Entities(objects, jdbcTemplate, taskId, positionOffset, attrNoFilter, attrNoToColumns));
                     }
 
                 }
@@ -417,14 +417,14 @@ public class ProductionRecordQueryService {
         Objects.requireNonNull(config, "Database config must not be null");
         Objects.requireNonNull(stepTypeNo, "stepTypeNo must not be null");
 
-        Set<String> attrKeyFilter = buildAttrKeyFilter(attrKeys);
+        Set<String> attrNoFilter = buildAttrNoFilter(attrKeys);
         Map<String, Set<String>> attrNoToColumns = buildAttrNoToColumnMap(Calibresult.class);
 
         try (HikariDataSource dataSource = buildDataSource(config)) {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
             String baseAlias = "t";
-            String selectColumns = qualifyColumns(buildSelectColumns(Calibresult.class, attrKeyFilter), baseAlias);
+            String selectColumns = qualifyColumns(buildSelectColumns(Calibresult.class, attrNoFilter), baseAlias);
             StringBuilder sql = new StringBuilder("SELECT ")
                     .append(selectColumns)
                     .append(" FROM calibresult ")
@@ -461,7 +461,7 @@ public class ProductionRecordQueryService {
                         item,
                         jdbcTemplate,
                         positionOffset,
-                        attrKeyFilter,
+                        attrNoFilter,
                         attrNoToColumns,
                         calibrationInfoMap,
                         position
@@ -512,20 +512,20 @@ public class ProductionRecordQueryService {
         return normalizedField;
     }
 
-    private Set<String> buildAttrKeyFilter(String[] attrKeys) {
-        if (attrKeys == null) {
+    private Set<String> buildAttrNoFilter(String[] attrNos) {
+        if (attrNos == null) {
             return Collections.emptySet();
         }
-        return Arrays.stream(attrKeys)
+        return Arrays.stream(attrNos)
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
+                .map(s -> s.toUpperCase(Locale.ROOT))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private <T> String buildSelectColumns(Class<T> entityClass, Set<String> attrKeyFilter) {
-        if (attrKeyFilter == null || attrKeyFilter.isEmpty()) {
+    private <T> String buildSelectColumns(Class<T> entityClass, Set<String> attrNoFilter) {
+        if (attrNoFilter == null || attrNoFilter.isEmpty()) {
             return "*";
         }
 
@@ -543,7 +543,10 @@ public class ProductionRecordQueryService {
             String columnName = resolveColumnName(field);
             boolean includeField;
             if (field.isAnnotationPresent(FieldCode.class)) {
-                includeField = attrKeyFilter.contains(columnName.toLowerCase());
+                FieldCode fieldCode = field.getAnnotation(FieldCode.class);
+                String attrNo = fieldCode.no();
+                includeField = StringUtils.hasText(attrNo)
+                        && attrNoFilter.contains(attrNo.trim().toUpperCase(Locale.ROOT));
             } else {
                 includeField = true;
             }
@@ -618,7 +621,7 @@ public class ProductionRecordQueryService {
                                                         JdbcTemplate jdbcTemplate,
                                                         Long resultId,
                                                         int positionOffset,
-                                                        Set<String> attrKeyFilter,
+                                                        Set<String> attrNoFilter,
                                                         Map<String, Set<String>> attrNoToColumns) {
         ProductionRecordDto dto = new ProductionRecordDto();
         T first = entities.get(0);
@@ -650,13 +653,13 @@ public class ProductionRecordQueryService {
 
         List<AttrKeyValDto> attrKeyValDtos = new ArrayList<>();
         for (T entity : entities) {
-            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity, attrKeyFilter);
+            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity, attrNoFilter);
             for (AttrKeyValDto attr : attrs) {
                 String originalPosition = attr.getPosition();
                 CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
                 attr.setPosition(applyPositionOffset(originalPosition, positionOffset));
             }
-//            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrKeyFilter, attrNoToColumns));
+//            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrNoFilter, attrNoToColumns));
             attrKeyValDtos.addAll(attrs);
         }
         dto.setAttrKeyVals(attrKeyValDtos);
@@ -667,7 +670,7 @@ public class ProductionRecordQueryService {
                                                         JdbcTemplate jdbcTemplate,
                                                         Long taskId,
                                                         int positionOffset,
-                                                        Set<String> attrKeyFilter,
+                                                        Set<String> attrNoFilter,
                                                         Map<String, Set<String>> attrNoToColumns) {
         ProductionRecordDto dto = new ProductionRecordDto();
         MoAutoAdjustSt07 first = entities.get(0);
@@ -686,13 +689,13 @@ public class ProductionRecordQueryService {
                 entity.setPosition(resolvePositionFromSide(entity.getSide()));
             }
 
-            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity, attrKeyFilter);
+            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity, attrNoFilter);
             for (AttrKeyValDto attr : attrs) {
                 String originalPosition = attr.getPosition();
                 CommonAttrMapping.mapEntityFieldsToDto(entity, attr, CommonAttrMapping.FIELD_TO_FIELD2);
                 attr.setPosition(applyPositionOffset(originalPosition, positionOffset));
             }
-//            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrKeyFilter, attrNoToColumns));
+//            attrKeyValDtos.addAll(filterAttrKeyVals(attrs, attrNoFilter, attrNoToColumns));
             attrKeyValDtos.addAll(attrs);
         }
 
@@ -703,7 +706,7 @@ public class ProductionRecordQueryService {
     private ProductionRecordDto buildDtoFromCalibresultEntities(Calibresult entity,
                                                                 JdbcTemplate jdbcTemplate,
                                                                 int positionOffset,
-                                                                Set<String> attrKeyFilter,
+                                                                Set<String> attrNoFilter,
                                                                 Map<String, Set<String>> attrNoToColumns,
                                                                 Map<String, CalibrationInfo> calibrationInfoMap,
                                                                 Integer requestedPosition) {
@@ -733,7 +736,7 @@ public class ProductionRecordQueryService {
             }
         }
 
-        List<AttrKeyValDto> attrKeyValDtos = FieldCodeMapper.extractAttrListFromObject(entity, attrKeyFilter);
+        List<AttrKeyValDto> attrKeyValDtos = FieldCodeMapper.extractAttrListFromObject(entity, attrNoFilter);
 
         dto.setAttrKeyVals(attrKeyValDtos);
         return dto;
@@ -821,27 +824,17 @@ public class ProductionRecordQueryService {
     }
 
     private List<AttrKeyValDto> filterAttrKeyVals(List<AttrKeyValDto> attrs,
-                                                  Set<String> attrKeyFilter,
+                                                  Set<String> attrNoFilter,
                                                   Map<String, Set<String>> attrNoToColumns) {
-        if (attrKeyFilter == null || attrKeyFilter.isEmpty()) {
+        if (attrNoFilter == null || attrNoFilter.isEmpty()) {
             return attrs;
         }
-        if (attrNoToColumns == null || attrNoToColumns.isEmpty()) {
-            return attrs;
+        if (attrs == null || attrs.isEmpty()) {
+            return Collections.emptyList();
         }
         return attrs.stream()
-                .filter(attr -> {
-                    Set<String> columns = attrNoToColumns.get(attr.getNo());
-                    if (columns == null || columns.isEmpty()) {
-                        return false;
-                    }
-                    for (String column : columns) {
-                        if (attrKeyFilter.contains(column.toLowerCase())) {
-                            return true;
-                        }
-                    }
-                    return false;
-                })
+                .filter(attr -> StringUtils.hasText(attr.getNo())
+                        && attrNoFilter.contains(attr.getNo().trim().toUpperCase(Locale.ROOT)))
                 .collect(Collectors.toList());
     }
 

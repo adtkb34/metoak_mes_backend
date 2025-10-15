@@ -53,7 +53,7 @@ public class FieldCodeMapper {
 //        return extractAttrListFromObject(obj, null);
 //    }
 
-    public static List<AttrKeyValDto> extractAttrListFromObject(Object obj, Set<String> attrKeyFilter) {
+    public static List<AttrKeyValDto> extractAttrListFromObject(Object obj, Set<String> attrNoFilter) {
         if (obj == null) {
             return List.of();
         }
@@ -65,12 +65,20 @@ public class FieldCodeMapper {
             if (!field.isAnnotationPresent(FieldCode.class)) {
                 continue;
             }
-            if (attrKeyFilter != null) {
-                if (!attrKeyFilter.contains(field.getName().toLowerCase())) {
+            FieldCode annotation = field.getAnnotation(FieldCode.class);
+            if (attrNoFilter != null && !attrNoFilter.isEmpty()) {
+                String attrNo = annotation.no();
+                if (attrNo == null) {
+                    continue;
+                }
+                String normalizedAttrNo = attrNo.trim();
+                if (normalizedAttrNo.isEmpty()) {
+                    continue;
+                }
+                if (!attrNoFilter.contains(normalizedAttrNo.toUpperCase(Locale.ROOT))) {
                     continue;
                 }
             }
-            FieldCode annotation = field.getAnnotation(FieldCode.class);
 
             AttrKeyValDto dto = grouped.computeIfAbsent(annotation.no(), no -> {
                 AttrKeyValDto attr = new AttrKeyValDto();

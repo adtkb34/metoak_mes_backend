@@ -37,11 +37,11 @@ public class Calibresult implements Serializable {
     private String timeStamp;
 
     @TableField("LeftSharpness")
-    @FieldCode(no = "003", type = "val")
+    @FieldCode(no = "003", type = "val", position = 1)
     private Double leftSharpness;
 
     @TableField("RightSharpness")
-    @FieldCode(no = "004", type = "val")
+    @FieldCode(no = "004", type = "val", position = 2)
     private Double rightSharpness;
 
     @TableField("Simor_validPattern")
@@ -53,19 +53,19 @@ public class Calibresult implements Serializable {
     private Double simorMeanReprojectionError;
 
     @TableField("Simor_mean_left_reprojection_error")
-    @FieldCode(no = "007", type = "val")
+    @FieldCode(no = "007", type = "val", position = 1)
     private Double simorMeanLeftReprojectionError;
 
     @TableField("Simor_mean_right_reprojection_error")
-    @FieldCode(no = "008", type = "val")
+    @FieldCode(no = "008", type = "val", position = 2)
     private Double simorMeanRightReprojectionError;
 
     @TableField("Simor_max_left_reprojection_error")
-    @FieldCode(no = "009", type = "val")
+    @FieldCode(no = "009", type = "val", position = 1)
     private Double simorMaxLeftReprojectionError;
 
     @TableField("Simor_max_right_reprojection_error")
-    @FieldCode(no = "010", type = "val")
+    @FieldCode(no = "010", type = "val", position = 2)
     private Double simorMaxRightReprojectionError;
 
     @TableField("Simor_amplify_ratio")
@@ -73,11 +73,11 @@ public class Calibresult implements Serializable {
     private Double simorAmplifyRatio;
 
     @TableField("Simor_left_trim")
-    @FieldCode(no = "012", type = "val")
+    @FieldCode(no = "012", type = "val", position = 1)
     private Double simorLeftTrim;
 
     @TableField("Simor_right_trim")
-    @FieldCode(no = "013", type = "val")
+    @FieldCode(no = "013", type = "val", position = 2)
     private Double simorRightTrim;
 
     @TableField("Simor_fov_h")
@@ -101,19 +101,19 @@ public class Calibresult implements Serializable {
     private Double ispMeanReprojectionError;
 
     @TableField("ISP_mean_left_reprojection_error")
-    @FieldCode(no = "019", type = "val")
+    @FieldCode(no = "019", type = "val", position = 1)
     private Double ispMeanLeftReprojectionError;
 
     @TableField("ISP_mean_right_reprojection_error")
-    @FieldCode(no = "020", type = "val")
+    @FieldCode(no = "020", type = "val", position = 2)
     private Double ispMeanRightReprojectionError;
 
     @TableField("ISP_max_left_reprojection_error")
-    @FieldCode(no = "021", type = "val")
+    @FieldCode(no = "021", type = "val", position = 1)
     private Double ispMaxLeftReprojectionError;
 
     @TableField("ISP_max_right_reprojection_error")
-    @FieldCode(no = "022", type = "val")
+    @FieldCode(no = "022", type = "val", position = 2)
     private Double ispMaxRightReprojectionError;
 
     @TableField("ISP_amplify_ratio")
@@ -121,11 +121,11 @@ public class Calibresult implements Serializable {
     private Double ispAmplifyRatio;
 
     @TableField("ISP_left_trim")
-    @FieldCode(no = "024", type = "val")
+    @FieldCode(no = "024", type = "val", position = 1)
     private Double ispLeftTrim;
 
     @TableField("ISP_right_trim")
-    @FieldCode(no = "025", type = "val")
+    @FieldCode(no = "025", type = "val", position = 2)
     private Double ispRightTrim;
 
     @TableField("ISP_fov_h")
@@ -145,75 +145,75 @@ public class Calibresult implements Serializable {
     private Double ispRectifyVerticalOffset;
 
     @TableField("Simor_left_fx")
-    @FieldCode(no = "030", type = "val")
+    @FieldCode(no = "030", type = "val", position = 1)
     private Double simorLeftFx;
 
     @TableField("Simor_left_fy")
-    @FieldCode(no = "031", type = "val")
+    @FieldCode(no = "031", type = "val", position = 1)
     private Double simorLeftFy;
 
     @TableField("Simor_left_cx")
-    @FieldCode(no = "032", type = "val")
+    @FieldCode(no = "032", type = "val", position = 1)
     private Double simorLeftCx;
 
     @TableField("Simor_left_cy")
-    @FieldCode(no = "033", type = "val")
+    @FieldCode(no = "033", type = "val", position = 1)
     private Double simorLeftCy;
 
     @TableField("Simor_left_k1")
-    @FieldCode(no = "034", type = "val")
+    @FieldCode(no = "034", type = "val", position = 1)
     private Double simorLeftK1;
 
     @TableField("Simor_left_k2")
-    @FieldCode(no = "035", type = "val")
+    @FieldCode(no = "035", type = "val", position = 1)
     private Double simorLeftK2;
 
     @TableField("Simor_left_k3")
-    @FieldCode(no = "036", type = "val")
+    @FieldCode(no = "036", type = "val", position = 1)
     private Double simorLeftK3;
 
     @TableField("Simor_left_p1")
-    @FieldCode(no = "037", type = "val")
+    @FieldCode(no = "037", type = "val", position = 1)
     private Double simorLeftP1;
 
     @TableField("Simor_left_p2")
-    @FieldCode(no = "038", type = "val")
+    @FieldCode(no = "038", type = "val", position = 1)
     private Double simorLeftP2;
 
     @TableField("Simor_right_fx")
-    @FieldCode(no = "039", type = "val")
+    @FieldCode(no = "039", type = "val", position = 2)
     private Double simorRightFx;
 
     @TableField("Simor_right_fy")
-    @FieldCode(no = "040", type = "val")
+    @FieldCode(no = "040", type = "val", position = 2)
     private Double simorRightFy;
 
     @TableField("Simor_right_cx")
-    @FieldCode(no = "041", type = "val")
+    @FieldCode(no = "041", type = "val", position = 2)
     private Double simorRightCx;
 
     @TableField("Simor_right_cy")
-    @FieldCode(no = "042", type = "val")
+    @FieldCode(no = "042", type = "val", position = 2)
     private Double simorRightCy;
 
     @TableField("Simor_right_k1")
-    @FieldCode(no = "043", type = "val")
+    @FieldCode(no = "043", type = "val", position = 2)
     private Double simorRightK1;
 
     @TableField("Simor_right_k2")
-    @FieldCode(no = "044", type = "val")
+    @FieldCode(no = "044", type = "val", position = 2)
     private Double simorRightK2;
 
     @TableField("Simor_right_k3")
-    @FieldCode(no = "045", type = "val")
+    @FieldCode(no = "045", type = "val", position = 2)
     private Double simorRightK3;
 
     @TableField("Simor_right_p1")
-    @FieldCode(no = "046", type = "val")
+    @FieldCode(no = "046", type = "val", position = 2)
     private Double simorRightP1;
 
     @TableField("Simor_right_p2")
-    @FieldCode(no = "047", type = "val")
+    @FieldCode(no = "047", type = "val", position = 2)
     private Double simorRightP2;
 
     @TableField("Simor_width")
@@ -277,27 +277,27 @@ public class Calibresult implements Serializable {
     private Double simorT2;
 
     @TableField("simor_left_r0")
-    @FieldCode(no = "063", type = "val")
+    @FieldCode(no = "063", type = "val", position = 1)
     private Double simorLeftR0;
 
     @TableField("simor_left_r1")
-    @FieldCode(no = "064", type = "val")
+    @FieldCode(no = "064", type = "val", position = 1)
     private Double simorLeftR1;
 
     @TableField("simor_left_r2")
-    @FieldCode(no = "065", type = "val")
+    @FieldCode(no = "065", type = "val", position = 1)
     private Double simorLeftR2;
 
     @TableField("simor_right_r0")
-    @FieldCode(no = "066", type = "val")
+    @FieldCode(no = "066", type = "val", position = 2)
     private Double simorRightR0;
 
     @TableField("simor_right_r1")
-    @FieldCode(no = "067", type = "val")
+    @FieldCode(no = "067", type = "val", position = 2)
     private Double simorRightR1;
 
     @TableField("simor_right_r2")
-    @FieldCode(no = "068", type = "val")
+    @FieldCode(no = "068", type = "val", position = 2)
     private Double simorRightR2;
 
     @TableField("simor_virtual_width")
@@ -317,99 +317,99 @@ public class Calibresult implements Serializable {
     private Double simorRoiY;
 
     @TableField("isp_left_fx")
-    @FieldCode(no = "073", type = "val")
+    @FieldCode(no = "073", type = "val", position = 1)
     private Double ispLeftFx;
 
     @TableField("isp_left_fy")
-    @FieldCode(no = "074", type = "val")
+    @FieldCode(no = "074", type = "val", position = 1)
     private Double ispLeftFy;
 
     @TableField("isp_left_cx")
-    @FieldCode(no = "075", type = "val")
+    @FieldCode(no = "075", type = "val", position = 1)
     private Double ispLeftCx;
 
     @TableField("isp_left_cy")
-    @FieldCode(no = "076", type = "val")
+    @FieldCode(no = "076", type = "val", position = 1)
     private Double ispLeftCy;
 
     @TableField("isp_left_k1")
-    @FieldCode(no = "077", type = "val")
+    @FieldCode(no = "077", type = "val", position = 1)
     private Double ispLeftK1;
 
     @TableField("isp_left_k2")
-    @FieldCode(no = "078", type = "val")
+    @FieldCode(no = "078", type = "val", position = 1)
     private Double ispLeftK2;
 
     @TableField("isp_left_k3")
-    @FieldCode(no = "079", type = "val")
+    @FieldCode(no = "079", type = "val", position = 1)
     private Double ispLeftK3;
 
     @TableField("isp_left_k4")
-    @FieldCode(no = "132", type = "val")
+    @FieldCode(no = "132", type = "val", position = 1)
     private Double ispLeftK4;
 
     @TableField("isp_left_k5")
-    @FieldCode(no = "133", type = "val")
+    @FieldCode(no = "133", type = "val", position = 1)
     private Double ispLeftK5;
 
     @TableField("isp_left_k6")
-    @FieldCode(no = "134", type = "val")
+    @FieldCode(no = "134", type = "val", position = 1)
     private Double ispLeftK6;
 
     @TableField("isp_left_p1")
-    @FieldCode(no = "080", type = "val")
+    @FieldCode(no = "080", type = "val", position = 1)
     private Double ispLeftP1;
 
     @TableField("isp_left_p2")
-    @FieldCode(no = "081", type = "val")
+    @FieldCode(no = "081", type = "val", position = 1)
     private Double ispLeftP2;
 
     @TableField("isp_right_fx")
-    @FieldCode(no = "082", type = "val")
+    @FieldCode(no = "082", type = "val", position = 2)
     private Double ispRightFx;
 
     @TableField("isp_right_fy")
-    @FieldCode(no = "083", type = "val")
+    @FieldCode(no = "083", type = "val", position = 2)
     private Double ispRightFy;
 
     @TableField("isp_right_cx")
-    @FieldCode(no = "084", type = "val")
+    @FieldCode(no = "084", type = "val", position = 2)
     private Double ispRightCx;
 
     @TableField("isp_right_cy")
-    @FieldCode(no = "085", type = "val")
+    @FieldCode(no = "085", type = "val", position = 2)
     private Double ispRightCy;
 
     @TableField("isp_right_k1")
-    @FieldCode(no = "086", type = "val")
+    @FieldCode(no = "086", type = "val", position = 2)
     private Double ispRightK1;
 
     @TableField("isp_right_k2")
-    @FieldCode(no = "087", type = "val")
+    @FieldCode(no = "087", type = "val", position = 2)
     private Double ispRightK2;
 
     @TableField("isp_right_k3")
-    @FieldCode(no = "088", type = "val")
+    @FieldCode(no = "088", type = "val", position = 2)
     private Double ispRightK3;
 
     @TableField("isp_right_k4")
-    @FieldCode(no = "135", type = "val")
+    @FieldCode(no = "135", type = "val", position = 2)
     private Double ispRightK4;
 
     @TableField("isp_right_k5")
-    @FieldCode(no = "136", type = "val")
+    @FieldCode(no = "136", type = "val", position = 2)
     private Double ispRightK5;
 
     @TableField("isp_right_k6")
-    @FieldCode(no = "137", type = "val")
+    @FieldCode(no = "137", type = "val", position = 2)
     private Double ispRightK6;
 
     @TableField("isp_right_p1")
-    @FieldCode(no = "089", type = "val")
+    @FieldCode(no = "089", type = "val", position = 2)
     private Double ispRightP1;
 
     @TableField("isp_right_p2")
-    @FieldCode(no = "090", type = "val")
+    @FieldCode(no = "090", type = "val", position = 2)
     private Double ispRightP2;
 
     @TableField("isp_width")
@@ -473,27 +473,27 @@ public class Calibresult implements Serializable {
     private Double ispT2;
 
     @TableField("isp_left_r0")
-    @FieldCode(no = "106", type = "val")
+    @FieldCode(no = "106", type = "val", position = 1)
     private Double ispLeftR0;
 
     @TableField("isp_left_r1")
-    @FieldCode(no = "107", type = "val")
+    @FieldCode(no = "107", type = "val", position = 1)
     private Double ispLeftR1;
 
     @TableField("isp_left_r2")
-    @FieldCode(no = "108", type = "val")
+    @FieldCode(no = "108", type = "val", position = 1)
     private Double ispLeftR2;
 
     @TableField("isp_right_r0")
-    @FieldCode(no = "109", type = "val")
+    @FieldCode(no = "109", type = "val", position = 2)
     private Double ispRightR0;
 
     @TableField("isp_right_r1")
-    @FieldCode(no = "110", type = "val")
+    @FieldCode(no = "110", type = "val", position = 2)
     private Double ispRightR1;
 
     @TableField("isp_right_r2")
-    @FieldCode(no = "111", type = "val")
+    @FieldCode(no = "111", type = "val", position = 2)
     private Double ispRightR2;
 
     @TableField("isp_virtual_width")
@@ -557,19 +557,19 @@ public class Calibresult implements Serializable {
     private Double simorRefHeight;
 
     @TableField("LeftCenterOffsetX")
-    @FieldCode(no = "127", type = "val")
+    @FieldCode(no = "127", type = "val", position = 1)
     private Integer leftCenterOffsetX;
 
     @TableField("LeftCenterOffsetY")
-    @FieldCode(no = "128", type = "val")
+    @FieldCode(no = "128", type = "val", position = 1)
     private Integer leftCenterOffsetY;
 
     @TableField("RightCenterOffsetX")
-    @FieldCode(no = "129", type = "val")
+    @FieldCode(no = "129", type = "val", position = 2)
     private Integer rightCenterOffsetX;
 
     @TableField("RightCenterOffsetY")
-    @FieldCode(no = "130", type = "val")
+    @FieldCode(no = "130", type = "val", position = 2)
     private Integer rightCenterOffsetY;
 //
     @TableField("Station")

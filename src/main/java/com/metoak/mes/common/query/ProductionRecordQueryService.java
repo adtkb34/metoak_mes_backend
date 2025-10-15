@@ -11,12 +11,14 @@ import com.metoak.mes.common.mapping.CommonAttrMapping;
 import com.metoak.mes.common.mapping.ProcessMappingRegistry;
 import com.metoak.mes.dto.AttrKeyValDto;
 import com.metoak.mes.dto.ProductionRecordDto;
+import com.metoak.mes.entity.Calibresult;
 import com.metoak.mes.entity.MoAutoAdjustInfo;
 import com.metoak.mes.entity.MoAutoAdjustSt07;
 import com.metoak.mes.entity.MoProcessStepProductionResult;
 import com.metoak.mes.enums.DeviceEnum;
 import com.metoak.mes.enums.OriginEnum;
 import com.metoak.mes.enums.StepMappingEnum;
+import com.metoak.mes.service.ICalibresultService;
 import com.metoak.mes.service.IMoAutoAdjustSt08Service;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -71,6 +73,20 @@ public class ProductionRecordQueryService {
         } else {
             Class<?> serviceClass = determineServiceClass(stepTypeNo);
             if (serviceClass == null) return Collections.emptyList();
+            if (serviceClass == ICalibresultService.class) {
+                return queryMethod3(
+                        databaseConfig,
+                        positionOffset,
+                        attrKeys,
+                        station,
+                        position,
+                        stage,
+                        startTime,
+                        endTime,
+                        count,
+                        stepTypeNo
+                );
+            }
             return queryMethod1(
                     databaseConfig,
                     serviceClass,
@@ -386,6 +402,112 @@ public class ProductionRecordQueryService {
         }
     }
 
+    public List<ProductionRecordDto> queryMethod3(DatabaseConfig config,
+                                                  Integer positionOffset,
+                                                  String[] attrKeys,
+                                                  Integer station,
+                                                  Integer position,
+                                                  Integer stage,
+                                                  String startTime,
+                                                  String endTime,
+                                                  Integer count,
+                                                  String stepTypeNo) {
+        Objects.requireNonNull(config, "Database config must not be null");
+        Objects.requireNonNull(stepTypeNo, "stepTypeNo must not be null");
+
+        Set<String> attrKeyFilter = buildAttrKeyFilter(attrKeys);
+        Map<String, Set<String>> attrNoToColumns = buildAttrNoToColumnMap(Calibresult.class);
+
+        try (HikariDataSource dataSource = buildDataSource(config)) {
+            JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+
+            String baseAlias = "t";
+            String resultAlias = "r";
+            String selectColumns = qualifyColumns(buildSelectColumns(Calibresult.class, attrKeyFilter), baseAlias);
+            StringBuilder sql = new StringBuilder("SELECT ")
+                    .append(selectColumns)
+                    .append(" FROM calibresult ")
+                    .append(baseAlias)
+                    .append(" LEFT JOIN mo_process_step_production_result ")
+                    .append(resultAlias)
+                    .append(" ON ")
+                    .append(baseAlias)
+                    .append(".mo_process_step_production_result_id = ")
+                    .append(resultAlias)
+                    .append(".id");
+            List<Object> params = new ArrayList<>();
+            appendConditions(sql, Collections.singletonList(resultAlias + ".step_type_no = ?"));
+            params.add(stepTypeNo);
+
+            if (station != null) {
+                appendConditions(sql, Collections.singletonList(baseAlias + ".Station = ?"));
+                params.add(station);
+            }
+
+            String normalizedTimeField = normalizeTimeField("TimeStamp");
+            String qualifiedTimeField = normalizedTimeField == null ? null : baseAlias + "." + normalizedTimeField;
+            boolean hasTimeFilter = appendTimeFilter(sql, params, qualifiedTimeField, startTime, endTime);
+
+            if (!hasTimeFilter && qualifiedTimeField != null) {
+                sql.append(" ORDER BY ").append(qualifiedTimeField).append(" DESC LIMIT ?");
+                params.add(count);
+            }
+
+            List<Calibresult> entities = jdbcTemplate.query(
+                    sql.toString(),
+                    new BeanPropertyRowMapper<>(Calibresult.class),
+                    params.toArray()
+            );
+
+            if (entities.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            Map<String, CalibrationInfo> calibrationInfoMap = fetchCalibrationInfo(jdbcTemplate, entities);
+
+            Map<Long, List<Calibresult>> groupedByResultId = new LinkedHashMap<>();
+            List<Calibresult> nullResultGroup = new ArrayList<>();
+            List<Long> order = new ArrayList<>();
+
+            for (Calibresult entity : entities) {
+                Long resultId = entity.getMoProcessStepProductionResultId();
+                if (resultId == null) {
+                    if (nullResultGroup.isEmpty()) {
+                        order.add(null);
+                    }
+                    nullResultGroup.add(entity);
+                } else {
+                    if (!groupedByResultId.containsKey(resultId)) {
+                        groupedByResultId.put(resultId, new ArrayList<>());
+                        order.add(resultId);
+                    }
+                    groupedByResultId.get(resultId).add(entity);
+                }
+            }
+
+            List<ProductionRecordDto> results = new ArrayList<>();
+            for (Long resultId : order) {
+                List<Calibresult> group = resultId == null ? nullResultGroup : groupedByResultId.get(resultId);
+                if (group == null || group.isEmpty()) {
+                    continue;
+                }
+                ProductionRecordDto dto = buildDtoFromCalibresultEntities(
+                        group,
+                        jdbcTemplate,
+                        resultId,
+                        positionOffset,
+                        attrKeyFilter,
+                        attrNoToColumns,
+                        calibrationInfoMap,
+                        position
+                );
+                results.add(dto);
+            }
+
+            return results;
+        }
+    }
+
     private boolean appendTimeFilter(StringBuilder sql, List<Object> params, String timeField, String startTime, String endTime) {
         if (timeField == null) {
             return false;
@@ -639,6 +761,41 @@ public class ProductionRecordQueryService {
         return dto;
     }
 
+    private ProductionRecordDto buildDtoFromCalibresultEntities(List<Calibresult> entities,
+                                                                JdbcTemplate jdbcTemplate,
+                                                                Long resultId,
+                                                                int positionOffset,
+                                                                Set<String> attrKeyFilter,
+                                                                Map<String, Set<String>> attrNoToColumns,
+                                                                Map<String, CalibrationInfo> calibrationInfoMap,
+                                                                Integer requestedPosition) {
+        ProductionRecordDto dto = buildDtoFromEntities(entities, jdbcTemplate, resultId, positionOffset, attrKeyFilter, attrNoToColumns);
+
+        Calibresult first = entities.get(0);
+        String key = buildCalibrationKey(first.getCameraSN(), normalizeTimestampString(first.getTimeStamp()));
+        if (key != null) {
+            CalibrationInfo info = calibrationInfoMap.get(key);
+            if (info != null) {
+                if (info.errorCode != null) {
+                    dto.setErrorNo(String.valueOf(info.errorCode));
+                }
+                if (StringUtils.hasText(info.operator) && !StringUtils.hasText(dto.getOperator())) {
+                    dto.setOperator(info.operator);
+                }
+            }
+        }
+
+        if (requestedPosition != null && dto.getAttrKeyVals() != null) {
+            String requestedPositionStr = String.valueOf(requestedPosition);
+            List<AttrKeyValDto> filtered = dto.getAttrKeyVals().stream()
+                    .filter(attr -> requestedPositionStr.equals(attr.getPosition()))
+                    .collect(Collectors.toList());
+            dto.setAttrKeyVals(filtered);
+        }
+
+        return dto;
+    }
+
     private MoAutoAdjustInfo findClosestAutoAdjustInfo(JdbcTemplate jdbcTemplate, List<MoAutoAdjustSt07> entities) {
         if (entities == null || entities.isEmpty()) {
             return null;
@@ -743,6 +900,95 @@ public class ProductionRecordQueryService {
                     return false;
                 })
                 .collect(Collectors.toList());
+    }
+
+    private Map<String, CalibrationInfo> fetchCalibrationInfo(JdbcTemplate jdbcTemplate, List<Calibresult> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, Set<String>> timestampsByCamera = new LinkedHashMap<>();
+        for (Calibresult entity : entities) {
+            String cameraSn = entity.getCameraSN();
+            String normalizedTimestamp = normalizeTimestampString(entity.getTimeStamp());
+            if (!StringUtils.hasText(cameraSn) || !StringUtils.hasText(normalizedTimestamp)) {
+                continue;
+            }
+            timestampsByCamera.computeIfAbsent(cameraSn.trim(), key -> new LinkedHashSet<>()).add(normalizedTimestamp);
+        }
+
+        if (timestampsByCamera.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, CalibrationInfo> result = new HashMap<>();
+        String formattedColumn = "DATE_FORMAT(start_time, '%Y-%m-%d %H:%i:%s')";
+
+        for (Map.Entry<String, Set<String>> entry : timestampsByCamera.entrySet()) {
+            String cameraSn = entry.getKey();
+            Set<String> timestamps = entry.getValue();
+            if (timestamps.isEmpty()) {
+                continue;
+            }
+
+            String placeholders = String.join(", ", Collections.nCopies(timestamps.size(), "?"));
+            String sql = "SELECT camera_sn, " + formattedColumn + " AS start_time_str, error_code, operator " +
+                    "FROM mo_calibration WHERE camera_sn = ? AND " + formattedColumn + " IN (" + placeholders + ")";
+            List<Object> params = new ArrayList<>();
+            params.add(cameraSn);
+            params.addAll(timestamps);
+
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
+            for (Map<String, Object> row : rows) {
+                String startTimeStr = normalizeTimestampString((String) row.get("start_time_str"));
+                String key = buildCalibrationKey((String) row.get("camera_sn"), startTimeStr);
+                if (key == null) {
+                    continue;
+                }
+                Integer errorCode = null;
+                Object errorVal = row.get("error_code");
+                if (errorVal instanceof Number number) {
+                    errorCode = number.intValue();
+                }
+                String operator = (String) row.get("operator");
+                result.put(key, new CalibrationInfo(errorCode, operator));
+            }
+        }
+
+        return result;
+    }
+
+    private String normalizeTimestampString(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+
+        String normalized = value.trim().replace('T', ' ');
+        int dotIndex = normalized.indexOf('.');
+        if (dotIndex > 0) {
+            normalized = normalized.substring(0, dotIndex);
+        }
+        if (normalized.length() > 19) {
+            normalized = normalized.substring(0, 19);
+        }
+        return normalized;
+    }
+
+    private String buildCalibrationKey(String cameraSn, String timestamp) {
+        if (!StringUtils.hasText(cameraSn) || !StringUtils.hasText(timestamp)) {
+            return null;
+        }
+        return cameraSn.trim() + "|" + timestamp.trim();
+    }
+
+    private static final class CalibrationInfo {
+        private final Integer errorCode;
+        private final String operator;
+
+        private CalibrationInfo(Integer errorCode, String operator) {
+            this.errorCode = errorCode;
+            this.operator = operator;
+        }
     }
 
     private <T> Map<String, Set<String>> buildAttrNoToColumnMap(Class<T> entityClass) {

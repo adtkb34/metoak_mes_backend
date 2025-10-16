@@ -6,6 +6,7 @@ import com.metoak.mes.enums.DefaultValueEnum;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class FieldCodeMapper {
 
@@ -53,7 +54,11 @@ public class FieldCodeMapper {
 //        return extractAttrListFromObject(obj, null);
 //    }
 
-    public static List<AttrKeyValDto> extractAttrListFromObject(Object obj, Set<String> attrKeyFilter) {
+    public static List<AttrKeyValDto> extractAttrListFromObject(Object obj, Set<String> attrKeyFilter_) {
+        Set<String> attrKeyFilter = attrKeyFilter_.stream()
+                .map(s -> s.replace("_", ""))
+                .collect(Collectors.toSet());
+
         if (obj == null) {
             return List.of();
         }
@@ -66,9 +71,11 @@ public class FieldCodeMapper {
                 continue;
             }
             if (attrKeyFilter != null) {
+
                 if (!attrKeyFilter.contains(field.getName().toLowerCase())) {
                     continue;
                 }
+
             }
             FieldCode annotation = field.getAnnotation(FieldCode.class);
 

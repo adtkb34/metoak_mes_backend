@@ -294,7 +294,7 @@ public class ProductionRecordQueryService {
                     results.add(buildDtoFromEntities(groupedByResultId.get(resultId), jdbcTemplate, resultId, positionOffset, attrKeyFilter, attrNoToColumns));
                 }
             }
-
+            System.out.println(sql);
             return results;
         }
     }

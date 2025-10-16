@@ -200,6 +200,9 @@ public class Calibresult implements Serializable {
     @FieldCode(no = "043", type = "val", position = 2)
     private Double simorRightK1;
 
+    @TableField(exist = false)
+    private Integer errorCode;
+
     @TableField("Simor_right_k2")
     @FieldCode(no = "044", type = "val", position = 2)
     private Double simorRightK2;

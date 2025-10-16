@@ -424,11 +424,20 @@ public class ProductionRecordQueryService {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
             String baseAlias = "t";
+            String calibrationAlias = "mc";
             String selectColumns = qualifyColumns(buildSelectColumns(Calibresult.class, attrKeyFilter), baseAlias);
-            StringBuilder sql = new StringBuilder("SELECT ")
-                    .append(selectColumns)
+            StringBuilder sql = new StringBuilder("SELECT ");
+            if (StringUtils.hasText(selectColumns)) {
+                sql.append(selectColumns).append(", ");
+            }
+            sql.append(calibrationAlias).append(".error_code AS errorCode")
                     .append(" FROM calibresult ")
-                    .append(baseAlias);;
+                    .append(baseAlias)
+                    .append(" LEFT JOIN mo_calibration ")
+                    .append(calibrationAlias)
+                    .append(" ON ")
+                    .append(baseAlias).append(".TimeStamp = ")
+                    .append(calibrationAlias).append(".start_time");
             List<Object> params = new ArrayList<>();
 
             if (station != null) {
@@ -454,16 +463,13 @@ public class ProductionRecordQueryService {
                 return Collections.emptyList();
             }
 
-            Map<String, CalibrationInfo> calibrationInfoMap = fetchCalibrationInfo(jdbcTemplate, entities);
             List<ProductionRecordDto> results = new ArrayList<>();
             for (Calibresult item : entities) {
                 ProductionRecordDto dto = buildDtoFromCalibresultEntities(
                         item,
-                        jdbcTemplate,
                         positionOffset,
                         attrKeyFilter,
                         attrNoToColumns,
-                        calibrationInfoMap,
                         position
                 );
                 results.add(dto);
@@ -701,11 +707,9 @@ public class ProductionRecordQueryService {
     }
 
     private ProductionRecordDto buildDtoFromCalibresultEntities(Calibresult entity,
-                                                                JdbcTemplate jdbcTemplate,
                                                                 int positionOffset,
                                                                 Set<String> attrKeyFilter,
                                                                 Map<String, Set<String>> attrNoToColumns,
-                                                                Map<String, CalibrationInfo> calibrationInfoMap,
                                                                 Integer requestedPosition) {
         ProductionRecordDto dto = new ProductionRecordDto();
         CommonAttrMapping.mapEntityFieldsToDto(entity, dto, CommonAttrMapping.FIELD_TO_FIELD);
@@ -718,19 +722,8 @@ public class ProductionRecordQueryService {
         dto.setStartTime(isoTimestamp);
         dto.setEndTime(isoTimestamp);
 
-        Map<String, CalibrationInfo> safeCalibrationInfoMap = calibrationInfoMap == null
-                ? Collections.emptyMap()
-                : calibrationInfoMap;
-        String calibrationKey = buildCalibrationKey(entity.getCameraSN(), normalizedTimestamp);
-        CalibrationInfo calibrationInfo = calibrationKey == null ? null : safeCalibrationInfoMap.get(calibrationKey);
-        if (calibrationInfo != null) {
-            if (calibrationInfo.errorCode != null) {
-                dto.setErrorNo(String.valueOf(calibrationInfo.errorCode));
-            }
-            if (StringUtils.hasText(calibrationInfo.operator)) {
-                dto.setOperator(calibrationInfo.operator);
-                dto.setOperator_(calibrationInfo.operator);
-            }
+        if (entity.getErrorCode() != null) {
+            dto.setErrorNo(String.valueOf(entity.getErrorCode()));
         }
 
         List<AttrKeyValDto> attrKeyValDtos = FieldCodeMapper.extractAttrListFromObject(entity, attrKeyFilter);
@@ -845,62 +838,6 @@ public class ProductionRecordQueryService {
                 .collect(Collectors.toList());
     }
 
-    private Map<String, CalibrationInfo> fetchCalibrationInfo(JdbcTemplate jdbcTemplate, List<Calibresult> entities) {
-        if (entities == null || entities.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        Map<String, Set<String>> timestampsByCamera = new LinkedHashMap<>();
-        for (Calibresult entity : entities) {
-            String cameraSn = entity.getCameraSN();
-            String normalizedTimestamp = normalizeTimestampString(entity.getTimeStamp());
-            if (!StringUtils.hasText(cameraSn) || !StringUtils.hasText(normalizedTimestamp)) {
-                continue;
-            }
-            timestampsByCamera.computeIfAbsent(cameraSn.trim(), key -> new LinkedHashSet<>()).add(normalizedTimestamp);
-        }
-
-        if (timestampsByCamera.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        Map<String, CalibrationInfo> result = new HashMap<>();
-        String formattedColumn = "DATE_FORMAT(start_time, '%Y-%m-%d %H:%i:%s')";
-
-        for (Map.Entry<String, Set<String>> entry : timestampsByCamera.entrySet()) {
-            String cameraSn = entry.getKey();
-            Set<String> timestamps = entry.getValue();
-            if (timestamps.isEmpty()) {
-                continue;
-            }
-
-            String placeholders = String.join(", ", Collections.nCopies(timestamps.size(), "?"));
-            String sql = "SELECT camera_sn, " + formattedColumn + " AS start_time_str, error_code, operator " +
-                    "FROM mo_calibration WHERE camera_sn = ? AND " + formattedColumn + " IN (" + placeholders + ")";
-            List<Object> params = new ArrayList<>();
-            params.add(cameraSn);
-            params.addAll(timestamps);
-
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params.toArray());
-            for (Map<String, Object> row : rows) {
-                String startTimeStr = normalizeTimestampString((String) row.get("start_time_str"));
-                String key = buildCalibrationKey((String) row.get("camera_sn"), startTimeStr);
-                if (key == null) {
-                    continue;
-                }
-                Integer errorCode = null;
-                Object errorVal = row.get("error_code");
-                if (errorVal instanceof Number number) {
-                    errorCode = number.intValue();
-                }
-                String operator = (String) row.get("operator");
-                result.put(key, new CalibrationInfo(errorCode, operator));
-            }
-        }
-
-        return result;
-    }
-
     private String normalizeTimestampString(String value) {
         if (!StringUtils.hasText(value)) {
             return null;
@@ -928,23 +865,6 @@ public class ProductionRecordQueryService {
             return DATE_TIME_FORMATTER.format(dateTime);
         } catch (DateTimeParseException ex) {
             return candidate;
-        }
-    }
-
-    private String buildCalibrationKey(String cameraSn, String timestamp) {
-        if (!StringUtils.hasText(cameraSn) || !StringUtils.hasText(timestamp)) {
-            return null;
-        }
-        return cameraSn.trim() + "|" + timestamp.trim();
-    }
-
-    private static final class CalibrationInfo {
-        private final Integer errorCode;
-        private final String operator;
-
-        private CalibrationInfo(Integer errorCode, String operator) {
-            this.errorCode = errorCode;
-            this.operator = operator;
         }
     }
 

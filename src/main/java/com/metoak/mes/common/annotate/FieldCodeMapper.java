@@ -53,8 +53,23 @@ public class FieldCodeMapper {
 //    public static List<AttrKeyValDto> extractAttrListFromObject(Object obj) {
 //        return extractAttrListFromObject(obj, null);
 //    }
+    public static Map<String, Field> buildFieldMap(Class<?> clazz) {
+        Map<String, Field> map = new HashMap<>();
 
-    public static List<AttrKeyValDto> extractAttrListFromObject(Object obj, Set<String> attrKeyFilter_) {
+        for (Field field : clazz.getDeclaredFields()) {
+            String key = field.getName()
+                    .toLowerCase()
+                    .replace("_", ""); // 去掉下划线
+
+            map.put(key, field);
+        }
+
+        return map;
+    }
+
+
+
+    public static List<AttrKeyValDto> extractAttrListFromObject(Object obj, Set<String> attrKeyFilter_) {//
         Set<String> attrKeyFilter = attrKeyFilter_.stream()
                 .map(s -> s.replace("_", ""))
                 .collect(Collectors.toSet());
@@ -67,6 +82,8 @@ public class FieldCodeMapper {
         Class<?> clazz = obj.getClass();
 
         for (Field field : clazz.getDeclaredFields()) {
+//        for (String s : attrKeyFilter) {
+//            Field field = fieldMap.get(s);
             if (!field.isAnnotationPresent(FieldCode.class)) {
                 continue;
             }

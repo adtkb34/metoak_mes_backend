@@ -39,6 +39,7 @@ public class ProductionRecordQueryController {
             @RequestParam(required = false) String endTime,
             @RequestParam String stepTypeNo
     ) {
+
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod(
                 attrKeys,
                 origin,
@@ -51,6 +52,7 @@ public class ProductionRecordQueryController {
                 count,
                 stepTypeNo
         );
+
         return Result.ok(dtos);
     }
 
@@ -69,6 +71,7 @@ public class ProductionRecordQueryController {
             @RequestParam(required = false) String endTime,
             @RequestParam String stepTypeNo
     ) {
+        long start = System.currentTimeMillis();
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod(
                 attrKeys,
                 origin,
@@ -81,6 +84,8 @@ public class ProductionRecordQueryController {
                 count,
                 stepTypeNo
         );
+        long end = System.currentTimeMillis();
+        System.out.println("执行时间：" + (end - start) + " ms");
         Map<String, List<String>> categorized = new LinkedHashMap<>();
         categorized.put("OK", new ArrayList<>());
         categorized.put("NG", new ArrayList<>());

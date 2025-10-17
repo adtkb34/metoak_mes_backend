@@ -3,6 +3,7 @@ package com.metoak.mes.service;
 import com.metoak.mes.common.MOException;
 import com.metoak.mes.common.config.DatabaseConfig;
 import com.metoak.mes.common.config.MesDatabaseProperties;
+import com.metoak.mes.entity.MoCalibration;
 import com.metoak.mes.enums.OriginEnum;
 import com.metoak.mes.enums.ResultCodeEnum;
 import com.zaxxer.hikari.HikariConfig;
@@ -10,6 +11,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -121,25 +124,42 @@ public class ProcessStepLatestResultService {
     }
 
     private enum StepDefinition {
-        CALIBRATION("1") {
+        StepMappingEnum.DUAL_TARGET_CALIB {
             @Override
             ProcessRecord fetchLatest(JdbcTemplate jdbcTemplate, String sn) {
-                String sql = "SELECT id, error_code, start_time, end_time FROM mo_calibration WHERE camera_sn = ? ORDER BY end_time DESC, start_time DESC, id DESC LIMIT 1";
-                return jdbcTemplate.query(sql, ps -> ps.setString(1, sn), rs -> mapCalibration(rs));
+                String sql = "SELECT  id, error_code, start_time, end_time FROM mo_calibration WHERE camera_sn = ?  ORDER BY start_time DESC, id DESC LIMIT 1";
+                System.out.println(sql);
+                return jdbcTemplate.query(
+                        sql,
+                        (PreparedStatementSetter) ps -> ps.setString(1, sn),
+                        (ResultSetExtractor<ProcessRecord>) rs -> mapCalibration(rs)
+                );
+
             }
         },
-        AUTO_ADJUST("2") {
+                StepMappingEnum.AUTO_ADJUST {
             @Override
             ProcessRecord fetchLatest(JdbcTemplate jdbcTemplate, String sn) {
-                String sql = "SELECT id, operation_result, operation_time, add_time FROM mo_auto_adjust_info WHERE beam_sn = ? ORDER BY operation_time DESC, add_time DESC, id DESC LIMIT 1";
-                return jdbcTemplate.query(sql, ps -> ps.setString(1, sn), rs -> mapAutoAdjust(rs));
+                String sql = "SELECT id, add_time, error_code FROM mo_auto_adjust_info WHERE beam_sn = ? ORDER BY add_time DESC, id DESC LIMIT 1";
+                System.out.println(sql);
+                return jdbcTemplate.query(
+                        sql,
+                        (PreparedStatementSetter) ps -> ps.setString(1, sn),
+                        (ResultSetExtractor<ProcessRecord>) rs -> mapAutoAdjust(rs)
+                );
+
             }
         },
-        FINAL_RESULT("3") {
+                StepMappingEnum.S315_FINAL_CHECK{
             @Override
             ProcessRecord fetchLatest(JdbcTemplate jdbcTemplate, String sn) {
-                String sql = "SELECT id, check_result, check_time FROM mo_final_result WHERE camera_sn = ? ORDER BY check_time DESC, id DESC LIMIT 1";
-                return jdbcTemplate.query(sql, ps -> ps.setString(1, sn), rs -> mapFinalResult(rs));
+                String sql = "SELECT id, check_result, check_time  FROM mo_final_result WHERE camera_sn = ? ORDER BY check_time DESC, id DESC LIMIT 1";
+                System.out.println(sql);
+                return jdbcTemplate.query(
+                        sql,
+                        (PreparedStatementSetter) ps -> ps.setString(1, sn),
+                        (ResultSetExtractor<ProcessRecord>) rs -> mapFinalResult(rs)
+                );
             }
         };
 
@@ -175,10 +195,10 @@ public class ProcessStepLatestResultService {
             if (!rs.next()) {
                 return null;
             }
-            Integer operationResult = (Integer) rs.getObject("operation_result");
-            LocalDateTime timestamp = extractTimestamp(rs.getTimestamp("operation_time"), rs.getTimestamp("add_time"));
+            Integer errorCode = (Integer) rs.getObject("error_code");
+            LocalDateTime timestamp = extractTimestamp(rs.getTimestamp("add_time"));
             long id = rs.getLong("id");
-            boolean success = operationResult != null && operationResult == 1;
+            boolean success = errorCode != null && errorCode == 0;
             return new ProcessRecord(success, timestamp, id);
         }
 

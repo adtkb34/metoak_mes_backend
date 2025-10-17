@@ -23,7 +23,8 @@ public enum StepMappingEnum {
     AFTER_AA_COATING_PROCESS_RECORD("019", "AA后涂布"),
     DUAL_TARGET_CALIB("020", "双目标定"),
     REAR_LENS_ASSEMBLY("022", "后群组装"),
-    REAR_LENS_CAP_FASTENING("023", "后镜头盖固定");
+    REAR_LENS_CAP_FASTENING("023", "后镜头盖固定"),
+    S315_FINAL_CHECK("027", "后镜头盖固定");
 
     private final String code;
     private final String description;

@@ -38,6 +38,8 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.metoak.mes.common.annotate.FieldCodeMapper.buildFieldMap;
+
 @Component
 public class ProductionRecordQueryService {
 
@@ -75,7 +77,6 @@ public class ProductionRecordQueryService {
             Class<?> serviceClass = determineServiceClass(stepTypeNo);
             if (serviceClass == null) return Collections.emptyList();
             if (serviceClass == ICalibresultService.class) {
-                System.out.println(11);
                 return queryMethod3(
                         databaseConfig,
                         positionOffset,
@@ -626,6 +627,7 @@ public class ProductionRecordQueryService {
                                                         int positionOffset,
                                                         Set<String> attrKeyFilter,
                                                         Map<String, Set<String>> attrNoToColumns) {
+
         ProductionRecordDto dto = new ProductionRecordDto();
         T first = entities.get(0);
         CommonAttrMapping.mapEntityFieldsToDto(first, dto, CommonAttrMapping.FIELD_TO_FIELD);
@@ -711,9 +713,9 @@ public class ProductionRecordQueryService {
                                                                 Set<String> attrKeyFilter,
                                                                 Map<String, Set<String>> attrNoToColumns,
                                                                 Integer requestedPosition) {
+
         ProductionRecordDto dto = new ProductionRecordDto();
         CommonAttrMapping.mapEntityFieldsToDto(entity, dto, CommonAttrMapping.FIELD_TO_FIELD);
-
         dto.setStepType(StepMappingEnum.DUAL_TARGET_CALIB.getDescription());
         dto.setStepTypeNo(StepMappingEnum.DUAL_TARGET_CALIB.getCode());
 

@@ -6,6 +6,7 @@ import com.metoak.mes.common.config.MesDatabaseProperties;
 import com.metoak.mes.entity.MoCalibration;
 import com.metoak.mes.enums.OriginEnum;
 import com.metoak.mes.enums.ResultCodeEnum;
+import com.metoak.mes.enums.StepMappingEnum;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
@@ -124,7 +125,7 @@ public class ProcessStepLatestResultService {
     }
 
     private enum StepDefinition {
-        StepMappingEnum.DUAL_TARGET_CALIB {
+        DUAL_TARGET_CALIB(StepMappingEnum.DUAL_TARGET_CALIB) {
             @Override
             ProcessRecord fetchLatest(JdbcTemplate jdbcTemplate, String sn) {
                 String sql = "SELECT  id, error_code, start_time, end_time FROM mo_calibration WHERE camera_sn = ?  ORDER BY start_time DESC, id DESC LIMIT 1";
@@ -137,7 +138,7 @@ public class ProcessStepLatestResultService {
 
             }
         },
-                StepMappingEnum.AUTO_ADJUST {
+        AUTO_ADJUST(StepMappingEnum.AUTO_ADJUST) {
             @Override
             ProcessRecord fetchLatest(JdbcTemplate jdbcTemplate, String sn) {
                 String sql = "SELECT id, add_time, error_code FROM mo_auto_adjust_info WHERE beam_sn = ? ORDER BY add_time DESC, id DESC LIMIT 1";
@@ -150,7 +151,7 @@ public class ProcessStepLatestResultService {
 
             }
         },
-                StepMappingEnum.S315_FINAL_CHECK{
+        S315_FINAL_CHECK(StepMappingEnum.S315_FINAL_CHECK) {
             @Override
             ProcessRecord fetchLatest(JdbcTemplate jdbcTemplate, String sn) {
                 String sql = "SELECT id, check_result, check_time  FROM mo_final_result WHERE camera_sn = ? ORDER BY check_time DESC, id DESC LIMIT 1";
@@ -165,8 +166,8 @@ public class ProcessStepLatestResultService {
 
         private final String code;
 
-        StepDefinition(String code) {
-            this.code = code;
+        StepDefinition(StepMappingEnum mapping) {
+            this.code = mapping.getCode();
         }
 
         static Optional<StepDefinition> fromCode(String code) {

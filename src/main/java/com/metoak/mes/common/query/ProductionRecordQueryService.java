@@ -28,6 +28,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -435,16 +439,24 @@ public class ProductionRecordQueryService {
         try (HikariDataSource dataSource = buildDataSource(config)) {
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
+            int effectivePositionOffset = positionOffset == null ? 0 : positionOffset;
+
             String baseAlias = "t";
             String calibrationAlias = "mc";
-            String selectColumns = qualifyColumns(buildSelectColumns(Calibresult.class, attrKeyFilter), baseAlias);
-            selectColumns += qualifyColumns(buildSelectColumns(MoCalibration.class, attrKeyFilter), calibrationAlias);
+            String basePrefix = baseAlias + "_";
+            String calibrationPrefix = calibrationAlias + "_";
+
+            List<String> selectParts = new ArrayList<>();
+            selectParts.addAll(buildAliasedColumns(Calibresult.class, baseAlias, basePrefix, attrKeyFilter));
+            selectParts.addAll(buildAliasedColumns(MoCalibration.class, calibrationAlias, calibrationPrefix, attrKeyFilter));
+
             StringBuilder sql = new StringBuilder("SELECT ");
-            if (StringUtils.hasText(selectColumns)) {
-                sql.append(selectColumns).append(", ");
+            if (!selectParts.isEmpty()) {
+                sql.append(String.join(", ", selectParts));
+            } else {
+                sql.append(baseAlias).append(".*");
             }
-            sql.append(calibrationAlias).append(".error_code AS errorCode")
-                    .append(" FROM calibresult ")
+            sql.append(" FROM calibresult ")
                     .append(baseAlias)
                     .append(" LEFT JOIN mo_calibration ")
                     .append(calibrationAlias)
@@ -472,27 +484,31 @@ public class ProductionRecordQueryService {
                     params.add(count);
                 }
             }
-            List<Calibresult> entities = jdbcTemplate.query(
+            List<CalibrationJoinResult> entities = jdbcTemplate.query(
                     sql.toString(),
-                    new BeanPropertyRowMapper<>(Calibresult.class),
-                    params.toArray()
+                    params.toArray(),
+                    (rs, rowNum) -> mapCalibrationJoinResult(rs, basePrefix, calibrationPrefix)
             );
+
             if (entities.isEmpty()) {
                 return Collections.emptyList();
             }
 
             List<ProductionRecordDto> results = new ArrayList<>();
-            for (Calibresult item : entities) {
+            for (CalibrationJoinResult item : entities) {
+                if (item.calibresult() == null) {
+                    continue;
+                }
                 ProductionRecordDto dto = buildDtoFromCalibresultEntities(
-                        item,
-                        positionOffset,
+                        item.calibresult(),
+                        item.moCalibration(),
+                        effectivePositionOffset,
                         attrKeyFilter,
                         attrNoToColumns,
                         position
                 );
                 results.add(dto);
             }
-            System.out.println(sql);
             return results;
         }
     }
@@ -584,6 +600,40 @@ public class ProductionRecordQueryService {
         }
 
         return String.join(", ", columns);
+    }
+
+    private <T> List<String> buildAliasedColumns(Class<T> entityClass,
+                                                String tableAlias,
+                                                String aliasPrefix,
+                                                Set<String> attrKeyFilter) {
+        List<String> columns = new ArrayList<>();
+        boolean hasFilter = attrKeyFilter != null && !attrKeyFilter.isEmpty();
+
+        for (Field field : entityClass.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+
+            TableField tableField = field.getAnnotation(TableField.class);
+            if (tableField != null && !tableField.exist()) {
+                continue;
+            }
+
+            boolean includeField = true;
+            if (field.isAnnotationPresent(FieldCode.class) && hasFilter) {
+                String columnName = resolveColumnName(field).toLowerCase(Locale.ROOT);
+                includeField = attrKeyFilter.contains(columnName);
+            }
+
+            if (!includeField) {
+                continue;
+            }
+
+            String columnName = resolveColumnName(field);
+            columns.add(tableAlias + "." + columnName + " AS " + aliasPrefix + field.getName());
+        }
+
+        return columns;
     }
 
     private String buildColumnWithAlias(String columnName, String fieldName) {
@@ -726,29 +776,191 @@ public class ProductionRecordQueryService {
     }
 
     private ProductionRecordDto buildDtoFromCalibresultEntities(Calibresult entity,
+                                                                MoCalibration calibration,
                                                                 int positionOffset,
                                                                 Set<String> attrKeyFilter,
                                                                 Map<String, Set<String>> attrNoToColumns,
                                                                 Integer requestedPosition) {
 
         ProductionRecordDto dto = new ProductionRecordDto();
-        CommonAttrMapping.mapEntityFieldsToDto(entity, dto, CommonAttrMapping.FIELD_TO_FIELD);
         dto.setStepType(StepMappingEnum.DUAL_TARGET_CALIB.getDescription());
         dto.setStepTypeNo(StepMappingEnum.DUAL_TARGET_CALIB.getCode());
 
-        String normalizedTimestamp = normalizeTimestampString(entity.getTimeStamp());
-        String isoTimestamp = toIsoDateTime(normalizedTimestamp);
-        dto.setStartTime(isoTimestamp);
-        dto.setEndTime(isoTimestamp);
+        if (entity != null) {
+            CommonAttrMapping.mapEntityFieldsToDto(entity, dto, CommonAttrMapping.FIELD_TO_FIELD);
 
-        if (entity.getErrorCode() != null) {
-            dto.setErrorNo(String.valueOf(entity.getErrorCode()));
+            String normalizedTimestamp = normalizeTimestampString(entity.getTimeStamp());
+            String isoTimestamp = toIsoDateTime(normalizedTimestamp);
+            dto.setStartTime(isoTimestamp);
+            dto.setEndTime(isoTimestamp);
+
+            if (entity.getErrorCode() != null) {
+                dto.setErrorNo(String.valueOf(entity.getErrorCode()));
+            }
         }
 
-        List<AttrKeyValDto> attrKeyValDtos = FieldCodeMapper.extractAttrListFromObject(entity, attrKeyFilter);
+        if (calibration != null) {
+            CommonAttrMapping.mapEntityFieldsToDto(calibration, dto, CommonAttrMapping.FIELD_TO_FIELD);
+
+            if (calibration.getStationNumber() != null) {
+                dto.setDeviceNo(String.valueOf(calibration.getStationNumber()));
+            }
+
+            if (calibration.getStartTime() != null) {
+                dto.setStartTime(calibration.getStartTime().format(DATE_TIME_FORMATTER));
+            }
+            if (calibration.getEndTime() != null) {
+                dto.setEndTime(calibration.getEndTime().format(DATE_TIME_FORMATTER));
+            }
+            if (calibration.getErrorCode() != null) {
+                dto.setErrorNo(String.valueOf(calibration.getErrorCode()));
+            }
+        }
+
+        List<AttrKeyValDto> attrKeyValDtos = new ArrayList<>();
+        if (entity != null) {
+            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(entity, attrKeyFilter);
+            for (AttrKeyValDto attr : attrs) {
+                attr.setPosition(applyPositionOffset(attr.getPosition(), positionOffset));
+            }
+            attrKeyValDtos.addAll(attrs);
+        }
+        if (calibration != null) {
+            List<AttrKeyValDto> attrs = FieldCodeMapper.extractAttrListFromObject(calibration, attrKeyFilter);
+            for (AttrKeyValDto attr : attrs) {
+                attr.setPosition(applyPositionOffset(attr.getPosition(), positionOffset));
+            }
+            attrKeyValDtos.addAll(attrs);
+        }
 
         dto.setAttrKeyVals(attrKeyValDtos);
         return dto;
+    }
+
+    private CalibrationJoinResult mapCalibrationJoinResult(ResultSet rs,
+                                                           String basePrefix,
+                                                           String calibrationPrefix) throws SQLException {
+        Calibresult calibresult = mapRowToEntity(rs, Calibresult.class, basePrefix);
+        MoCalibration calibration = mapRowToEntity(rs, MoCalibration.class, calibrationPrefix);
+        return new CalibrationJoinResult(calibresult, calibration);
+    }
+
+    private <T> T mapRowToEntity(ResultSet rs, Class<T> entityClass, String prefix) throws SQLException {
+        try {
+            T instance = entityClass.getDeclaredConstructor().newInstance();
+            boolean hasValue = false;
+
+            for (Field field : entityClass.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
+
+                TableField tableField = field.getAnnotation(TableField.class);
+                if (tableField != null && !tableField.exist()) {
+                    continue;
+                }
+
+                String columnLabel = prefix + field.getName();
+                Object value;
+                try {
+                    value = rs.getObject(columnLabel);
+                } catch (SQLException ex) {
+                    continue;
+                }
+
+                if (value == null) {
+                    continue;
+                }
+
+                hasValue = true;
+                field.setAccessible(true);
+                Object converted = convertValue(value, field.getType());
+                try {
+                    field.set(instance, converted);
+                } catch (IllegalAccessException ex) {
+                    throw new IllegalStateException("无法为字段赋值: " + field.getName(), ex);
+                }
+            }
+
+            return hasValue ? instance : null;
+        } catch (ReflectiveOperationException ex) {
+            throw new IllegalStateException("无法构造实体: " + entityClass.getSimpleName(), ex);
+        }
+    }
+
+    private Object convertValue(Object value, Class<?> targetType) {
+        if (value == null) {
+            return null;
+        }
+
+        if (targetType.isInstance(value)) {
+            return value;
+        }
+
+        if (targetType == LocalDateTime.class) {
+            if (value instanceof Timestamp ts) {
+                return ts.toLocalDateTime();
+            }
+            if (value instanceof java.util.Date date) {
+                return new Timestamp(date.getTime()).toLocalDateTime();
+            }
+            if (value instanceof String text && StringUtils.hasText(text)) {
+                String normalized = normalizeTimestampString(text);
+                String iso = toIsoDateTime(normalized);
+                if (iso != null) {
+                    return LocalDateTime.parse(iso);
+                }
+            }
+            return null;
+        }
+
+        if (value instanceof Number number) {
+            if (targetType == Integer.class || targetType == int.class) {
+                return number.intValue();
+            }
+            if (targetType == Long.class || targetType == long.class) {
+                return number.longValue();
+            }
+            if (targetType == Double.class || targetType == double.class) {
+                return number.doubleValue();
+            }
+            if (targetType == Float.class || targetType == float.class) {
+                return number.floatValue();
+            }
+            if (targetType == Short.class || targetType == short.class) {
+                return number.shortValue();
+            }
+            if (targetType == Byte.class || targetType == byte.class) {
+                return number.byteValue();
+            }
+            if (targetType == BigDecimal.class) {
+                return new BigDecimal(number.toString());
+            }
+        }
+
+        if (value instanceof Boolean bool) {
+            if (targetType == Boolean.class || targetType == boolean.class) {
+                return bool;
+            }
+            return FieldCodeMapper.convertToFieldType(bool ? "1" : "0", targetType);
+        }
+
+        if (targetType == String.class) {
+            return String.valueOf(value);
+        }
+
+        if (value instanceof Timestamp ts) {
+            return FieldCodeMapper.convertToFieldType(ts.toString(), targetType);
+        }
+
+        if (value instanceof java.util.Date date) {
+            return FieldCodeMapper.convertToFieldType(new Timestamp(date.getTime()).toString(), targetType);
+        }
+
+        return FieldCodeMapper.convertToFieldType(String.valueOf(value), targetType);
+    }
+
+    private record CalibrationJoinResult(Calibresult calibresult, MoCalibration moCalibration) {
     }
 
     private MoAutoAdjustInfo findClosestAutoAdjustInfo(JdbcTemplate jdbcTemplate, List<MoAutoAdjustSt07> entities) {

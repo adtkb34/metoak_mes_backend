@@ -1,6 +1,7 @@
 package com.metoak.mes.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.metoak.mes.common.annotate.FieldCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -83,15 +84,19 @@ public class MoCalibration implements Serializable {
     private Double ispYml2dataFov;
 
     @ApiModelProperty("epr文件（路径+名称）")
+    @FieldCode(no = "350", type = "val")
     private String eprFilename;
 
     @ApiModelProperty("yml文件（路径+名称）")
+    @FieldCode(no = "351", type = "val")
     private String ymlFilename;
 
     @ApiModelProperty("isp行差")
+    @FieldCode(no = "352", type = "val")
     private Double ispLineOffset;
 
     @ApiModelProperty("标定文件存储路径")
+    @FieldCode(no = "353", type = "val")
     private String filePath;
 
     @ApiModelProperty("错误码")

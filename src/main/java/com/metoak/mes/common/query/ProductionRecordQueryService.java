@@ -434,6 +434,7 @@ public class ProductionRecordQueryService {
         Objects.requireNonNull(stepTypeNo, "stepTypeNo must not be null");
 
         Set<String> attrKeyFilter = buildAttrKeyFilter(attrKeys);
+        Map<String, String> normalizedAttrKeyMap = buildNormalizedAttrKeyMap(attrKeys);
         Map<String, Set<String>> attrNoToColumns = buildAttrNoToColumnMap(Calibresult.class);
 
         try (HikariDataSource dataSource = buildDataSource(config)) {
@@ -505,6 +506,7 @@ public class ProductionRecordQueryService {
                         effectivePositionOffset,
                         attrKeyFilter,
                         attrNoToColumns,
+                        normalizedAttrKeyMap,
                         position
                 );
                 results.add(dto);
@@ -562,6 +564,28 @@ public class ProductionRecordQueryService {
                 .filter(s -> !s.isEmpty())
                 .map(String::toLowerCase)
                 .collect(Collectors.toSet());
+    }
+
+    private Map<String, String> buildNormalizedAttrKeyMap(String[] attrKeys) {
+        if (attrKeys == null || attrKeys.length == 0) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> mapping = new LinkedHashMap<>();
+        for (String key : attrKeys) {
+            if (!StringUtils.hasText(key)) {
+                continue;
+            }
+
+            String trimmed = key.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+
+            String normalized = trimmed.toLowerCase(Locale.ROOT).replace("_", "");
+            mapping.put(normalized, trimmed);
+        }
+        return mapping;
     }
 
     private <T> String buildSelectColumns(Class<T> entityClass, Set<String> attrKeyFilter) {
@@ -780,6 +804,7 @@ public class ProductionRecordQueryService {
                                                                 int positionOffset,
                                                                 Set<String> attrKeyFilter,
                                                                 Map<String, Set<String>> attrNoToColumns,
+                                                                Map<String, String> normalizedAttrKeyMap,
                                                                 Integer requestedPosition) {
 
         ProductionRecordDto dto = new ProductionRecordDto();
@@ -833,8 +858,42 @@ public class ProductionRecordQueryService {
             attrKeyValDtos.addAll(attrs);
         }
 
+        addSpecialAttrKeyVals(attrKeyValDtos, normalizedAttrKeyMap, entity, calibration);
+
         dto.setAttrKeyVals(attrKeyValDtos);
         return dto;
+    }
+
+    private void addSpecialAttrKeyVals(List<AttrKeyValDto> attrKeyValDtos,
+                                       Map<String, String> normalizedAttrKeyMap,
+                                       Calibresult entity,
+                                       MoCalibration calibration) {
+        if (normalizedAttrKeyMap == null || normalizedAttrKeyMap.isEmpty()) {
+            return;
+        }
+
+        addSpecialAttrKeyVal(attrKeyValDtos, normalizedAttrKeyMap, "calibresultid",
+                entity == null ? null : entity.getId());
+        addSpecialAttrKeyVal(attrKeyValDtos, normalizedAttrKeyMap, "mocalibrationid",
+                calibration == null ? null : calibration.getId());
+    }
+
+    private void addSpecialAttrKeyVal(List<AttrKeyValDto> attrKeyValDtos,
+                                      Map<String, String> normalizedAttrKeyMap,
+                                      String normalizedKey,
+                                      Object value) {
+        String originalKey = normalizedAttrKeyMap.get(normalizedKey);
+        if (originalKey == null) {
+            return;
+        }
+
+        AttrKeyValDto attr = new AttrKeyValDto();
+        attr.setNo(originalKey);
+        attr.setKey(originalKey);
+        if (value != null) {
+            attr.setVal(String.valueOf(value));
+        }
+        attrKeyValDtos.add(attr);
     }
 
     private CalibrationJoinResult mapCalibrationJoinResult(ResultSet rs,

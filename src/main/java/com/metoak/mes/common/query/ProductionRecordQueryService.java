@@ -267,8 +267,11 @@ public class ProductionRecordQueryService {
             boolean hasTimeFilter = appendTimeFilter(sql, params, qualifiedTimeField, startTime, endTime);
             appendStagePositionFilter(sql, params, baseAlias + ".position", position, baseAlias + ".stage", stage != null ? stage.toString() : null);
             if (!hasTimeFilter && normalizedTimeField != null) {
-                sql.append(" ORDER BY ").append(qualifiedTimeField).append(" DESC LIMIT ?");
-                params.add(count);
+                sql.append(" ORDER BY ").append(qualifiedTimeField);
+                if (count != null) {
+                    sql.append(" DESC LIMIT ?");
+                    params.add(count);
+                }
             }
 
             List<T> entities = jdbcTemplate.query(

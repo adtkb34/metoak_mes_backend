@@ -24,7 +24,7 @@ public enum StepMappingEnum {
     DUAL_TARGET_CALIB("020", "双目标定"),
     REAR_LENS_ASSEMBLY("022", "后群组装"),
     REAR_LENS_CAP_FASTENING("023", "后镜头盖固定"),
-    S315_FINAL_CHECK("027", "后镜头盖固定");
+    S315_FINAL_CHECK("027", "S315终检");
 
     private final String code;
     private final String description;

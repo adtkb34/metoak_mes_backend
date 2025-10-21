@@ -45,11 +45,11 @@ mes:
   database:
     origins:
       suzhou:
-        url: ${MES_DATABASE_SUZHOU_URL:jdbc:mysql://11.11.11.13:3306/mo_mes_db}
+        url: ${MES_DATABASE_SUZHOU_URL:jdbc:mysql://172.24.81.104:3306/mo_mes_db}
         username: ${MES_DATABASE_SUZHOU_USERNAME:root}
         password: ${MES_DATABASE_SUZHOU_PASSWORD:momeshou}
       mianyang:
-        url: ${MES_DATABASE_MIANYANG_URL:jdbc:mysql://192.168.188.11:3306/mo_mes_db}
+        url: ${MES_DATABASE_MIANYANG_URL:jdbc:mysql://172.24.81.104:3306/mo_mes_db}
         username: ${MES_DATABASE_MIANYANG_USERNAME:root}
         password: ${MES_DATABASE_MIANYANG_PASSWORD:momeshou}
 

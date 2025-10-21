@@ -11,10 +11,7 @@ import com.metoak.mes.common.mapping.CommonAttrMapping;
 import com.metoak.mes.common.mapping.ProcessMappingRegistry;
 import com.metoak.mes.dto.AttrKeyValDto;
 import com.metoak.mes.dto.ProductionRecordDto;
-import com.metoak.mes.entity.Calibresult;
-import com.metoak.mes.entity.MoAutoAdjustInfo;
-import com.metoak.mes.entity.MoAutoAdjustSt07;
-import com.metoak.mes.entity.MoProcessStepProductionResult;
+import com.metoak.mes.entity.*;
 import com.metoak.mes.enums.DeviceEnum;
 import com.metoak.mes.enums.OriginEnum;
 import com.metoak.mes.enums.StepMappingEnum;
@@ -54,57 +51,70 @@ public class ProductionRecordQueryService {
                                                  String startTime,
                                                  String endTime,
                                                  Integer count,
-                                                 String stepTypeNo) {
-        OriginEnum originEnum = OriginEnum.fromCode(Objects.requireNonNull(origin, "origin must not be null"));
-        DeviceEnum deviceEnum = device != null ? DeviceEnum.fromCode(device) : null;
-
-        DatabaseConfig databaseConfig = buildDatabaseConfig(originEnum);
-
-        int positionOffset = originEnum == OriginEnum.SUZHOU ? 1 : 0;
-
-        if (deviceEnum == DeviceEnum.GUANGHAOJIE) {
-            return queryMethod2(
-                    databaseConfig,
-                    positionOffset,
-                    attrKeys,
-                    String.valueOf(position),
-                    stage,
-                    startTime,
-                    endTime,
-                    count * 4
-            );
+                                                 String stepTypeNo,
+                                                 String productSn) {
+        List<OriginEnum> originEnums;
+        if (origin != null) {
+            originEnums = List.of(OriginEnum.fromCode(origin));
         } else {
-            Class<?> serviceClass = determineServiceClass(stepTypeNo);
-            if (serviceClass == null) return Collections.emptyList();
-            if (serviceClass == ICalibresultService.class) {
-                return queryMethod3(
+            originEnums = Arrays.asList(OriginEnum.values());
+        }
+
+        List<ProductionRecordDto> productionRecordDtos = new ArrayList<>();
+        for (OriginEnum originEnum : originEnums) {
+            DeviceEnum deviceEnum = device != null ? DeviceEnum.fromCode(device) : null;
+
+            DatabaseConfig databaseConfig = buildDatabaseConfig(originEnum);
+
+            int positionOffset = originEnum == OriginEnum.SUZHOU ? 1 : 0;
+
+            if (deviceEnum == DeviceEnum.GUANGHAOJIE) {
+                productionRecordDtos.addAll(queryMethod2(
                         databaseConfig,
                         positionOffset,
                         attrKeys,
-                        station,
-                        position,
+                        String.valueOf(position),
                         stage,
                         startTime,
                         endTime,
-                        count,
-                        stepTypeNo
-                );
+                        count * 4
+                ));
+            } else {
+                Class<?> serviceClass = determineServiceClass(stepTypeNo);
+                if (serviceClass == null) return Collections.emptyList();
+                if (serviceClass == ICalibresultService.class) {
+                    productionRecordDtos.addAll(queryMethod3(
+                            databaseConfig,
+                            positionOffset,
+                            attrKeys,
+                            station,
+                            position,
+                            stage,
+                            startTime,
+                            endTime,
+                            count,
+                            stepTypeNo,
+                            productSn
+                    ));
+                } else {
+                    productionRecordDtos.addAll(queryMethod1(
+                            databaseConfig,
+                            serviceClass,
+                            positionOffset,
+                            attrKeys,
+                            position == null ? null : String.valueOf(position - positionOffset),
+                            stage,
+                            "add_time",
+                            startTime,
+                            endTime,
+                            count,
+                            stepTypeNo
+                    ));
+                }
             }
-            return queryMethod1(
-                    databaseConfig,
-                    serviceClass,
-                    positionOffset,
-                    attrKeys,
-                    position == null ? null : String.valueOf(position - positionOffset),
-                    stage,
-                    "add_time",
-                    startTime,
-                    endTime,
-                    count,
-                    stepTypeNo
-            );
         }
 
+        return productionRecordDtos;
 //        return Collections.emptyList();
     }
 
@@ -414,7 +424,8 @@ public class ProductionRecordQueryService {
                                                   String startTime,
                                                   String endTime,
                                                   Integer count,
-                                                  String stepTypeNo) {
+                                                  String stepTypeNo,
+                                                  String productSn) {
         Objects.requireNonNull(config, "Database config must not be null");
         Objects.requireNonNull(stepTypeNo, "stepTypeNo must not be null");
 
@@ -427,6 +438,7 @@ public class ProductionRecordQueryService {
             String baseAlias = "t";
             String calibrationAlias = "mc";
             String selectColumns = qualifyColumns(buildSelectColumns(Calibresult.class, attrKeyFilter), baseAlias);
+            selectColumns += qualifyColumns(buildSelectColumns(MoCalibration.class, attrKeyFilter), calibrationAlias);
             StringBuilder sql = new StringBuilder("SELECT ");
             if (StringUtils.hasText(selectColumns)) {
                 sql.append(selectColumns).append(", ");
@@ -440,7 +452,10 @@ public class ProductionRecordQueryService {
                     .append(baseAlias).append(".TimeStamp = ")
                     .append(calibrationAlias).append(".start_time");
             List<Object> params = new ArrayList<>();
-
+            if (productSn != null) {
+                appendConditions(sql, Collections.singletonList(baseAlias + ".camerasn = ?"));
+                params.add(productSn);
+            }
             if (station != null) {
                 appendConditions(sql, Collections.singletonList(baseAlias + ".Station = ?"));
                 params.add(station);
@@ -451,10 +466,12 @@ public class ProductionRecordQueryService {
             boolean hasTimeFilter = appendTimeFilter(sql, params, qualifiedTimeField, startTime, endTime);
 
             if (!hasTimeFilter && qualifiedTimeField != null) {
-                sql.append(" ORDER BY ").append(qualifiedTimeField).append(" DESC LIMIT ?");
-                params.add(count);
+                sql.append(" ORDER BY ").append(qualifiedTimeField);
+                if (count != null) {
+                    sql.append(" DESC LIMIT ?");
+                    params.add(count);
+                }
             }
-
             List<Calibresult> entities = jdbcTemplate.query(
                     sql.toString(),
                     new BeanPropertyRowMapper<>(Calibresult.class),

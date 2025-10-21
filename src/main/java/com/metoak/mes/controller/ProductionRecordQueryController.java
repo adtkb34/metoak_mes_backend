@@ -25,7 +25,6 @@ public class ProductionRecordQueryController {
     }
 
     @GetMapping
-    @Operation(summary = "生产记录查询方法1")
 //    @RequestBody @Valid ProductionRecordQueryRequest request
     public Result<List<ProductionRecordDto>> queryMethod1(
             @RequestParam(required = false) String[] attrKeys,
@@ -34,10 +33,11 @@ public class ProductionRecordQueryController {
             @RequestParam(required = false) Integer station,
             @RequestParam(required = false) Integer position,
             @RequestParam(required = false) Integer stage,
-            @RequestParam Integer count,
+            @RequestParam(required = false) Integer count,
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime,
-            @RequestParam String stepTypeNo
+            @RequestParam String stepTypeNo,
+            @RequestParam(required = false) String productSn
     ) {
 
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod(
@@ -50,7 +50,8 @@ public class ProductionRecordQueryController {
                 startTime,
                 endTime,
                 count,
-                stepTypeNo
+                stepTypeNo,
+                productSn
         );
 
         return Result.ok(dtos);
@@ -66,10 +67,11 @@ public class ProductionRecordQueryController {
             @RequestParam(required = false) Integer station,
             @RequestParam(required = false) Integer position,
             @RequestParam(required = false) Integer stage,
-            @RequestParam Integer count,
+            @RequestParam(required = false) Integer count,
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime,
-            @RequestParam String stepTypeNo
+            @RequestParam String stepTypeNo,
+            @RequestParam(required = false) String productSn
     ) {
         long start = System.currentTimeMillis();
         List<ProductionRecordDto> dtos = productionRecordQueryService.queryMethod(
@@ -82,7 +84,8 @@ public class ProductionRecordQueryController {
                 startTime,
                 endTime,
                 count,
-                stepTypeNo
+                stepTypeNo,
+                productSn
         );
         long end = System.currentTimeMillis();
         System.out.println("执行时间：" + (end - start) + " ms");

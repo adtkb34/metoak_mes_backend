@@ -22,6 +22,11 @@ public @interface FieldCode {
     String name() default "";
 
     /**
+     * 字段展示名称。若未设置则回退到 {@link #name()}。
+     */
+    String label() default "";
+
+    /**
      * 静态位置编号。如果 {@link #hasPosition()} 为 {@code true}，则忽略该值。
      */
     int position() default Integer.MIN_VALUE;

@@ -30,34 +30,34 @@ public class MoLensCapFastening implements Serializable {
 
     private String batchNo;
 
-    @FieldCode(no = "000", type = "val", name = "锁附高度")
+    @FieldCode(no = "000", type = "val", name = "锁附高度", label = "锁附高度")
     private Float screwHeight;
 
-    @FieldCode(no = "000", type = "usl")
+    @FieldCode(no = "000", type = "usl", label = "锁附高度上限规格值")
     private Float screwHeightUsl;
 
-    @FieldCode(no = "000", type = "lsl")
+    @FieldCode(no = "000", type = "lsl", label = "锁附高度下限规格值")
     private Float screwHeightLsl;
 
-    @FieldCode(no = "003", type = "val", name = "锁附扭力")
+    @FieldCode(no = "003", type = "val", name = "锁附扭力", label = "锁附扭力")
     private Float screwTorque;
 
-    @FieldCode(no = "003", type = "usl")
+    @FieldCode(no = "003", type = "usl", label = "锁附扭力上限规格值")
     private Float screwTorqueUsl;
 
-    @FieldCode(no = "003", type = "lsl")
+    @FieldCode(no = "003", type = "lsl", label = "锁附扭力下限规格值")
     private Float screwTorqueLsl;
 
-    @FieldCode(no = "006", type = "val", name = "锁附压力")
+    @FieldCode(no = "006", type = "val", name = "锁附压力", label = "锁附压力")
     private Float screwPressure;
 
-    @FieldCode(no = "006", type = "usl")
+    @FieldCode(no = "006", type = "usl", label = "锁附压力上限规格值")
     private Float screwPressureUsl;
 
-    @FieldCode(no = "006", type = "lsl")
+    @FieldCode(no = "006", type = "lsl", label = "锁附压力下限规格值")
     private Float screwPressureLsl;
 
-    @FieldCode(no = "006", type = "spec")
+    @FieldCode(no = "006", type = "spec", label = "锁附压力规格值")
     private Float screwPressureSpec;
 
     private String operator;

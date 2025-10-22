@@ -36,52 +36,52 @@ public class MoLensMtfChecking implements Serializable {
 
     private Integer position;             // 位置编号（如1-7）
 
-    @FieldCode(no = "003", type = "val", name = "T方向MTF")
+    @FieldCode(no = "003", type = "val", name = "T方向MTF", label = "T方向MTF")
     private Float tMtf;
 
-    @FieldCode(no = "004", type = "val", name = "S方向MTF")
+    @FieldCode(no = "004", type = "val", name = "S方向MTF", label = "S方向MTF")
     private Float sMtf;
 
-    @FieldCode(no = "005", type = "val", name = "T方向峰值位置")
+    @FieldCode(no = "005", type = "val", name = "T方向峰值位置", label = "T方向峰值位置")
     private Float tPeak;
 
-    @FieldCode(no = "006", type = "val", name = "S方向峰值位置")
+    @FieldCode(no = "006", type = "val", name = "S方向峰值位置", label = "S方向峰值位置")
     private Float sPeak;
 
-    @FieldCode(no = "007", type = "val", name = "T方向傅里叶面积")
+    @FieldCode(no = "007", type = "val", name = "T方向傅里叶面积", label = "T方向傅里叶面积")
     private Float tFs;
 
-    @FieldCode(no = "008", type = "val", name = "S方向傅里叶面积")
+    @FieldCode(no = "008", type = "val", name = "S方向傅里叶面积", label = "S方向傅里叶面积")
     private Float sFs;
 
-    @FieldCode(no = "009", type = "val", name = "像散")
+    @FieldCode(no = "009", type = "val", name = "像散", label = "像散")
     private Float astigmatism;
 
-    @FieldCode(no = "010", type = "val", name = "场曲-T方向")
+    @FieldCode(no = "010", type = "val", name = "场曲-T方向", label = "场曲-T方向")
     private Float fieldCurvatureT;
 
-    @FieldCode(no = "011", type = "val", name = "场曲-S方向")
+    @FieldCode(no = "011", type = "val", name = "场曲-S方向", label = "场曲-S方向")
     private Float fieldCurvatureS;
 
-    @FieldCode(no = "012", type = "val", name = "偏移量-T方向")
+    @FieldCode(no = "012", type = "val", name = "偏移量-T方向", label = "偏移量-T方向")
     private Float offsetT;
 
-    @FieldCode(no = "013", type = "val", name = "偏移量-S方向")
+    @FieldCode(no = "013", type = "val", name = "偏移量-S方向", label = "偏移量-S方向")
     private Float offsetS;
 
-    @FieldCode(no = "014", type = "val", name = "均匀性-T方向")
+    @FieldCode(no = "014", type = "val", name = "均匀性-T方向", label = "均匀性-T方向")
     private Float uniformityT;
 
-    @FieldCode(no = "015", type = "val", name = "均匀性-S方向")
+    @FieldCode(no = "015", type = "val", name = "均匀性-S方向", label = "均匀性-S方向")
     private Float uniformityS;
 
-    @FieldCode(no = "016", type = "val", name = "焦深")
+    @FieldCode(no = "016", type = "val", name = "焦深", label = "焦深")
     private Float depthOfFocus;
 
-    @FieldCode(no = "017", type = "val", name = "后焦位置")
+    @FieldCode(no = "017", type = "val", name = "后焦位置", label = "后焦位置")
     private Float backFocalDistance;
 
-    @FieldCode(no = "018", type = "val", name = "焦距")
+    @FieldCode(no = "018", type = "val", name = "焦距", label = "焦距")
     private String ngReason;
 
     private LocalDateTime addTime;

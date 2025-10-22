@@ -31,43 +31,43 @@ public class UvDispensing implements Serializable {
 
     private String beamSn;
 
-    @FieldCode(no = "001", type = "val")
+    @FieldCode(no = "001", type = "val", label = "胶宽")
     @ApiModelProperty("胶宽")
     private Float glueWidth;
 
-    @FieldCode(no = "001", type = "usl")
+    @FieldCode(no = "001", type = "usl", label = "胶宽上限规格值")
     @ApiModelProperty("胶宽上限规格值")
     private Float glueWidthUsl;
 
-    @FieldCode(no = "001", type = "lsl")
+    @FieldCode(no = "001", type = "lsl", label = "胶宽下限规格值")
     @ApiModelProperty("胶宽下限规格值")
     private Float glueWidthLsl;
 
-    @FieldCode(no = "003", type = "val")
+    @FieldCode(no = "003", type = "val", label = "圆心偏差")
     @ApiModelProperty("圆心偏差")
     private Float circleCenterOffset;
 
-    @FieldCode(no = "003", type = "usl")
+    @FieldCode(no = "003", type = "usl", label = "圆心偏差上限规格值")
     @ApiModelProperty("圆心偏差上限规格值")
     private Float circleCenterOffsetUsl;
 
-    @FieldCode(no = "005", type = "val")
+    @FieldCode(no = "005", type = "val", label = "图片路径")
     @ApiModelProperty("图片路径")
     private String imagePath;
 
-    @FieldCode(no = "006", type = "val")
+    @FieldCode(no = "006", type = "val", label = "胶重")
     @ApiModelProperty("胶重")
     private Float checkGlueWeight;
 
     /* =========== 胶宽最小值 =========== */
-    @FieldCode(no = "007", type = "val")
+    @FieldCode(no = "007", type = "val", label = "胶宽最小值")
     private Float glueWidthMin;                // 胶宽最小值
 
     /* =========== 胶宽最大值 =========== */
-    @FieldCode(no = "008", type = "val")
+    @FieldCode(no = "008", type = "val", label = "胶宽最大值")
     private Float glueWidthMax;                // 胶宽最大值
 
-    @FieldCode(no = "009", type = "val")
+    @FieldCode(no = "009", type = "val", label = "胶高")
     private Float glueHeight;                // 胶高
 
     private String position;

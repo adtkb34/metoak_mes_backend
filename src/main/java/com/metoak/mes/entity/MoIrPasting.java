@@ -30,13 +30,13 @@ public class MoIrPasting implements Serializable {
 
     private String batchNo;
 
-    @FieldCode(no = "000", type = "val")
+    @FieldCode(no = "000", type = "val", label = "点胶时间")
     private String assemblyTime;
 
-    @FieldCode(no = "001", type = "val")
+    @FieldCode(no = "001", type = "val", label = "点胶用时")
     private Float dispenseTime;
 
-    @FieldCode(no = "002", type = "val")
+    @FieldCode(no = "002", type = "val", label = "固化时间规格")
     private Float cureTimeSpec;
 
     private String operator;

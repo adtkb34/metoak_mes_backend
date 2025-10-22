@@ -30,13 +30,13 @@ public class    MoLensBaking implements Serializable {
 
     private String batchNo;
 
-    @FieldCode(no = "000", type = "val")
+    @FieldCode(no = "000", type = "val", label = "固化时间")
     private Float cureTime;
 
-    @FieldCode(no = "001", type = "val")
+    @FieldCode(no = "001", type = "val", label = "固化功率")
     private Float curePower;
 
-    @FieldCode(no = "002", type = "val")
+    @FieldCode(no = "002", type = "val", label = "固化温度")
     private Float cureTemperature;
 
     private String operator;

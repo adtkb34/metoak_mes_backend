@@ -29,35 +29,35 @@ public class MoHighTempCuringRecord implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @FieldCode(no = "000", type = "val")
+    @FieldCode(no = "000", type = "val", label = "料盘号")
     @ApiModelProperty("料盘号")
     private String trayNo;
 
-    @FieldCode(no = "001", type = "val")
+    @FieldCode(no = "001", type = "val", label = "炉号")
     @ApiModelProperty("炉号")
     private String ovenNo;
 
-    @FieldCode(no = "002", type = "val")
+    @FieldCode(no = "002", type = "val", label = "最低炉温 (°C)")
     @ApiModelProperty("最低炉温 (°C)")
     private BigDecimal minTemp;
 
-    @FieldCode(no = "003", type = "val")
+    @FieldCode(no = "003", type = "val", label = "最高炉温 (°C)")
     @ApiModelProperty("最高炉温 (°C)")
     private BigDecimal maxTemp;
 
-    @FieldCode(no = "004", type = "val")
+    @FieldCode(no = "004", type = "val", label = "烘烤时间（分钟）")
     @ApiModelProperty("烘烤时间（分钟）")
     private Integer bakeDurationMinutes;
 
     /* =========== 005 温度达到时间 =========== */
-    @FieldCode(no = "005", type = "val")
+    @FieldCode(no = "005", type = "val", label = "温度达到时间")
     private String temperatureReachingTime;
 
     /* =========== 006 烘烤完成时间 =========== */
-    @FieldCode(no = "006", type = "val")
+    @FieldCode(no = "006", type = "val", label = "烘烤完成时间")
     private String bakingEndTime;
 
-    @FieldCode(no = "007", type = "val")
+    @FieldCode(no = "007", type = "val", label = "夹爪编号")
     private String gripperNumber;
 
     private Long moProcessStepProductionResultId;

@@ -29,27 +29,27 @@ public class MoDirtyCheck implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @FieldCode(no = "001", type = "val")
+    @FieldCode(no = "001", type = "val", label = "污点大小上限规格值")
     @ApiModelProperty("污点大小上限规格值")
     private Float stainSizeUsl;
 
-    @FieldCode(no = "002", type = "val")
+    @FieldCode(no = "002", type = "val", label = "污点数上限规格值")
     @ApiModelProperty("污点数上限规格值")
     private Float stainCountUsl;
 
-    @FieldCode(no = "003", type = "val")
+    @FieldCode(no = "003", type = "val", label = "污点描述")
     @ApiModelProperty("污点描述")
     private String stains;
 
-    @FieldCode(no = "004", type = "val")
+    @FieldCode(no = "004", type = "val", label = "图片路径")
     @ApiModelProperty("图片路径")
     private String imagePath;
 
-    @FieldCode(no = "005", type = "spec")
+    @FieldCode(no = "005", type = "spec", label = "Plasma设定功率")
     @ApiModelProperty("Plasma设定功率")
     private Float plasmaPowerSpec;
 
-    @FieldCode(no = "006", type = "spec")
+    @FieldCode(no = "006", type = "spec", label = "镜头夹爪设定值")
     @ApiModelProperty("镜头夹爪设定值")
     private Float lensGripperSpec;
 

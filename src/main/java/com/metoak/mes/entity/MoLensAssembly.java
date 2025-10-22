@@ -33,7 +33,7 @@ public class MoLensAssembly implements Serializable {
 //    @FieldCode(no = "000", type = "val")
 //    private Float assemblyPressure;
 
-    @FieldCode(no = "000", type = "spec")
+    @FieldCode(no = "000", type = "spec", label = "压力规格值")
     private Float assemblyPressureSpec;
 
 //    @FieldCode(no = "000", type = "usl")
@@ -45,7 +45,7 @@ public class MoLensAssembly implements Serializable {
 //    @FieldCode(no = "003", type = "val")
 //    private Float assemblyHeight;
 
-    @FieldCode(no = "003", type = "spec")
+    @FieldCode(no = "003", type = "spec", label = "高度规格值")
     private Float assemblyHeightSpec;
 
 //    @FieldCode(no = "003", type = "usl")

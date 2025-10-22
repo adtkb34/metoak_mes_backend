@@ -29,47 +29,47 @@ public class MoScrewTighteningInspection implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @FieldCode(no = "000", type = "val")
+    @FieldCode(no = "000", type = "val", label = "扭力 (N·m)")
     @ApiModelProperty("扭力 (N·m)")
     private BigDecimal torque;
 
-    @FieldCode(no = "000", type = "usl")
+    @FieldCode(no = "000", type = "usl", label = "扭力上限 (N·m)")
     @ApiModelProperty("扭力 (N·m)")
     private BigDecimal torqueUsl;
 
-    @FieldCode(no = "000", type = "lsl")
+    @FieldCode(no = "000", type = "lsl", label = "扭力下限 (N·m)")
     @ApiModelProperty("扭力 (N·m)")
     private BigDecimal torqueLsl;
 
-    @FieldCode(no = "001", type = "val")
+    @FieldCode(no = "001", type = "val", label = "角度 (°)")
     @ApiModelProperty("角度 (°)")
     private BigDecimal angle;
 
-    @FieldCode(no = "001", type = "usl")
+    @FieldCode(no = "001", type = "usl", label = "角度上限 (°)")
     @ApiModelProperty("角度 (°)")
     private BigDecimal angleUsl;
 
-    @FieldCode(no = "001", type = "lsl")
+    @FieldCode(no = "001", type = "lsl", label = "角度下限 (°)")
     @ApiModelProperty("角度 (°)")
     private BigDecimal angleLsl;
 
-    @FieldCode(no = "002", type = "val")
+    @FieldCode(no = "002", type = "val", label = "用时")
     @ApiModelProperty("用时")
     private BigDecimal duration;
 
-    @FieldCode(no = "002", type = "usl")
+    @FieldCode(no = "002", type = "usl", label = "用时上限")
     @ApiModelProperty("用时")
     private BigDecimal durationUsl;
 
-    @FieldCode(no = "002", type = "lsl")
+    @FieldCode(no = "002", type = "lsl", label = "用时下限")
     @ApiModelProperty("用时")
     private BigDecimal durationLsl;
 
-    @FieldCode(no = "003", type = "val")
+    @FieldCode(no = "003", type = "val", label = "锁付高度 (mm)")
     @ApiModelProperty("锁付高度 (mm)")
     private BigDecimal screwHeight;
 
-    @FieldCode(no = "003", type = "usl")
+    @FieldCode(no = "003", type = "usl", label = "锁付高度上限 (mm)")
     @ApiModelProperty("锁付高度 (mm)")
     private BigDecimal screwHeightUsl;
 

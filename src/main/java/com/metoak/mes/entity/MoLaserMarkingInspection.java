@@ -29,10 +29,10 @@ public class MoLaserMarkingInspection implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @FieldCode(no = "000", type = "val")
+    @FieldCode(no = "000", type = "val", label = "激光功率")
     private String laserPower;
 
-    @FieldCode(no = "001", type = "val")
+    @FieldCode(no = "001", type = "val", label = "激光模板编号")
     private String laserTemplateNo;
 
     private Long moProcessStepProductionResultId;

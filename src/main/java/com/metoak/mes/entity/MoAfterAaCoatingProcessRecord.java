@@ -29,11 +29,11 @@ public class MoAfterAaCoatingProcessRecord implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @FieldCode(no = "000", type = "spec")
+    @FieldCode(no = "000", type = "spec", label = "喷涂压力 (bar 或 MPa)")
     @ApiModelProperty("喷涂压力 (bar 或 MPa)")
     private BigDecimal sprayPressure;
 
-    @FieldCode(no = "001", type = "spec")
+    @FieldCode(no = "001", type = "spec", label = "喷涂轨迹程序编号")
     @ApiModelProperty("喷涂轨迹程序编号")
     private String sprayProgramCode;
 

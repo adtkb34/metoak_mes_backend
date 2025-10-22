@@ -29,19 +29,19 @@ public class MoCmosAppearanceInspection implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @FieldCode(no = "000", type = "val")
+    @FieldCode(no = "000", type = "val", label = "Sensor 平行度")
     @ApiModelProperty("Sensor 平行度")
     private BigDecimal sensorParallelism;
 
-    @FieldCode(no = "001", type = "val")
+    @FieldCode(no = "001", type = "val", label = "两孔间距")
     @ApiModelProperty("两孔间距")
     private BigDecimal holeDistance;
 
-    @FieldCode(no = "001", type = "usl")
+    @FieldCode(no = "001", type = "usl", label = "两孔间距上限")
     @ApiModelProperty("两孔间距")
     private BigDecimal holeDistanceUsl;
 
-    @FieldCode(no = "001", type = "lsl")
+    @FieldCode(no = "001", type = "lsl", label = "两孔间距下限")
     @ApiModelProperty("两孔间距")
     private BigDecimal holeDistanceLsl;
 

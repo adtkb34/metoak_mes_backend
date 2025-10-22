@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.metoak.mes.common.MOException;
 import com.metoak.mes.common.annotate.FieldCode;
+import com.metoak.mes.common.annotate.FieldCodeMapper;
 import com.metoak.mes.common.mapping.ProcessMappingRegistry;
 import com.metoak.mes.dto.OptionDto;
 import com.metoak.mes.enums.DefaultValueEnum;
@@ -32,7 +33,7 @@ public class FieldExtractor {
             FieldCode annotation = field.getAnnotation(FieldCode.class);
             if (annotation != null && "val".equals(annotation.type())) {
                 String no = annotation.no();
-                String name = annotation.name();
+                String name = FieldCodeMapper.resolveLabel(field, annotation);
                 // 避免重复添加
                 if (seenNos.add(no)) {
                     result.add(new OptionDto(no, name));

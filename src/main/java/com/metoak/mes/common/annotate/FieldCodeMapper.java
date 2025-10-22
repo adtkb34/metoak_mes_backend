@@ -99,7 +99,7 @@ public class FieldCodeMapper {
             AttrKeyValDto dto = grouped.computeIfAbsent(annotation.no(), no -> {
                 AttrKeyValDto attr = new AttrKeyValDto();
                 attr.setNo(no);
-                attr.setKey(annotation.name());
+                attr.setKey(resolveLabel(field, annotation));
                 if (annotation.index() != Integer.MIN_VALUE) {
                     attr.setIdx(String.valueOf(annotation.index()));
                 }
@@ -130,6 +130,26 @@ public class FieldCodeMapper {
             }
         }
         return new ArrayList<>(grouped.values());
+    }
+
+    public static String resolveLabel(Field field) {
+        return resolveLabel(field, field.getAnnotation(FieldCode.class));
+    }
+
+    public static String resolveLabel(Field field, FieldCode annotation) {
+        if (annotation == null) {
+            return field.getName();
+        }
+
+        if (hasText(annotation.label())) {
+            return annotation.label().trim();
+        }
+
+        if (hasText(annotation.name())) {
+            return annotation.name().trim();
+        }
+
+        return field.getName();
     }
 
     private static Object readField(Field field, Object obj) {
@@ -208,5 +228,9 @@ public class FieldCodeMapper {
         }
 
         return DefaultValueEnum.getDefault(type);
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 }

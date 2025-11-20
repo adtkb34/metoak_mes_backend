@@ -1,0 +1,1 @@
+ALTER TABLE mo_beam_appearance_inspection MODIFY ng_reason VARCHAR(1000);

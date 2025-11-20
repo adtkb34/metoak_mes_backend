@@ -1,0 +1,1 @@
+ALTER TABLE mo_workstage MODIFY COLUMN stage_code VARCHAR(50) UNIQUE;

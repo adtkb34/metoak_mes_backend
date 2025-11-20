@@ -1,0 +1,1 @@
+ALTER TABLE transfer_box add column device_no varchar(50) comment '设备编号';

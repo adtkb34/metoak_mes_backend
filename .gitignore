@@ -1,0 +1,125 @@
+# 编译输出
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+# 构建工具输出
+target/
+build/
+out/
+bin/
+!gradle/wrapper/gradle-wrapper.jar
+
+# 依赖管理
+**/maven-wrapper.jar
+!maven/wrapper/maven-wrapper.jar
+
+# 日志文件
+*.log
+logs/
+!**/src/main/**/logs/
+!**/src/test/**/logs/
+
+# 临时文件
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE 文件
+## IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+.idea_modules/
+
+## Eclipse
+.settings/
+.classpath
+.project
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+
+## NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+## VS Code
+.vscode/
+
+# 环境配置文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 应用特定文件
+application.properties
+application-*.properties
+application.yml
+application-*.yml
+
+# 数据库文件
+*.db
+*.sqlite
+*.h2.db
+
+# 测试相关
+/test-results/
+/test-output/
+[O/coverage/
+/.gradle/
+/.mvn/
+
+# 打包排除
+/dist/
+/release/
+
+# 文档
+/docs/_build/
+/doc/build/
+
+# 缓存
+.cache/
+.attach_pid*
+
+# 性能日志
+*.hprof
+*.jfr
+
+# 本地开发配置
+/local.properties
+/local-*.properties
+
+# 密钥文件
+*.keystore
+*.jks
+*.p12
+*.key
+*.cer
+*.crt

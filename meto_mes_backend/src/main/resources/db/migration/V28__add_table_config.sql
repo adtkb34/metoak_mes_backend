@@ -1,0 +1,9 @@
+CREATE TABLE table_config (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    table_name   VARCHAR(255) NOT NULL,
+    table_field  VARCHAR(255) NOT NULL,
+    position     JSON NULL,
+    stage        JSON NULL,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

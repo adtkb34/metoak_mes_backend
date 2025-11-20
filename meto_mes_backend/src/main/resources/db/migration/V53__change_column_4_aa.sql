@@ -1,0 +1,5 @@
+ALTER TABLE mo_auto_adjust_st08 CHANGE COLUMN releaseClawMinusUvCuredMtfCenterDiff release_claw_minus_uv_cured_mtf_center_diff FLOAT COMMENT '释放爪与UV固化MTF中心差';
+ALTER TABLE mo_auto_adjust_st08 CHANGE COLUMN releaseClawMinusUvCuredMtfTlDiff release_claw_minus_uv_cured_mtf_tl_diff FLOAT COMMENT '释放爪与UV固化MTF左上差';
+ALTER TABLE mo_auto_adjust_st08 CHANGE COLUMN releaseClawMinusUvCuredMtfTrDiff release_claw_minus_uv_cured_mtf_tr_diff FLOAT COMMENT '释放爪与UV固化MTF右上差';
+ALTER TABLE mo_auto_adjust_st08 CHANGE COLUMN releaseClawMinusUvCuredMtfBlDiff release_claw_minus_uv_cured_mtf_bl_diff FLOAT COMMENT '释放爪与UV固化MTF左下差';
+ALTER TABLE mo_auto_adjust_st08 CHANGE COLUMN releaseClawMinusUvCuredMtfBrDiff release_claw_minus_uv_cured_mtf_br_diff FLOAT COMMENT '释放爪与UV固化MTF右下差';

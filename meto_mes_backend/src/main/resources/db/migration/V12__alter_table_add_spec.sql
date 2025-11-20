@@ -1,0 +1,1 @@
+alter table mo_lens_cap_fastening add column screw_pressure_spec float;

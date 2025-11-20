@@ -1,0 +1,26 @@
+SET SQL_SAFE_UPDATES = 0;
+DELETE FROM mo_step_attr_keys WHERE step_type_no='028';
+INSERT INTO mo_step_attr_keys (step_type_no, attr_key, attr_no) VALUES
+('028', 'case_name', '001'),
+('028', 'reprojection_error_cam0_mean', '002'),
+('028', 'reprojection_error_cam0_median', '003'),
+('028', 'reprojection_error_cam0_std', '004'),
+('028', 'gyroscope_error_imu0_mean', '005'),
+('028', 'gyroscope_error_imu0_median', '006'),
+('028', 'gyroscope_error_imu0_std', '007'),
+('028', 'accelerometer_error_imu0_mean', '008'),
+('028', 'accelerometer_error_imu0_median', '009'),
+('028', 'accelerometer_error_imu0_std', '010'),
+('028', 'tx_mm', '011'),
+('028', 'ty_mm', '012'),
+('028', 'tz_mm', '013'),
+('028', 'timeshift_ms', '014'),
+('028', 'q_angle', '015'),
+('028', 'root', '016'),
+('028', 'path', '017'),
+('028', 'relative_path_bag', '018'),
+('028', 'relative_path_yml_imu', '019'),
+('028', 'relative_path_yml_imucam', '020'),
+('028', 'software_tool', '021'),
+('028', 'software_tool_version', '022'),
+('028', 'mo_calibration_id', '023');

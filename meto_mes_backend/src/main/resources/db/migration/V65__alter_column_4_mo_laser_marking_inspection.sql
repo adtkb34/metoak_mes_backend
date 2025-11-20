@@ -1,0 +1,1 @@
+ALTER TABLE mo_laser_marking_inspection MODIFY COLUMN laser_power varchar(10) comment '镭射功率';

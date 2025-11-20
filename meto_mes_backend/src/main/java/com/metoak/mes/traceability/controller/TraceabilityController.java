@@ -1,4 +1,4 @@
 package com.metoak.mes.traceability.controller;
 
-public class traceabilityController {
+public class TraceabilityController {
 }

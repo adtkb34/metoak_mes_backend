@@ -31,16 +31,10 @@ public class MoLensDispensing implements Serializable {
     private String batchNo;
 
     @FieldCode(no = "000", type = "val", label = "前盖点胶时间")
-    private Float frontCoverDispenseTime;
+    private Float coverDispenseTime;
 
     @FieldCode(no = "001", type = "val", label = "前盖固化时间")
-    private Float frontCoverCureTime;
-
-    @FieldCode(no = "002", type = "val", label = "后盖点胶时间")
-    private Float rearCoverDispenseTime;
-
-    @FieldCode(no = "003", type = "val", label = "后盖固化时间")
-    private Float rearCoverCureTime;
+    private Float coverCureTime;
 
     private String operator;
 
@@ -54,15 +48,13 @@ public class MoLensDispensing implements Serializable {
 
     private Long moProcessStepProductionResultId;
 
+    private Integer position;
+
     @Override
     public String toString() {
         return "MoLensDispensing{" +
             "id = " + id +
             ", batchNo = " + batchNo +
-            ", frontCoverDispenseTime = " + frontCoverDispenseTime +
-            ", frontCoverCureTime = " + frontCoverCureTime +
-            ", rearCoverDispenseTime = " + rearCoverDispenseTime +
-            ", rearCoverCureTime = " + rearCoverCureTime +
             ", ngReason = " + ngReason +
             ", addTime = " + addTime +
             ", stationNum = " + stationNum +

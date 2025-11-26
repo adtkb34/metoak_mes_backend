@@ -19,11 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -253,52 +249,102 @@ public class ParamsController {
         return newBase;
     }
 
+    /**
+     * 按 major → minor → patch 三层匹配规则决定版本号
+     */
     private VersionResult determineVersion(List<MoParamsDetail> history, JsonNode currentParams) {
-        int maxMajor = history.stream().map(MoParamsDetail::getVersionMajor).filter(Objects::nonNull)
-                .max(Comparator.naturalOrder()).orElse(-1);
 
-        Optional<MoParamsDetail> matchedMajor = history.stream()
-                .filter(item -> containsAllFields(currentParams, parseParams(item.getParams())))
-                .findFirst();
-
-        if (!matchedMajor.isPresent()) {
-            return new VersionResult(maxMajor + 1, 0, 0, null);
+        if (history == null || history.isEmpty()) {
+            // 没有任何历史 → 从 1.0.0 开始
+            return new VersionResult(1, 0, 0, null);
         }
 
-        int major = matchedMajor.get().getVersionMajor();
+        // ====== 第 1 层：匹配 major ======
+        int maxMajor = history.stream()
+                .map(MoParamsDetail::getVersionMajor)
+                .max(Integer::compareTo)
+                .orElse(1);
+
+        // 找所有“字段结构包含在当前 params 中”的版本
+        List<MoParamsDetail> compatibleMajor = history.stream()
+                .filter(item -> containsAllFields(currentParams, parse(item.getParams())))
+                .collect(Collectors.toList());
+
+        int major;
+        if (compatibleMajor.isEmpty()) {
+            // 无兼容 → major + 1
+            major = maxMajor + 1;
+            return new VersionResult(major, 0, 0, null);
+        } else {
+            // 取兼容的最大 major（不是 findFirst）
+            major = compatibleMajor.stream()
+                    .map(MoParamsDetail::getVersionMajor)
+                    .max(Integer::compareTo)
+                    .orElse(maxMajor + 1);
+        }
+
+        // 提取此 major 下的所有版本
         List<MoParamsDetail> sameMajor = history.stream()
-                .filter(item -> Objects.equals(item.getVersionMajor(), major))
+                .filter(x -> x.getVersionMajor() == major)
                 .collect(Collectors.toList());
 
-        int maxMinor = sameMajor.stream().map(MoParamsDetail::getVersionMinor).filter(Objects::nonNull)
-                .max(Comparator.naturalOrder()).orElse(-1);
 
-        Optional<MoParamsDetail> matchedMinor = sameMajor.stream()
-                .filter(item -> containsAllFields(currentParams, parseParams(item.getParams())))
-                .findFirst();
+        // ====== 第 2 层：匹配 minor ======
+        int maxMinor = sameMajor.stream()
+                .map(MoParamsDetail::getVersionMinor)
+                .max(Integer::compareTo)
+                .orElse(0);
 
-        if (!matchedMinor.isPresent()) {
-            return new VersionResult(major, maxMinor + 1, 0, null);
+        // 找所有 minor 中“字段结构完全包含在当前 params”的版本
+        List<MoParamsDetail> compatibleMinor = sameMajor.stream()
+                .filter(item -> containsAllFields(parse(item.getParams()), currentParams))
+                .collect(Collectors.toList());
+
+        int minor;
+        if (compatibleMinor.isEmpty()) {
+            minor = maxMinor + 1;
+            return new VersionResult(major, minor, 0, null);
+        } else {
+            // 取兼容的最大 minor
+            minor = compatibleMinor.stream()
+                    .map(MoParamsDetail::getVersionMinor)
+                    .max(Integer::compareTo)
+                    .orElse(0);
         }
 
-        int minor = matchedMinor.get().getVersionMinor();
         List<MoParamsDetail> sameMinor = sameMajor.stream()
-                .filter(item -> Objects.equals(item.getVersionMinor(), minor))
+                .filter(x -> x.getVersionMinor() == minor)
                 .collect(Collectors.toList());
 
-        int maxPatch = sameMinor.stream().map(MoParamsDetail::getVersionPatch).filter(Objects::nonNull)
-                .max(Comparator.naturalOrder()).orElse(-1);
 
-        Optional<MoParamsDetail> matchedPatch = sameMinor.stream()
-                .filter(item -> Objects.equals(parseParams(item.getParams()), currentParams))
-                .findFirst();
+        // ====== 第 3 层：匹配 patch ======
+        int maxPatch = sameMinor.stream()
+                .map(MoParamsDetail::getVersionPatch)
+                .max(Integer::compareTo)
+                .orElse(0);
 
-        if (matchedPatch.isPresent()) {
-            return new VersionResult(major, minor, matchedPatch.get().getVersionPatch(), matchedPatch.get());
+        // 是否存在完全相同的 params？
+        for (MoParamsDetail detail : sameMinor) {
+            if (jsonEquals(parse(detail.getParams()), currentParams)) {
+                // 完全相同 → 不创建版本
+                return new VersionResult(major, minor, detail.getVersionPatch(), detail);
+            }
         }
 
+        // 未找到完全相同 → patch + 1
         return new VersionResult(major, minor, maxPatch + 1, null);
     }
+
+    /**
+     * 判断 JSON 是否完全一致（用于 patch 判断）
+     * 更安全，避免 int/long、顺序问题
+     */
+    private boolean jsonEquals(JsonNode a, JsonNode b) {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return a.equals(b);
+    }
+
 
     private JsonNode parseParams(String params) {
         try {
@@ -308,44 +354,51 @@ public class ParamsController {
         }
     }
 
+    /**
+     * 判断 containee 的字段结构是否完全包含在 container 中
+     * 用于 major/minor 的结构匹配
+     */
     private boolean containsAllFields(JsonNode container, JsonNode containee) {
-        if (containee == null || containee.isMissingNode()) {
-            return true;
-        }
+        if (containee == null || containee.isMissingNode()) return true;
 
+        // -------- Object 处理 --------
         if (containee.isObject()) {
-            if (!container.isObject()) {
-                return false;
-            }
-            for (Map.Entry<String, JsonNode> entry : iterable(containee.fields())) {
-                JsonNode containerChild = container.get(entry.getKey());
-                if (containerChild == null) {
-                    return false;
-                }
-                if (!containsAllFields(containerChild, entry.getValue())) {
-                    return false;
-                }
+            if (!container.isObject()) return false;
+
+            Iterator<Map.Entry<String, JsonNode>> fields = containee.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> e = fields.next();
+                JsonNode child = container.get(e.getKey());
+
+                if (child == null) return false;
+                if (!containsAllFields(child, e.getValue())) return false;
             }
             return true;
         }
 
+        // -------- Array 处理 --------
         if (containee.isArray()) {
-            if (!container.isArray()) {
-                return false;
-            }
-            if (containee.size() > container.size()) {
-                return false;
-            }
+            if (!container.isArray()) return false;
+            if (containee.size() > container.size()) return false;
+
             for (int i = 0; i < containee.size(); i++) {
-                if (!containsAllFields(container.get(i), containee.get(i))) {
-                    return false;
-                }
+                if (!containsAllFields(container.get(i), containee.get(i))) return false;
             }
             return true;
         }
 
+        // 基础类型不比较值，只比较是否存在结构
         return true;
     }
+
+    private JsonNode parse(String json) {
+        try {
+            return objectMapper.readTree(json);
+        } catch (Exception e) {
+            return objectMapper.createObjectNode();
+        }
+    }
+
 
     private <T> Iterable<T> iterable(java.util.Iterator<T> iterator) {
         return () -> iterator;

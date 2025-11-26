@@ -104,6 +104,9 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
     @Autowired
     private IMoProcessFlowService moProcessFlowService;
 
+    @Autowired
+    private IMoFinalResultService moFinalResultService;
+
     @Override
     public Long add(ProductionRecordDto productionRecordDto) {
         System.out.println(productionRecordDto);
@@ -125,6 +128,10 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
         Long moProcessStepProductionResultId = moProcessStepProductionResult.getId();
         add_material_binding(productionRecordDto, moProcessStepProductionResultId);
         if (StepMappingEnum.AUTO_ADJUST.getCode().equals(productionRecordDto.getStepTypeNo())) add_auto_adjust(productionRecordDto);
+        if (List.of(
+                StepMappingEnum.FQC_M55H_STEREO.getCode(),
+                StepMappingEnum.FQC_M55H.getCode()
+        ).contains(productionRecordDto.getStepTypeNo())) add_final_result(productionRecordDto);
         if (StepMappingEnum.DUAL_TARGET_CALIB.getCode().equals(productionRecordDto.getStepTypeNo())) add_2_mo_calibration(productionRecordDto, moProcessStepProductionResultId);
         if (List.of(
                 StepMappingEnum.PLASMA.getCode(),
@@ -138,6 +145,28 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
         return 0L;
     }
 
+    @Override
+    public List<Long> binding(ProductionRecordDto productionRecordDto) {
+        List<Long> Ids = new ArrayList<>();
+        MoProcessStepProductionResult moProcessStepProductionResult = MoProcessStepProductionResult.builder().
+                stepType(productionRecordDto.getStepType()).
+                stepTypeNo(productionRecordDto.getStepTypeNo()).
+                productSn(productionRecordDto.getProductSn()).
+                productBatchNo(productionRecordDto.getProductBatchNo()).
+                startTime(convertToDateTime(productionRecordDto.getStartTime())).
+                endTime(convertToDateTime(productionRecordDto.getEndTime())).
+                errorCode(Integer.parseInt(productionRecordDto.getErrorNo())).
+                ngReason(productionRecordDto.getError()).
+                softwareTool(productionRecordDto.getSoftwareTool()).
+                softwareToolVersion(productionRecordDto.getSoftwareToolVersion()).
+                stationNum(Integer.parseInt(productionRecordDto.getDeviceNo())).
+                operator(productionRecordDto.getOperator()).
+                build();
+        moProcessStepProductionResultService.save(moProcessStepProductionResult);
+        Long moProcessStepProductionResultId = moProcessStepProductionResult.getId();
+
+        return add_material_binding(productionRecordDto, moProcessStepProductionResultId);
+    }
     public <T> void save_attr_vals(ProductionRecordDto productionRecordDto, Long moProcessStepProductionResultId, T entity_, Class<?> service_) {
         GroupingUtil.group(productionRecordDto.getAttrKeyVals()).forEach(items -> {
             if (productionRecordDto.getStepTypeNo().equals(StepMappingEnum.AFTER_AA_FINAL_COMPREHENSIVE_INSPECTION.getCode())) {
@@ -187,6 +216,21 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
         return true;
     }
 
+    public Boolean add_final_result(ProductionRecordDto productionRecordDto) {
+        MoFinalResult moFinalResult = MoFinalResult.builder().
+                cameraSn(productionRecordDto.getProductSn()).
+                stationNumber(Integer.parseInt(productionRecordDto.getDeviceNo())).
+                operator(productionRecordDto.getOperator()).
+                checkType("FQC").
+                checkTime(convertToDateTime(productionRecordDto.getStartTime())).
+                checkResult(productionRecordDto.getErrorNo() != null && "0".equals(productionRecordDto.getErrorNo())).
+                errorCode(Integer.parseInt(productionRecordDto.getErrorNo())).
+                build();
+        moFinalResultService.save(moFinalResult);
+
+        return true;
+    }
+
     public Boolean add_2_mo_calibration(ProductionRecordDto productionRecordDto, Long moProcessStepProductionResultId) {
         MoCalibration moCalibration = MoCalibration.builder().
                 cameraSn(productionRecordDto.getProductSn()).
@@ -200,10 +244,13 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
         return true;
     }
 
-    public Boolean add_material_binding(ProductionRecordDto productionRecordDto, Long moProcessStepProductionResultId) {
+    public List<Long> add_material_binding(ProductionRecordDto productionRecordDto, Long moProcessStepProductionResultId) {
+
+        List<Long> Ids = new ArrayList<>();
+
         if (productionRecordDto.getMaterials() != null) {
             productionRecordDto.getMaterials().forEach(item -> {
-                moMaterialBindingService.save(MoMaterialBinding.builder().
+                MoMaterialBinding m = MoMaterialBinding.builder().
                         cameraSn(productionRecordDto.getProductSn()).
                         cameraBatch(productionRecordDto.getProductBatchNo()).
                         category(item.getCategory()).
@@ -212,10 +259,12 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
                         materialSerialNo(item.getSerialNo()).
                         moProcessStepProductionResultId(moProcessStepProductionResultId).
                         position(item.getPosition()).
-                        build());
+                        build();
+                moMaterialBindingService.save(m);
+                Ids.add(m.getId());
             });
         }
-        return true;
+        return Ids;
     }
 
     @Override

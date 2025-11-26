@@ -5,6 +5,9 @@ import com.metoak.mes.enums.DefaultValueEnum;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -183,8 +186,8 @@ public class FieldCodeMapper {
     }
 
     // 数值允许的最小值和最大值
-    private static final BigDecimal MIN_VALUE = new BigDecimal("-99999999");
-    private static final BigDecimal MAX_VALUE = new BigDecimal("99999999");
+    private static final BigDecimal MIN_VALUE = new BigDecimal("-999999999999999");
+    private static final BigDecimal MAX_VALUE = new BigDecimal("999999999999999");
 
     public static Object convertToFieldType(String val, Class<?> type) {
         try {
@@ -197,7 +200,8 @@ public class FieldCodeMapper {
             if (Number.class.isAssignableFrom(type) ||
                     type == int.class || type == long.class ||
                     type == float.class || type == double.class ||
-                    type == BigDecimal.class) {
+                    type == BigDecimal.class||
+                    type == LocalDateTime.class) {
 
                 BigDecimal decimal = new BigDecimal(val);
 
@@ -207,7 +211,8 @@ public class FieldCodeMapper {
                             String.format("数值超出允许范围: %s (允许范围: %s ~ %s)", val, MIN_VALUE, MAX_VALUE)
                     );
                 }
-
+                if (type == LocalDateTime.class) return LocalDateTime.ofInstant(Instant.ofEpochMilli(decimal.longValue()), ZoneId.systemDefault());;
+                if (type == Byte.class || type == byte.class) return decimal.byteValue();
                 if (type == Integer.class || type == int.class) return decimal.intValue();
                 if (type == Long.class || type == long.class) return decimal.longValue();
                 if (type == Float.class || type == float.class) return decimal.floatValue();

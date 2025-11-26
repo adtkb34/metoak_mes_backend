@@ -7,11 +7,14 @@ import com.metoak.mes.service.IProcessStepProductionRecordsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 import static com.metoak.mes.enums.ResultCodeEnum.PRO_PRODUCT_SN_NOT_FOUND_BY_WORKORDER_NO;
 
@@ -50,6 +53,17 @@ public class ProductionController {
     @Operation(summary = "添加生产记录")
     public Result<Long> add(@RequestBody ProductionRecordDto productionRecordDto) {
         return Result.ok(processStepProductionRecordsService.add(productionRecordDto));
+    }
+
+    @PostMapping("result/bind")
+    @Operation(summary = "物料绑定记录")
+    public Result<List<Long>> binding(@RequestBody ProductionRecordDto productionRecordDto) {
+        System.out.println("--------------------binding--------------------");
+        List<Long> bindings = processStepProductionRecordsService.binding(productionRecordDto);
+        System.out.println(bindings);
+        System.out.println("--------------------binding--------------------");
+
+        return Result.ok(bindings);
     }
 
     @PostMapping("judgement/check")

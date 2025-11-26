@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -17,6 +21,11 @@ import java.time.LocalDateTime;
  * @author xukaiwen
  * @since 2024-10-14 09:43:16
  */
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @TableName("mo_final_result")
 @ApiModel(value = "MoFinalResult对象", description = "终检和出货检最终检测结果信息表")
 public class MoFinalResult implements Serializable {

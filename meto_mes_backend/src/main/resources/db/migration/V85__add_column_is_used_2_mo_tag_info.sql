@@ -1,0 +1,1 @@
+ALTER TABLE mo_tag_info ADD COLUMN is_used INT DEFAULT 0 COMMENT '是否使用';

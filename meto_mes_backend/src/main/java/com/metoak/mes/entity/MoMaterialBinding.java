@@ -2,6 +2,7 @@ package com.metoak.mes.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -45,6 +46,7 @@ public class MoMaterialBinding implements Serializable {
 
     private String materialSerialNo;
 
+    @TableLogic(value = "0", delval = "1")
     private Long isDeleted;
 
     private LocalDateTime createTime;

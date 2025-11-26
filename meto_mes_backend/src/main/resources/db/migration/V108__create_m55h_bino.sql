@@ -27,7 +27,7 @@
   `multifirmware_version_ref` VARCHAR(256) COMMENT '固件版本基准值',
   `multifirmware_version` VARCHAR(256) COMMENT '实际固件版本',
 
-  `err_code` INT COMMENT '错误码',
+  `error_code` INT COMMENT '错误码',
 
   `ecu_firmware_writen_version` VARCHAR(64) COMMENT '写入的 ECU 固件版本',
   `ecu_production_time_writen` VARCHAR(64) COMMENT '写入的 ECU 生产时间',

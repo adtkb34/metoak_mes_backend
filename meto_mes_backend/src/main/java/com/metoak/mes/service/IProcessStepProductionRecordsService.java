@@ -2,12 +2,15 @@ package com.metoak.mes.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.metoak.mes.dto.*;
-import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 public interface IProcessStepProductionRecordsService {
 
     Long add(ProductionRecordDto productionRecordDto);
+
+    List<Long> binding(ProductionRecordDto productionRecordDto);
 
     Boolean executable(ExecutableDto executableDto);
 

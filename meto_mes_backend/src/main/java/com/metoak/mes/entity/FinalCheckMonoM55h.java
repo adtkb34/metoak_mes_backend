@@ -5,8 +5,13 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
+
+import com.metoak.mes.common.annotate.FieldCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 
 /**
  * <p>
@@ -16,6 +21,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author kevin
  * @since 2025-08-25 10:48:51
  */
+@Data
 @TableName("final_check_mono_m55h")
 @ApiModel(value = "FinalCheckMonoM55h对象", description = "")
 public class FinalCheckMonoM55h implements Serializable {
@@ -25,159 +31,120 @@ public class FinalCheckMonoM55h implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    private LocalDateTime datetime;
-
     private String sn;
 
+    @FieldCode(no = "000", type = "val")
     private Integer errorCode;
 
+    @FieldCode(no = "001", type = "val")
     private String operator;
 
+    @FieldCode(no = "002", type = "val")
     private Boolean imageOk;
 
+    private Long moProcessStepProductionResultId; // 过站记录关联ID
+
+    @FieldCode(no = "004", type = "val")
+    private LocalDateTime startTime; // 开始时间
+
+    @FieldCode(no = "005", type = "val")
+    private LocalDateTime endTime; // 结束时间
+
+    @FieldCode(no = "006", type = "val")
+    private Integer cameraType; // 相机类型: 0竖版;1横版
+
+    // 检测功能相关字段
+    @FieldCode(no = "007", type = "val")
+    private Boolean isImageDirtyDetectEnabled;
+
+    @FieldCode(no = "008", type = "val")
+    private Integer imageDirtyCount;
+
+    @FieldCode(no = "009", type = "val")
+    private Boolean isBoardClarityDetectEnabled;
+
+    @FieldCode(no = "010", type = "val")
+    private Float boardClarity;
+
+    @FieldCode(no = "011", type = "val")
+    private Float boardClarityRefMin;
+
+    @FieldCode(no = "012", type = "val")
+    private Boolean isBoardColorCastDetectEnabled;
+
+    @FieldCode(no = "013", type = "val")
+    private Float boardColorCastRMean;
+
+    @FieldCode(no = "014", type = "val")
+    private Float boardColorCastGMean;
+
+    @FieldCode(no = "015", type = "val")
+    private Float boardColorCastBMean;
+
+    @FieldCode(no = "016", type = "val")
+    private Float boardColorCastRStddev;
+
+    @FieldCode(no = "017", type = "val")
+    private Float boardColorCastGStddev;
+
+    @FieldCode(no = "018", type = "val")
+    private Float boardColorCastBStddev;
+
+    @FieldCode(no = "019", type = "val")
+    private Float boardColorCastMaxdiffRatioRef;
+
+    @FieldCode(no = "020", type = "val")
+    private Float boardColorCastMaxdiffValueRef;
+
+    @FieldCode(no = "021", type = "val")
+    private Boolean isBoardCodDetectEnabled;
+
+    @FieldCode(no = "022", type = "val")
+    private Float boardCodX;
+
+    @FieldCode(no = "023", type = "val")
+    private Float boardCodY;
+
+    @FieldCode(no = "024", type = "val")
+    private Float boardCodXRef;
+
+    @FieldCode(no = "025", type = "val")
+    private Float boardCodXTolerance;
+
+    @FieldCode(no = "026", type = "val")
+    private Float boardCodYRef;
+
+    @FieldCode(no = "027", type = "val")
+    private Float boardCodYTolerance;
+
+    @FieldCode(no = "028", type = "val")
     private String imagePath;
 
-    private Boolean checkResult;
+    @FieldCode(no = "029", type = "val")
+    private Integer checkResult;
 
-    private Boolean can0Ok;
+    @FieldCode(no = "030", type = "val")
+    private Integer can0Ok;
 
-    private Boolean can1Ok;
+    @FieldCode(no = "031", type = "val")
+    private Integer can1Ok;
 
-    private String versionAdas;
+    @FieldCode(no = "032", type = "val")
+    private String versionMcuRef;
 
-    private String versionSpi;
+    @FieldCode(no = "033", type = "val")
+    private String versionProductRef;
 
-    private String versionMcu;
+    @FieldCode(no = "034", type = "val")
+    private String versionMcuStd;
 
-    private Double focus;
-
-    private Double baseline;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public LocalDateTime getDatetime() {
-        return datetime;
-    }
-
-    public void setDatetime(LocalDateTime datetime) {
-        this.datetime = datetime;
-    }
-
-    public String getSn() {
-        return sn;
-    }
-
-    public void setSn(String sn) {
-        this.sn = sn;
-    }
-
-    public Integer getErrorCode() {
-        return errorCode;
-    }
-
-    public void setErrorCode(Integer errorCode) {
-        this.errorCode = errorCode;
-    }
-
-    public String getOperator() {
-        return operator;
-    }
-
-    public void setOperator(String operator) {
-        this.operator = operator;
-    }
-
-    public Boolean getImageOk() {
-        return imageOk;
-    }
-
-    public void setImageOk(Boolean imageOk) {
-        this.imageOk = imageOk;
-    }
-
-    public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
-
-    public Boolean getCheckResult() {
-        return checkResult;
-    }
-
-    public void setCheckResult(Boolean checkResult) {
-        this.checkResult = checkResult;
-    }
-
-    public Boolean getCan0Ok() {
-        return can0Ok;
-    }
-
-    public void setCan0Ok(Boolean can0Ok) {
-        this.can0Ok = can0Ok;
-    }
-
-    public Boolean getCan1Ok() {
-        return can1Ok;
-    }
-
-    public void setCan1Ok(Boolean can1Ok) {
-        this.can1Ok = can1Ok;
-    }
-
-    public String getVersionAdas() {
-        return versionAdas;
-    }
-
-    public void setVersionAdas(String versionAdas) {
-        this.versionAdas = versionAdas;
-    }
-
-    public String getVersionSpi() {
-        return versionSpi;
-    }
-
-    public void setVersionSpi(String versionSpi) {
-        this.versionSpi = versionSpi;
-    }
-
-    public String getVersionMcu() {
-        return versionMcu;
-    }
-
-    public void setVersionMcu(String versionMcu) {
-        this.versionMcu = versionMcu;
-    }
-
-    public Double getFocus() {
-        return focus;
-    }
-
-    public void setFocus(Double focus) {
-        this.focus = focus;
-    }
-
-    public Double getBaseline() {
-        return baseline;
-    }
-
-    public void setBaseline(Double baseline) {
-        this.baseline = baseline;
-    }
+    @FieldCode(no = "035", type = "val")
+    private String versionProductStd;
 
     @Override
     public String toString() {
         return "FinalCheckMonoM55h{" +
             "id = " + id +
-            ", datetime = " + datetime +
             ", sn = " + sn +
             ", errorCode = " + errorCode +
             ", operator = " + operator +
@@ -186,11 +153,6 @@ public class FinalCheckMonoM55h implements Serializable {
             ", checkResult = " + checkResult +
             ", can0Ok = " + can0Ok +
             ", can1Ok = " + can1Ok +
-            ", versionAdas = " + versionAdas +
-            ", versionSpi = " + versionSpi +
-            ", versionMcu = " + versionMcu +
-            ", focus = " + focus +
-            ", baseline = " + baseline +
         "}";
     }
 }

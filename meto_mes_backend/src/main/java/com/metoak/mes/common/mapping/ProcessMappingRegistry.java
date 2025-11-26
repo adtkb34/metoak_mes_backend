@@ -62,7 +62,6 @@ public class ProcessMappingRegistry {
         put(StepMappingEnum.DUAL_TARGET_CALIB,
                 Calibresult.class,    ICalibresultService.class);
         put(StepMappingEnum.IMU_CALIB, MoImuCalibResults.class,    IMoImuCalibResultsService.class);
-        put(StepMappingEnum.FQC_M55H_STEREO, FinalCheckM55hStereo.class,    IFinalCheckM55hStereoService.class);
     }
 
     private static void put(StepMappingEnum step, Class<?> entity, Class<?> service) {

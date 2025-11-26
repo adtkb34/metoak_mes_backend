@@ -27,8 +27,7 @@ public enum StepMappingEnum {
     REAR_LENS_ASSEMBLY("022", "后群组装"),
     REAR_LENS_CAP_FASTENING("023", "后镜头盖固定"),
     S315_FINAL_CHECK("027", "S315终检"),
-    IMU_CALIB("028", "IMU计算"),
-    FQC_M55H_STEREO("032", "双目M55H终测");
+    IMU_CALIB("028", "IMU计算");
 
     private final String code;
     private final String description;

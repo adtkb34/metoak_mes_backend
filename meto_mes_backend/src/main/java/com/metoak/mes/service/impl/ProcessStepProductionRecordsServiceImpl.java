@@ -104,9 +104,6 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
     @Autowired
     private IMoProcessFlowService moProcessFlowService;
 
-    @Autowired
-    private IMoFinalResultService moFinalResultService;
-
     @Override
     public Long add(ProductionRecordDto productionRecordDto) {
         System.out.println(productionRecordDto);
@@ -128,7 +125,6 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
         Long moProcessStepProductionResultId = moProcessStepProductionResult.getId();
         add_material_binding(productionRecordDto, moProcessStepProductionResultId);
         if (StepMappingEnum.AUTO_ADJUST.getCode().equals(productionRecordDto.getStepTypeNo())) add_auto_adjust(productionRecordDto);
-        if (StepMappingEnum.FQC_M55H_STEREO.getCode().equals(productionRecordDto.getStepTypeNo())) add_final_result(productionRecordDto);
         if (StepMappingEnum.DUAL_TARGET_CALIB.getCode().equals(productionRecordDto.getStepTypeNo())) add_2_mo_calibration(productionRecordDto, moProcessStepProductionResultId);
         if (List.of(
                 StepMappingEnum.PLASMA.getCode(),
@@ -187,21 +183,6 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
                 errorCode(Integer.parseInt(productionRecordDto.getErrorNo())).
                 build();
         moAutoAdjustInfoService.save(moAutoAdjustInfo);
-
-        return true;
-    }
-
-    public Boolean add_final_result(ProductionRecordDto productionRecordDto) {
-        MoFinalResult moFinalResult = MoFinalResult.builder().
-                cameraSn(productionRecordDto.getProductSn()).
-                stationNumber(Integer.parseInt(productionRecordDto.getDeviceNo())).
-                operator(productionRecordDto.getOperator()).
-                checkType("FQC").
-                checkTime(convertToDateTime(productionRecordDto.getStartTime())).
-                checkResult(productionRecordDto.getErrorNo() != null && "0".equals(productionRecordDto.getErrorNo())).
-                errorCode(Integer.parseInt(productionRecordDto.getErrorNo())).
-                build();
-        moFinalResultService.save(moFinalResult);
 
         return true;
     }

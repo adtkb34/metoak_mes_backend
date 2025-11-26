@@ -3,8 +3,10 @@ package com.metoak.mes.params.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metoak.mes.params.entity.MoParamsDetail;
+import com.metoak.mes.params.service.IMoParamsDetailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -15,14 +17,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ParamsControllerDetermineVersionTest {
 
-    private ParamsController paramsController;
+    @Autowired
+    private IMoParamsDetailService moParamsDetailService;
     private Method determineVersionMethod;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() throws Exception {
-        paramsController = new ParamsController();
-        determineVersionMethod = ParamsController.class.getDeclaredMethod("determineVersion", List.class, JsonNode.class);
+        determineVersionMethod = moParamsDetailService.getClass()
+                .getDeclaredMethod("determineVersion", List.class, JsonNode.class);
         determineVersionMethod.setAccessible(true);
     }
 
@@ -90,7 +93,7 @@ public class ParamsControllerDetermineVersionTest {
     }
 
     private VersionResultView invokeDetermineVersion(List<MoParamsDetail> history, JsonNode current) throws Exception {
-        Object rawResult = determineVersionMethod.invoke(paramsController, history, current);
+        Object rawResult = determineVersionMethod.invoke(moParamsDetailService, history, current);
         Class<?> resultClass = rawResult.getClass();
 
         Field major = resultClass.getDeclaredField("major");

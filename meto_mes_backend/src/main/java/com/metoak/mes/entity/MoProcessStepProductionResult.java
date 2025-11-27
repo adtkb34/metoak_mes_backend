@@ -54,6 +54,10 @@ public class MoProcessStepProductionResult implements Serializable {
 
     private String softwareToolVersion;
 
+    private Long engineeringParamsId;
+
+    private Long flowParamsId;
+
     public Long getId() {
         return id;
     }

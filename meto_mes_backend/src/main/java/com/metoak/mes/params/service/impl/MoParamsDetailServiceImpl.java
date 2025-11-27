@@ -5,15 +5,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.metoak.mes.common.ResultBean;
-import com.metoak.mes.dto.ParamsDetailDto;
-import com.metoak.mes.dto.ParamsUploadRequest;
+import com.metoak.mes.common.result.Result;
+import com.metoak.mes.params.entity.ParamsUploadRequest;
 import com.metoak.mes.params.entity.MoParamsBase;
 import com.metoak.mes.params.entity.MoParamsDetail;
+import com.metoak.mes.params.enums.ParamTypeEnum;
 import com.metoak.mes.params.mapper.MoParamsDetailMapper;
 import com.metoak.mes.params.service.IMoParamsBaseService;
 import com.metoak.mes.params.service.IMoParamsDetailService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,12 +39,12 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public ResultBean<ParamsDetailDto> uploadParams(ParamsUploadRequest request) {
+    public Result<Long> uploadParams(ParamsUploadRequest request) {
         JsonNode currentParams;
         try {
             currentParams = objectMapper.readTree(request.getParams());
         } catch (JsonProcessingException e) {
-            return ResultBean.fail(201, "params 不是有效的 JSON");
+            return Result.fail(201, "params 不是有效的 JSON");
         }
 
         MoParamsBase paramsBase = findOrCreateParamsBase(request);
@@ -56,12 +55,12 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
 
         VersionResult versionResult = determineVersion(detailList, currentParams);
 
+        // 如果存在完全匹配的版本，直接返回现有版本的ID
         if (versionResult.existingDetail != null) {
-            ParamsDetailDto dto = new ParamsDetailDto();
-            BeanUtils.copyProperties(versionResult.existingDetail, dto);
-            return ResultBean.ok(dto);
+            return Result.ok(versionResult.existingDetail.getId());
         }
 
+        // 创建新版本记录
         MoParamsDetail newDetail = new MoParamsDetail();
         newDetail.setBaseId(paramsBase.getId());
         newDetail.setDescription(request.getDescription());
@@ -69,15 +68,16 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
         newDetail.setVersionMinor(versionResult.minor);
         newDetail.setVersionPatch(versionResult.patch);
         newDetail.setParams(request.getParams());
-        newDetail.setIsActive(1);
+        if (request.getType().equals(ParamTypeEnum.ENGINEERING.getCode())) {
+            newDetail.setIsActive(1);
+        }
         newDetail.setCreatedBy(request.getUsername());
         newDetail.setCreatedAt(LocalDateTime.now());
 
         save(newDetail);
 
-        ParamsDetailDto dto = new ParamsDetailDto();
-        BeanUtils.copyProperties(newDetail, dto);
-        return ResultBean.ok(dto);
+        // 返回新创建记录的ID
+        return Result.ok(newDetail.getId());
     }
 
     private MoParamsBase findOrCreateParamsBase(ParamsUploadRequest request) {
@@ -104,35 +104,48 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
             return new VersionResult(1, 0, 0, null);
         }
 
-        int maxMajor = history.stream()
-                .map(MoParamsDetail::getVersionMajor)
+        // ====== 第 1 层：匹配 major ======
+        // 按 major 分组
+        Map<Integer, List<MoParamsDetail>> majorGroups = history.stream()
+                .collect(Collectors.groupingBy(MoParamsDetail::getVersionMajor));
+
+        int maxMajor = majorGroups.keySet().stream()
                 .max(Integer::compareTo)
                 .orElse(1);
 
-        List<MoParamsDetail> compatibleMajor = history.stream()
-                .filter(item -> containsAllFields(currentParams, parse(item.getParams())))
+        // 找出“整个 major 组完全兼容 current”的 major
+        List<Integer> compatibleMajors = majorGroups.entrySet().stream()
+                .filter(entry ->
+                        entry.getValue().stream()
+                                .allMatch(item -> containsAllFields(currentParams, parse(item.getParams())))
+                )
+                .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
         int major;
-        if (compatibleMajor.isEmpty()) {
+        if (compatibleMajors.isEmpty()) {
+            // 没有 major 完全兼容 → major + 1
             major = maxMajor + 1;
             return new VersionResult(major, 0, 0, null);
         } else {
-            major = compatibleMajor.stream()
-                    .map(MoParamsDetail::getVersionMajor)
+            // 选择最大号的 major
+            major = compatibleMajors.stream()
                     .max(Integer::compareTo)
                     .orElse(maxMajor + 1);
         }
 
-        List<MoParamsDetail> sameMajor = history.stream()
-                .filter(x -> x.getVersionMajor() == major)
-                .collect(Collectors.toList());
 
+        // ====== 提取此 major 下所有版本 ======
+        List<MoParamsDetail> sameMajor = majorGroups.get(major);
+
+
+        // ====== 第 2 层：匹配 minor ======
         int maxMinor = sameMajor.stream()
                 .map(MoParamsDetail::getVersionMinor)
                 .max(Integer::compareTo)
                 .orElse(0);
 
+        // 判断 history 是否包含 current（按你的最新规则）
         List<MoParamsDetail> compatibleMinor = sameMajor.stream()
                 .filter(item -> containsAllFields(parse(item.getParams()), currentParams))
                 .collect(Collectors.toList());
@@ -148,6 +161,8 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
                     .orElse(0);
         }
 
+
+        // ====== 第 3 层：匹配 patch ======
         List<MoParamsDetail> sameMinor = sameMajor.stream()
                 .filter(x -> x.getVersionMinor() == minor)
                 .collect(Collectors.toList());

@@ -123,6 +123,8 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
                 softwareToolVersion(productionRecordDto.getSoftwareToolVersion()).
                 stationNum(Integer.parseInt(productionRecordDto.getDeviceNo())).
                 operator(productionRecordDto.getOperator()).
+                engineeringParamsId(productionRecordDto.getEngineeringParamsId()).
+                flowParamsId(productionRecordDto.getFlowParamsId()).
                 build();
         moProcessStepProductionResultService.save(moProcessStepProductionResult);
         Long moProcessStepProductionResultId = moProcessStepProductionResult.getId();

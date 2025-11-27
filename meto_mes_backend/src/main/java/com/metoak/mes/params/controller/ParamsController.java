@@ -2,9 +2,10 @@ package com.metoak.mes.params.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.metoak.mes.common.ResultBean;
+import com.metoak.mes.common.result.Result;
 import com.metoak.mes.dto.ParamsBaseDto;
 import com.metoak.mes.dto.ParamsDetailDto;
-import com.metoak.mes.dto.ParamsUploadRequest;
+import com.metoak.mes.params.entity.ParamsUploadRequest;
 import com.metoak.mes.params.entity.MoParamsBase;
 import com.metoak.mes.params.entity.MoParamsDetail;
 import com.metoak.mes.params.service.IMoParamsBaseService;
@@ -39,8 +40,8 @@ public class ParamsController {
     private IMoParamsDetailService paramsDetailService;
 
     @Operation(summary = "参数集上传并自动管理版本")
-    @PostMapping("/upload")
-    public ResultBean<ParamsDetailDto> uploadParams(@RequestBody ParamsUploadRequest request) {
+    @PostMapping
+    public Result<Long> uploadParams(@RequestBody ParamsUploadRequest request) {
         return paramsDetailService.uploadParams(request);
     }
 

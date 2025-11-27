@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS mo_s316_final_check (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    mo_process_step_production_result_id BIGINT NOT NULL COMMENT '【过站表】记录关联ID。通用字段在过站表里面：数据库表单-过站信息',
+    sn VARCHAR(64) NOT NULL COMMENT '相机序列号',
+    start_time DATETIME NOT NULL COMMENT '开始时间',
+    end_time DATETIME NOT NULL COMMENT '结束时间',
+    errcode INT NOT NULL COMMENT '错误码',
+    is_oqc BOOL DEFAULT FALSE COMMENT '是否为 OQC 记录',
+    product_type INT COMMENT '产品类别',
+    is_signed BOOL DEFAULT FALSE COMMENT '是否签名',
+    version_mcu VARCHAR(10) DEFAULT '未检测' COMMENT 'MCU 版本',
+    imu_tx FLOAT COMMENT 'IMU tx',
+    imu_ty FLOAT COMMENT 'IMU ty',
+    imu_tz FLOAT COMMENT 'IMU tz',
+    imu_qangle_deg FLOAT COMMENT 'IMU qAngle',
+    distance1_error FLOAT COMMENT '距离1的测距误差',
+    distance1_density FLOAT COMMENT '距离1的视差稠密度',
+    distance2_error FLOAT COMMENT '距离2的测距误差',
+    distance2_density FLOAT COMMENT '距离2的视差稠密度',
+    material_root VARCHAR(256) COMMENT '相关素材的存储根路径'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='生产结果记录表';

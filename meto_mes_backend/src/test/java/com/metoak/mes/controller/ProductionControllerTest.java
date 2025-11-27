@@ -124,6 +124,8 @@ class ProductionControllerTest {
         productionRecordDto.setError("SUCCESS");
         productionRecordDto.setErrorNo("0");
         productionRecordDto.setDeviceNo("0");
+        productionRecordDto.setEngineeringParamsId(1L);
+        productionRecordDto.setFlowParamsId(2L);
         ArrayList<MaterialDto> materialDtos = new ArrayList<>();
 
         MaterialDto materialDto = new MaterialDto();

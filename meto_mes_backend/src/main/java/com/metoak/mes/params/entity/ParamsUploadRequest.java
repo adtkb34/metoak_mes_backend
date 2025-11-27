@@ -1,4 +1,4 @@
-package com.metoak.mes.dto;
+package com.metoak.mes.params.entity;
 
 import lombok.Data;
 

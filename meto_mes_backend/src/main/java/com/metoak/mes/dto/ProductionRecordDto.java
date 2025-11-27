@@ -91,4 +91,8 @@ public class ProductionRecordDto {
     @Schema(description = "产品物料编号")
     private List<MaterialDto> materials;
 
+    private Long engineeringParamsId;
+
+    private Long flowParamsId;
+
 }

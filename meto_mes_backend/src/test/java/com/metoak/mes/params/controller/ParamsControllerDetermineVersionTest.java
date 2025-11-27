@@ -65,6 +65,20 @@ public class ParamsControllerDetermineVersionTest {
     }
 
     @Test
+    void shouldIncreaseMajorWhenPartialMatchWithHistory() throws Exception {
+        List<MoParamsDetail> history = new ArrayList<>();
+        history.add(detail(1, 0, 0, "{\"base\":1}"));
+        history.add(detail(1, 1, 0, "{\"base\":1,\"extra\":2,\"extra2\":2}"));
+
+        VersionResultView result = invokeDetermineVersion(history, jsonNode("{\"base\":1,\"extra\":2}"));
+
+        assertThat(result.major).isEqualTo(2);
+        assertThat(result.minor).isEqualTo(0);
+        assertThat(result.patch).isEqualTo(0);
+        assertThat(result.existingDetail).isNull();
+    }
+
+    @Test
     void shouldReturnExistingVersionWhenParamsMatchExactly() throws Exception {
         List<MoParamsDetail> history = new ArrayList<>();
         MoParamsDetail matching = detail(1, 2, 3, "{\"match\":true}" );

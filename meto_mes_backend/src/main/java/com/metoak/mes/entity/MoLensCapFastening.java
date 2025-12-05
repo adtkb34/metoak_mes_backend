@@ -48,17 +48,11 @@ public class MoLensCapFastening implements Serializable {
     @FieldCode(no = "003", type = "lsl", label = "锁附扭力下限规格值")
     private Float screwTorqueLsl;
 
-//    @FieldCode(no = "006", type = "val", name = "锁附压力", label = "锁附压力")
-//    private Float screwPressure;
-//
-//    @FieldCode(no = "006", type = "usl", label = "锁附压力上限规格值")
-//    private Float screwPressureUsl;
-//
-//    @FieldCode(no = "006", type = "lsl", label = "锁附压力下限规格值")
-//    private Float screwPressureLsl;
-
-    @FieldCode(no = "006", type = "spec", label = "锁附压力规格值")
+    @FieldCode(no = "006", type = "val", label = "锁附压力")
     private Float screwPressure;
+
+    @FieldCode(no = "007", type = "val", label = "压杆高度")
+    private Float pressingRodHeight;
 
     private String operator;
 

@@ -11,7 +11,7 @@ public enum StepMappingEnum {
     LENS_ASSEMBLY("005", "镜头组装"),
     LENS_CAP_FASTENING("006", "镜头盖固定"),
     LENS_MTF_TESTING("007", "MTF测试"),
-    LENS_DISPENSING("008", "镜头点胶"),
+    LENS_DISPENSING("008", "镜头正面点胶"),
     IR_PASTING("009", "IR贴合"),
     LENS_BAKING("010", "镜头烘烤"),
     BEAM_APPEARANCE_INSPECTION("011", "横梁外观检测"),
@@ -29,7 +29,9 @@ public enum StepMappingEnum {
     S315_FINAL_CHECK("027", "S315终检"),
     IMU_CALIB("028", "IMU计算"),
     FQC_M55H_STEREO("032", "双目M55H终测"),
-    FQC_M55H("033", "单目M55H终测");
+    FQC_M55H("033", "单目M55H终测"),
+    QC_S316("034", "316检测"),
+    LENS_SIDE_DISPENSING("035", "镜头侧面点胶");
 
     private final String code;
     private final String description;

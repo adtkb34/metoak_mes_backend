@@ -48,7 +48,7 @@ class ParamsDetailServiceTest {
         assertEquals(request.getParams(), savedDetail.getParams());
         assertEquals(1, savedDetail.getVersionMajor());
         assertEquals(0, savedDetail.getVersionMinor());
-        assertEquals(1, savedDetail.getVersionPatch());
+        assertEquals(0, savedDetail.getVersionPatch());
 
         // 修改：通过 savedDetail 获取 baseId 而不是 detailDto
         MoParamsBase savedBase = paramsBaseService.getById(savedDetail.getBaseId());

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import com.metoak.mes.common.annotate.FieldCode;
 import io.swagger.annotations.ApiModel;
@@ -30,6 +31,8 @@ public class MoImuCalibResults implements Serializable {
 
     @FieldCode(no = "000", type = "val")
     private String sn;
+
+    private Integer errorCode;
 
     @FieldCode(no = "001", type = "val")
     private String caseName;
@@ -100,6 +103,7 @@ public class MoImuCalibResults implements Serializable {
     @FieldCode(no = "023", type = "val")
     private Long moCalibrationId;
 
+    private LocalDateTime createTime;
 
     @Override
     public String toString() {

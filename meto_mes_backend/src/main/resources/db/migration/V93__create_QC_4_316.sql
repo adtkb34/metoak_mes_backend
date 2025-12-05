@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS mo_s316_final_check (
     sn VARCHAR(64) NOT NULL COMMENT '相机序列号',
     start_time DATETIME NOT NULL COMMENT '开始时间',
     end_time DATETIME NOT NULL COMMENT '结束时间',
-    errcode INT NOT NULL COMMENT '错误码',
+    error_code INT NOT NULL COMMENT '错误码',
     is_oqc BOOL DEFAULT FALSE COMMENT '是否为 OQC 记录',
     product_type INT COMMENT '产品类别',
     is_signed BOOL DEFAULT FALSE COMMENT '是否签名',

@@ -33,6 +33,8 @@ public class MoCalibration implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
+    private Long moProcessStepProductionResultId;
+
     private String cameraSn;
 
     @ApiModelProperty("工位号")

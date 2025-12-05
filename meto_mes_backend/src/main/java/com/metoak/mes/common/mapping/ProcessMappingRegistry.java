@@ -46,6 +46,7 @@ public class ProcessMappingRegistry {
         put(StepMappingEnum.REAR_LENS_CAP_FASTENING,     MoLensCapFastening.class,           IMoLensCapFasteningService.class);
         put(StepMappingEnum.LENS_MTF_TESTING,            MoLensMtfChecking.class,            IMoLensMtfCheckingService.class);
         put(StepMappingEnum.LENS_DISPENSING,             MoLensDispensing.class,             IMoLensDispensingService.class);
+        put(StepMappingEnum.LENS_SIDE_DISPENSING,        MoLensDispensing.class,             IMoLensDispensingService.class);
         put(StepMappingEnum.IR_PASTING,                  MoIrPasting.class,                  IMoIrPastingService.class);
         put(StepMappingEnum.LENS_BAKING,                 MoLensBaking.class,                 IMoLensBakingService.class);
 
@@ -64,6 +65,7 @@ public class ProcessMappingRegistry {
         put(StepMappingEnum.IMU_CALIB, MoImuCalibResults.class,    IMoImuCalibResultsService.class);
         put(StepMappingEnum.FQC_M55H_STEREO, FinalCheckM55hStereo.class,    IFinalCheckM55hStereoService.class);
         put(StepMappingEnum.FQC_M55H, FinalCheckMonoM55h.class,    IFinalCheckMonoM55hService.class);
+        put(StepMappingEnum.QC_S316, MoS316FinalCheck.class,    IMoS316FinalCheckService.class);
     }
 
     private static void put(StepMappingEnum step, Class<?> entity, Class<?> service) {

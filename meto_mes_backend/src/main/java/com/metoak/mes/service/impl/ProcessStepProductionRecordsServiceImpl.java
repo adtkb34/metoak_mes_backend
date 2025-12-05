@@ -133,7 +133,18 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
         if (List.of(
                 StepMappingEnum.FQC_M55H_STEREO.getCode(),
                 StepMappingEnum.FQC_M55H.getCode()
-        ).contains(productionRecordDto.getStepTypeNo())) add_final_result(productionRecordDto);
+        ).contains(productionRecordDto.getStepTypeNo())) add_final_result(productionRecordDto, "FQC");
+        if (List.of(
+                StepMappingEnum.QC_S316.getCode()
+        ).contains(productionRecordDto.getStepTypeNo())) {
+            AttrKeyValDto attrKeyValDto = productionRecordDto.getAttrKeyVals().stream()
+                    .filter(o -> o.getNo().equals("003"))
+                    .findFirst()
+                    .orElse(null);
+            String checkType = "FQC";
+            if (attrKeyValDto != null && attrKeyValDto.getVal().equals("true")) checkType = "OQC";
+            add_final_result(productionRecordDto, checkType);
+        }
         if (StepMappingEnum.DUAL_TARGET_CALIB.getCode().equals(productionRecordDto.getStepTypeNo())) add_2_mo_calibration(productionRecordDto, moProcessStepProductionResultId);
         if (List.of(
                 StepMappingEnum.PLASMA.getCode(),
@@ -218,12 +229,12 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
         return true;
     }
 
-    public Boolean add_final_result(ProductionRecordDto productionRecordDto) {
+    public Boolean add_final_result(ProductionRecordDto productionRecordDto, String checkType) {
         MoFinalResult moFinalResult = MoFinalResult.builder().
                 cameraSn(productionRecordDto.getProductSn()).
                 stationNumber(Integer.parseInt(productionRecordDto.getDeviceNo())).
                 operator(productionRecordDto.getOperator()).
-                checkType("FQC").
+                checkType(checkType).
                 checkTime(convertToDateTime(productionRecordDto.getStartTime())).
                 checkResult(productionRecordDto.getErrorNo() != null && "0".equals(productionRecordDto.getErrorNo())).
                 errorCode(Integer.parseInt(productionRecordDto.getErrorNo())).
@@ -240,6 +251,7 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
                 endTime(convertToDateTime(productionRecordDto.getEndTime())).
                 startTime(convertToDateTime(productionRecordDto.getStartTime())).
                 errorCode(Integer.parseInt(productionRecordDto.getErrorNo())).
+                moProcessStepProductionResultId(moProcessStepProductionResultId).
                 build();
         save_attr_vals(productionRecordDto, moProcessStepProductionResultId, moCalibration, IMoCalibrationService.class);
 

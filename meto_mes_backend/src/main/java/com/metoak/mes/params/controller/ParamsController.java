@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @since 2025-11-18
  */
 @RestController
-@RequestMapping("/api/v1/params")
+@RequestMapping("/api/mes/v1/params")
 @Tag(name = "参数管理", description = "参数集基础信息和详情管理")
 public class ParamsController {
 

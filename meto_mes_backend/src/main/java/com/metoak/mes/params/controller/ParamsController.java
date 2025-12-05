@@ -209,14 +209,14 @@ public class ParamsController {
     @Operation(summary = "根据产品序列号获取参数集内容")
     @GetMapping("/detail/params/bySn")
     public ResultBean<String> getParamsBySerialNumber(@RequestParam String sn) {
-        String workOrderCode = fetchWorkOrderCode(sn);
-        if (workOrderCode == null) {
+        WorkOrderInfo workOrderInfo = fetchWorkOrderInfo(sn);
+        if (workOrderInfo == null) {
             return ResultBean.fail(201, "SN 未绑定工单");
         }
 
         LambdaQueryWrapper<MoProduceOrder> orderQueryWrapper = new LambdaQueryWrapper<>();
-        orderQueryWrapper.eq(MoProduceOrder::getWorkOrderCode, workOrderCode);
-        orderQueryWrapper.eq(MoProduceOrder::getMaterialCode, materialCode);
+        orderQueryWrapper.eq(MoProduceOrder::getWorkOrderCode, workOrderInfo.getWorkOrderCode());
+        orderQueryWrapper.eq(MoProduceOrder::getMaterialCode, workOrderInfo.getMaterialCode());
         MoProduceOrder produceOrder = produceOrderService.getOne(orderQueryWrapper);
         if (produceOrder == null) {
             return ResultBean.fail(201, "工单不存在或已关闭");
@@ -235,21 +235,58 @@ public class ParamsController {
         return ResultBean.ok(paramsDetail.getParams());
     }
 
-    private String fetchWorkOrderCode(String sn) {
+    private WorkOrderInfo fetchWorkOrderInfo(String sn) {
         LambdaQueryWrapper<MoTagInfo> tagInfoWrapper = new LambdaQueryWrapper<>();
         tagInfoWrapper.eq(MoTagInfo::getTagSn, sn);
         MoTagInfo tagInfo = tagInfoService.getOne(tagInfoWrapper, false);
         if (tagInfo != null) {
-            return tagInfo.getWorkOrderCode();
+            MoProduceOrder produceOrder = getProduceOrder(tagInfo.getProduceOrderId(), tagInfo.getWorkOrderCode());
+            if (produceOrder != null) {
+                return new WorkOrderInfo(produceOrder.getWorkOrderCode(), produceOrder.getMaterialCode());
+            }
         }
 
         LambdaQueryWrapper<MoBeamInfo> beamInfoWrapper = new LambdaQueryWrapper<>();
         beamInfoWrapper.eq(MoBeamInfo::getBeamSn, sn);
         MoBeamInfo beamInfo = beamInfoService.getOne(beamInfoWrapper, false);
         if (beamInfo != null) {
-            return beamInfo.getWorkOrderCode();
+            MoProduceOrder produceOrder = getProduceOrder(beamInfo.getProduceOrderId(), beamInfo.getWorkOrderCode());
+            if (produceOrder != null) {
+                return new WorkOrderInfo(produceOrder.getWorkOrderCode(), produceOrder.getMaterialCode());
+            }
         }
         return null;
+    }
+
+    private MoProduceOrder getProduceOrder(Integer produceOrderId, String workOrderCode) {
+        MoProduceOrder produceOrder = null;
+        if (produceOrderId != null) {
+            produceOrder = produceOrderService.getById(produceOrderId);
+        }
+        if (produceOrder == null && workOrderCode != null) {
+            LambdaQueryWrapper<MoProduceOrder> orderQueryWrapper = new LambdaQueryWrapper<>();
+            orderQueryWrapper.eq(MoProduceOrder::getWorkOrderCode, workOrderCode);
+            produceOrder = produceOrderService.getOne(orderQueryWrapper, false);
+        }
+        return produceOrder;
+    }
+
+    private static class WorkOrderInfo {
+        private final String workOrderCode;
+        private final String materialCode;
+
+        public WorkOrderInfo(String workOrderCode, String materialCode) {
+            this.workOrderCode = workOrderCode;
+            this.materialCode = materialCode;
+        }
+
+        public String getWorkOrderCode() {
+            return workOrderCode;
+        }
+
+        public String getMaterialCode() {
+            return materialCode;
+        }
     }
 
 }

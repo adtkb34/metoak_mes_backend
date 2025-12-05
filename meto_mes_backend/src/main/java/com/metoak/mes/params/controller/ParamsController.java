@@ -207,7 +207,7 @@ public class ParamsController {
     }
 
     @Operation(summary = "根据产品序列号获取参数集内容")
-    @GetMapping("/detail/by-sn")
+    @GetMapping("/detail/params/bySn")
     public ResultBean<String> getParamsBySerialNumber(@RequestParam String sn) {
         String workOrderCode = fetchWorkOrderCode(sn);
         if (workOrderCode == null) {
@@ -216,8 +216,8 @@ public class ParamsController {
 
         LambdaQueryWrapper<MoProduceOrder> orderQueryWrapper = new LambdaQueryWrapper<>();
         orderQueryWrapper.eq(MoProduceOrder::getWorkOrderCode, workOrderCode);
-        MoProduceOrder produceOrder = produceOrderService.getOne(orderQueryWrapper, false);
-        if (produceOrder == null || (produceOrder.getOrderState() != null && produceOrder.getOrderState() != 0)) {
+        MoProduceOrder produceOrder = produceOrderService.getOne(orderQueryWrapper);
+        if (produceOrder == null) {
             return ResultBean.fail(201, "工单不存在或已关闭");
         }
 

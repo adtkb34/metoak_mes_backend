@@ -91,6 +91,12 @@ public class MoProduceOrder implements Serializable {
 
     private String productType;
 
+    @ApiModelProperty("是否允许 SN 超过计划数量：0=否，1=是")
+    private Integer tagSnCanExceedPlannedCount;
+
+    @ApiModelProperty("参数集详情ID")
+    private Long paramsDetailId;
+
     public Integer getId() {
         return id;
     }
@@ -267,6 +273,22 @@ public class MoProduceOrder implements Serializable {
         this.productType = productType;
     }
 
+    public Integer getTagSnCanExceedPlannedCount() {
+        return tagSnCanExceedPlannedCount;
+    }
+
+    public void setTagSnCanExceedPlannedCount(Integer tagSnCanExceedPlannedCount) {
+        this.tagSnCanExceedPlannedCount = tagSnCanExceedPlannedCount;
+    }
+
+    public Long getParamsDetailId() {
+        return paramsDetailId;
+    }
+
+    public void setParamsDetailId(Long paramsDetailId) {
+        this.paramsDetailId = paramsDetailId;
+    }
+
     @Override
     public String toString() {
         return "MoProduceOrder{" +
@@ -292,6 +314,8 @@ public class MoProduceOrder implements Serializable {
             ", orderState = " + orderState +
             ", completedCount = " + completedCount +
             ", productType = " + productType +
+            ", tagSnCanExceedPlannedCount = " + tagSnCanExceedPlannedCount +
+            ", paramsDetailId = " + paramsDetailId +
         "}";
     }
 }

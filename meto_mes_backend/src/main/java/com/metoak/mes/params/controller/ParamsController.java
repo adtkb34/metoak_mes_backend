@@ -5,11 +5,17 @@ import com.metoak.mes.common.ResultBean;
 import com.metoak.mes.common.result.Result;
 import com.metoak.mes.dto.ParamsBaseDto;
 import com.metoak.mes.dto.ParamsDetailDto;
+import com.metoak.mes.entity.MoBeamInfo;
+import com.metoak.mes.entity.MoProduceOrder;
+import com.metoak.mes.entity.MoTagInfo;
 import com.metoak.mes.params.entity.ParamsUploadRequest;
 import com.metoak.mes.params.entity.MoParamsBase;
 import com.metoak.mes.params.entity.MoParamsDetail;
 import com.metoak.mes.params.service.IMoParamsBaseService;
 import com.metoak.mes.params.service.IMoParamsDetailService;
+import com.metoak.mes.service.IMoBeamInfoService;
+import com.metoak.mes.service.IMoProduceOrderService;
+import com.metoak.mes.service.IMoTagInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.BeanUtils;
@@ -38,6 +44,15 @@ public class ParamsController {
 
     @Autowired
     private IMoParamsDetailService paramsDetailService;
+
+    @Autowired
+    private IMoTagInfoService tagInfoService;
+
+    @Autowired
+    private IMoBeamInfoService beamInfoService;
+
+    @Autowired
+    private IMoProduceOrderService produceOrderService;
 
     @Operation(summary = "参数集上传并自动管理版本")
     @PostMapping
@@ -189,6 +204,51 @@ public class ParamsController {
             return ResultBean.fail(201, "参数集详情不存在或删除失败");
         }
         return ResultBean.ok();
+    }
+
+    @Operation(summary = "根据产品序列号获取参数集内容")
+    @GetMapping("/detail/by-sn")
+    public ResultBean<String> getParamsBySerialNumber(@RequestParam String sn) {
+        String workOrderCode = fetchWorkOrderCode(sn);
+        if (workOrderCode == null) {
+            return ResultBean.fail(201, "SN 未绑定工单");
+        }
+
+        LambdaQueryWrapper<MoProduceOrder> orderQueryWrapper = new LambdaQueryWrapper<>();
+        orderQueryWrapper.eq(MoProduceOrder::getWorkOrderCode, workOrderCode);
+        MoProduceOrder produceOrder = produceOrderService.getOne(orderQueryWrapper, false);
+        if (produceOrder == null || (produceOrder.getOrderState() != null && produceOrder.getOrderState() != 0)) {
+            return ResultBean.fail(201, "工单不存在或已关闭");
+        }
+
+        Long paramsDetailId = produceOrder.getParamsDetailId();
+        if (paramsDetailId == null) {
+            return ResultBean.fail(201, "工单未绑定参数集");
+        }
+
+        MoParamsDetail paramsDetail = paramsDetailService.getById(paramsDetailId);
+        if (paramsDetail == null) {
+            return ResultBean.fail(201, "参数集详情不存在");
+        }
+
+        return ResultBean.ok(paramsDetail.getParams());
+    }
+
+    private String fetchWorkOrderCode(String sn) {
+        LambdaQueryWrapper<MoTagInfo> tagInfoWrapper = new LambdaQueryWrapper<>();
+        tagInfoWrapper.eq(MoTagInfo::getTagSn, sn);
+        MoTagInfo tagInfo = tagInfoService.getOne(tagInfoWrapper, false);
+        if (tagInfo != null) {
+            return tagInfo.getWorkOrderCode();
+        }
+
+        LambdaQueryWrapper<MoBeamInfo> beamInfoWrapper = new LambdaQueryWrapper<>();
+        beamInfoWrapper.eq(MoBeamInfo::getBeamSn, sn);
+        MoBeamInfo beamInfo = beamInfoService.getOne(beamInfoWrapper, false);
+        if (beamInfo != null) {
+            return beamInfo.getWorkOrderCode();
+        }
+        return null;
     }
 
 }

@@ -216,6 +216,7 @@ public class ParamsController {
 
         LambdaQueryWrapper<MoProduceOrder> orderQueryWrapper = new LambdaQueryWrapper<>();
         orderQueryWrapper.eq(MoProduceOrder::getWorkOrderCode, workOrderCode);
+        orderQueryWrapper.eq(MoProduceOrder::getMaterialCode, materialCode);
         MoProduceOrder produceOrder = produceOrderService.getOne(orderQueryWrapper);
         if (produceOrder == null) {
             return ResultBean.fail(201, "工单不存在或已关闭");

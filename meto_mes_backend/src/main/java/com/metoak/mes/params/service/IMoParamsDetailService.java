@@ -1,7 +1,6 @@
 package com.metoak.mes.params.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.metoak.mes.common.ResultBean;
 import com.metoak.mes.common.result.Result;
 import com.metoak.mes.params.dto.ParamDetailCreateDto;
 import com.metoak.mes.params.dto.ParamsUploadRequest;
@@ -19,5 +18,5 @@ public interface IMoParamsDetailService extends IService<MoParamsDetail> {
 
     Result<Long> uploadParams(ParamsUploadRequest request);
 
-    ResultBean<Long> saveDetail(ParamDetailCreateDto createDto);
+    Result<Long> saveDetail(ParamDetailCreateDto createDto);
 }

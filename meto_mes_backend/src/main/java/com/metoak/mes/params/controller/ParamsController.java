@@ -1,6 +1,6 @@
 package com.metoak.mes.params.controller;
 
-import com.metoak.mes.common.ResultBean;
+import com.metoak.mes.common.result.Result;
 import com.metoak.mes.params.dto.ParamBaseCreateDto;
 import com.metoak.mes.params.dto.ParamDetailCreateDto;
 import com.metoak.mes.params.service.IMoParamsBaseService;
@@ -39,19 +39,19 @@ public class ParamsController {
 
     @Operation(summary = "根据类型获取参数集列表")
     @GetMapping
-    public ResultBean<List<MoParamsVO>> listByType(@RequestParam Integer type) {
+    public Result<List<MoParamsVO>> listByType(@RequestParam Integer type) {
         return paramsBaseService.listByType(type);
     }
 
     @Operation(summary = "保存参数集基础信息")
     @PostMapping("/base")
-    public ResultBean<Long> saveBase(@RequestBody ParamBaseCreateDto createDto) {
+    public Result<Long> saveBase(@RequestBody ParamBaseCreateDto createDto) {
         return paramsBaseService.saveBase(createDto);
     }
 
     @Operation(summary = "保存参数集详情并自动生成版本")
     @PostMapping("/detail")
-    public ResultBean<Long> saveDetail(@RequestBody ParamDetailCreateDto createDto) {
+    public Result<Long> saveDetail(@RequestBody ParamDetailCreateDto createDto) {
         return paramsDetailService.saveDetail(createDto);
     }
 

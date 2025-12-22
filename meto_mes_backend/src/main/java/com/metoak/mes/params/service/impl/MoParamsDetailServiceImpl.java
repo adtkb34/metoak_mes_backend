@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.metoak.mes.common.ResultBean;
 import com.metoak.mes.common.result.Result;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.params.dto.ParamDetailCreateDto;
 import com.metoak.mes.params.dto.ParamsUploadRequest;
 import com.metoak.mes.params.entity.MoParamsBase;
@@ -43,16 +43,16 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public ResultBean<Long> saveDetail(ParamDetailCreateDto createDto) {
+    public Result<Long> saveDetail(ParamDetailCreateDto createDto) {
         MoParamsBase paramsBase = paramsBaseService.getById(createDto.getBaseId());
         if (paramsBase == null) {
-            return ResultBean.fail(ERROR_CODE, "参数集基础信息不存在");
+            return Result.fail(ResultCodeEnum.PARAM_BASE_NOT_FOUND);
         }
         JsonNode currentParams;
         try {
             currentParams = objectMapper.readTree(createDto.getParams());
         } catch (JsonProcessingException e) {
-            return Result.fail(201, "params 不是有效的 JSON");
+            return Result.fail(ResultCodeEnum.PARAMS_INVALID_JSON);
         }
         List<MoParamsDetail> detailList = lambdaQuery()
                 .eq(MoParamsDetail::getBaseId, paramsBase.getId())
@@ -69,7 +69,7 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
         paramsDetail.setIsActive(ACTIVE_FLAG);
         paramsDetail.setCreatedAt(LocalDateTime.now());
         save(paramsDetail);
-        return ResultBean.ok(paramsDetail.getId());
+        return Result.ok(paramsDetail.getId());
     }
 
     @Override
@@ -78,7 +78,7 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
         try {
             currentParams = objectMapper.readTree(request.getParams());
         } catch (JsonProcessingException e) {
-            return Result.fail(201, "params 不是有效的 JSON");
+            return Result.fail(ResultCodeEnum.PARAMS_INVALID_JSON);
         }
 
         MoParamsBase paramsBase = findOrCreateParamsBase(request);

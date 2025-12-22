@@ -1,7 +1,7 @@
 package com.metoak.mes.params.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.metoak.mes.common.ResultBean;
+import com.metoak.mes.common.result.Result;
 import com.metoak.mes.params.dto.ParamBaseCreateDto;
 import com.metoak.mes.params.entity.MoParamsBase;
 import com.metoak.mes.params.vo.MoParamsVO;
@@ -18,7 +18,7 @@ import java.util.List;
  */
 public interface IMoParamsBaseService extends IService<MoParamsBase> {
 
-    ResultBean<Long> saveBase(ParamBaseCreateDto createDto);
+    Result<Long> saveBase(ParamBaseCreateDto createDto);
 
-    ResultBean<List<MoParamsVO>> listByType(Integer type);
+    Result<List<MoParamsVO>> listByType(Integer type);
 }

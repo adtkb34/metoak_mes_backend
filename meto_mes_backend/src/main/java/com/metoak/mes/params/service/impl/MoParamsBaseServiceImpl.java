@@ -2,7 +2,7 @@ package com.metoak.mes.params.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.metoak.mes.common.ResultBean;
+import com.metoak.mes.common.result.Result;
 import com.metoak.mes.params.dto.ParamBaseCreateDto;
 import com.metoak.mes.params.entity.MoParamsBase;
 import com.metoak.mes.params.entity.MoParamsDetail;
@@ -41,20 +41,20 @@ public class MoParamsBaseServiceImpl extends ServiceImpl<MoParamsBaseMapper, MoP
     private IMoParamsDetailService paramsDetailService;
 
     @Override
-    public ResultBean<Long> saveBase(ParamBaseCreateDto createDto) {
+    public Result<Long> saveBase(ParamBaseCreateDto createDto) {
         MoParamsBase paramsBase = new MoParamsBase();
         BeanUtils.copyProperties(createDto, paramsBase);
         paramsBase.setCreatedAt(LocalDateTime.now());
         save(paramsBase);
-        return ResultBean.ok(paramsBase.getId());
+        return Result.ok(paramsBase.getId());
     }
 
     @Override
-    public ResultBean<List<MoParamsVO>> listByType(Integer type) {
+    public Result<List<MoParamsVO>> listByType(Integer type) {
         List<MoParamsBase> paramsBases = list(new LambdaQueryWrapper<MoParamsBase>()
                 .eq(MoParamsBase::getType, type));
         if (paramsBases.isEmpty()) {
-            return ResultBean.ok(Collections.emptyList());
+            return Result.ok(Collections.emptyList());
         }
 
         List<Long> baseIds = paramsBases.stream()
@@ -63,7 +63,7 @@ public class MoParamsBaseServiceImpl extends ServiceImpl<MoParamsBaseMapper, MoP
                 .collect(Collectors.toList());
 
         if (baseIds.isEmpty()) {
-            return ResultBean.ok(Collections.emptyList());
+            return Result.ok(Collections.emptyList());
         }
 
         Map<Long, MoParamsDetail> detailMap = paramsDetailService.list(new LambdaQueryWrapper<MoParamsDetail>()
@@ -78,7 +78,7 @@ public class MoParamsBaseServiceImpl extends ServiceImpl<MoParamsBaseMapper, MoP
                 .map(base -> buildParamsVO(base, detailMap.get(base.getId())))
                 .collect(Collectors.toList());
 
-        return ResultBean.ok(result);
+        return Result.ok(result);
     }
 
     private MoParamsVO buildParamsVO(MoParamsBase base, MoParamsDetail detail) {

@@ -19,6 +19,10 @@ public enum ResultCodeEnum {
     // 双目标定
     Field_NOT_FOUND(2002001, "字段没有找到"),
     RECORD_NOT_FOUND(2002002, "没有找到记录"),
+
+    // 参数模块
+    PARAM_BASE_NOT_FOUND(2003001, "参数集基础信息不存在"),
+    PARAMS_INVALID_JSON(2003002, "参数配置不是有效的 JSON"),
     ;
 
 

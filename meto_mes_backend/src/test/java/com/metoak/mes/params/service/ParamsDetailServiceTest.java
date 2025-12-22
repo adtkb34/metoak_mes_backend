@@ -1,16 +1,7 @@
 package com.metoak.mes.params.service;
 
-import com.metoak.mes.common.ResultBean;
-import com.metoak.mes.common.result.Result;
-import com.metoak.mes.dto.ParamsDetailDto;
-import com.metoak.mes.params.entity.ParamsUploadRequest;
-import com.metoak.mes.params.entity.MoParamsBase;
-import com.metoak.mes.params.entity.MoParamsDetail;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class ParamsDetailServiceTest {

@@ -3,7 +3,7 @@ package com.metoak.mes.params.service;
 import com.metoak.mes.common.result.Result;
 import com.metoak.mes.params.entity.MoParamsDetail;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.metoak.mes.params.entity.ParamsUploadRequest;
+import com.metoak.mes.params.dto.ParamsUploadRequest;
 
 /**
  * <p>

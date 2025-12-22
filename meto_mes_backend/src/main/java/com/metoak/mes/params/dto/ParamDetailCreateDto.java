@@ -21,6 +21,6 @@ public class ParamDetailCreateDto {
     private String description;
 
     @ApiModelProperty(value = "参数集")
-    private Object params;
+    private String params;
 
 }

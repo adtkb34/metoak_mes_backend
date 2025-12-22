@@ -37,12 +37,6 @@ import java.util.stream.Collectors;
 @Service
 public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper, MoParamsDetail> implements IMoParamsDetailService {
 
-    private static final int ERROR_CODE = 201;
-    private static final int INITIAL_VERSION_MAJOR = 1;
-    private static final int INITIAL_VERSION_MINOR = 0;
-    private static final int INITIAL_VERSION_PATCH = 0;
-    private static final int ACTIVE_FLAG = 1;
-
     @Autowired
     private IMoParamsBaseService paramsBaseService;
 
@@ -54,22 +48,24 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
         if (paramsBase == null) {
             return ResultBean.fail(ERROR_CODE, "参数集基础信息不存在");
         }
-        String paramsContent;
+        JsonNode currentParams;
         try {
-            paramsContent = objectMapper.writeValueAsString(createDto.getParams());
+            currentParams = objectMapper.readTree(createDto.getParams());
         } catch (JsonProcessingException e) {
-            return ResultBean.fail(ERROR_CODE, "参数格式错误");
+            return Result.fail(201, "params 不是有效的 JSON");
         }
-
-        VersionResult nextVersion = generateNextVersion(createDto.getBaseId());
+        List<MoParamsDetail> detailList = lambdaQuery()
+                .eq(MoParamsDetail::getBaseId, paramsBase.getId())
+                .list();
+        VersionResult versionResult = determineVersion(detailList, currentParams);
 
         MoParamsDetail paramsDetail = new MoParamsDetail();
         paramsDetail.setBaseId(createDto.getBaseId());
         paramsDetail.setDescription(createDto.getDescription());
-        paramsDetail.setVersionMajor(nextVersion.major);
-        paramsDetail.setVersionMinor(nextVersion.minor);
-        paramsDetail.setVersionPatch(nextVersion.patch);
-        paramsDetail.setParams(paramsContent);
+        paramsDetail.setVersionMajor(versionResult.major);
+        paramsDetail.setVersionMinor(versionResult.minor);
+        paramsDetail.setVersionPatch(versionResult.patch);
+        paramsDetail.setParams(createDto.getParams());
         paramsDetail.setIsActive(ACTIVE_FLAG);
         paramsDetail.setCreatedAt(LocalDateTime.now());
         save(paramsDetail);

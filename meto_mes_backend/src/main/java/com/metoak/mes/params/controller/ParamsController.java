@@ -11,8 +11,10 @@ import com.metoak.mes.entity.MoTagInfo;
 import com.metoak.mes.params.entity.ParamsUploadRequest;
 import com.metoak.mes.params.entity.MoParamsBase;
 import com.metoak.mes.params.entity.MoParamsDetail;
+import com.metoak.mes.params.enums.ParamTypeEnum;
 import com.metoak.mes.params.service.IMoParamsBaseService;
 import com.metoak.mes.params.service.IMoParamsDetailService;
+import com.metoak.mes.params.vo.MoParamsVO;
 import com.metoak.mes.service.IMoBeamInfoService;
 import com.metoak.mes.service.IMoProduceOrderService;
 import com.metoak.mes.service.IMoTagInfoService;
@@ -23,7 +25,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -58,6 +64,39 @@ public class ParamsController {
     @PostMapping
     public Result<Long> uploadParams(@RequestBody ParamsUploadRequest request) {
         return paramsDetailService.uploadParams(request);
+    }
+
+    @Operation(summary = "根据类型获取参数集列表")
+    @GetMapping("/list")
+    public ResultBean<List<MoParamsVO>> listByType(@RequestParam Integer type) {
+        List<MoParamsBase> paramsBases = paramsBaseService.list(new LambdaQueryWrapper<MoParamsBase>()
+                .eq(MoParamsBase::getType, type));
+        if (paramsBases.isEmpty()) {
+            return ResultBean.ok(Collections.emptyList());
+        }
+
+        List<Long> baseIds = paramsBases.stream()
+                .map(MoParamsBase::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        if (baseIds.isEmpty()) {
+            return ResultBean.ok(Collections.emptyList());
+        }
+
+        Map<Long, MoParamsDetail> detailMap = paramsDetailService.list(new LambdaQueryWrapper<MoParamsDetail>()
+                        .in(MoParamsDetail::getBaseId, baseIds))
+                .stream()
+                .collect(Collectors.groupingBy(MoParamsDetail::getBaseId))
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> selectDetail(entry.getValue())));
+
+        List<MoParamsVO> result = paramsBases.stream()
+                .map(base -> buildParamsVO(base, detailMap.get(base.getId())))
+                .collect(Collectors.toList());
+
+        return ResultBean.ok(result);
     }
 
     @Operation(summary = "创建参数集基础信息")
@@ -274,6 +313,52 @@ public class ParamsController {
             produceOrder = produceOrderService.getOne(orderQueryWrapper, false);
         }
         return produceOrder;
+    }
+
+    private MoParamsVO buildParamsVO(MoParamsBase base, MoParamsDetail detail) {
+        return MoParamsVO.builder()
+                .type(base.getType())
+                .relation(resolveRelation(base))
+                .name(base.getName())
+                .description(detail != null ? detail.getDescription() : null)
+                .version(detail != null ? formatVersion(detail) : null)
+                .createdBy(detail != null ? detail.getCreatedBy() : base.getCreatedBy())
+                .createdAt(detail != null ? detail.getCreatedAt() : base.getCreatedAt())
+                .build();
+    }
+
+    private String resolveRelation(MoParamsBase base) {
+        if (ParamTypeEnum.STEP.getCode().equals(base.getType())) {
+            return base.getStepTypeNo();
+        }
+        if (ParamTypeEnum.PROCESS.getCode().equals(base.getType())) {
+            return base.getFlowNo();
+        }
+        if (ParamTypeEnum.WORK_ORDER.getCode().equals(base.getType())) {
+            return base.getOrderId() != null ? base.getOrderId().toString() : null;
+        }
+        return null;
+    }
+
+    private String formatVersion(MoParamsDetail detail) {
+        return String.format("%d.%d.%d",
+                detail.getVersionMajor() == null ? 0 : detail.getVersionMajor(),
+                detail.getVersionMinor() == null ? 0 : detail.getVersionMinor(),
+                detail.getVersionPatch() == null ? 0 : detail.getVersionPatch());
+    }
+
+    private MoParamsDetail selectDetail(List<MoParamsDetail> details) {
+        Comparator<MoParamsDetail> comparator = Comparator
+                .comparing((MoParamsDetail detail) -> detail.getIsActive() != null ? detail.getIsActive() : -1, Comparator.reverseOrder())
+                .thenComparing(MoParamsDetail::getVersionMajor, Comparator.nullsFirst(Integer::compareTo))
+                .thenComparing(MoParamsDetail::getVersionMinor, Comparator.nullsFirst(Integer::compareTo))
+                .thenComparing(MoParamsDetail::getVersionPatch, Comparator.nullsFirst(Integer::compareTo))
+                .thenComparing(MoParamsDetail::getCreatedAt, Comparator.nullsLast(LocalDateTime::compareTo));
+
+        return details.stream()
+                .filter(Objects::nonNull)
+                .max(comparator)
+                .orElse(null);
     }
 
     private static class WorkOrderInfo {

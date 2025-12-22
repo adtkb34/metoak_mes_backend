@@ -1,12 +1,14 @@
 package com.metoak.mes.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metoak.mes.dto.ParamsBaseDto;
 import com.metoak.mes.entity.MoProduceOrder;
 import com.metoak.mes.entity.MoTagInfo;
+import com.metoak.mes.params.controller.ParamsController;
 import com.metoak.mes.params.entity.MoParamsBase;
 import com.metoak.mes.params.entity.MoParamsDetail;
-import com.metoak.mes.params.controller.ParamsController;
+import com.metoak.mes.params.enums.ParamTypeEnum;
 import com.metoak.mes.params.service.IMoParamsBaseService;
 import com.metoak.mes.params.service.IMoParamsDetailService;
 import com.metoak.mes.service.IMoBeamInfoService;
@@ -20,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -91,6 +94,37 @@ public class ParamsControllerTest {
         mockMvc.perform(get("/api/mes/v1/params/base/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.name").value("测试参数集"));
+    }
+
+    @Test
+    void shouldReturnParamsListByType() throws Exception {
+        MoParamsBase paramsBase = new MoParamsBase();
+        paramsBase.setId(1L);
+        paramsBase.setName("工艺参数");
+        paramsBase.setType(ParamTypeEnum.PROCESS.getCode());
+        paramsBase.setFlowNo("FLOW-01");
+        paramsBase.setCreatedBy("user");
+        paramsBase.setCreatedAt(LocalDateTime.now());
+
+        MoParamsDetail paramsDetail = new MoParamsDetail();
+        paramsDetail.setBaseId(1L);
+        paramsDetail.setDescription("描述");
+        paramsDetail.setVersionMajor(1);
+        paramsDetail.setVersionMinor(0);
+        paramsDetail.setVersionPatch(0);
+        paramsDetail.setIsActive(1);
+        paramsDetail.setCreatedBy("detailUser");
+        paramsDetail.setCreatedAt(LocalDateTime.now());
+
+        when(paramsBaseService.list(any(LambdaQueryWrapper.class))).thenReturn(Collections.singletonList(paramsBase));
+        when(paramsDetailService.list(any(LambdaQueryWrapper.class))).thenReturn(Collections.singletonList(paramsDetail));
+
+        mockMvc.perform(get("/api/mes/v1/params/list").param("type", ParamTypeEnum.PROCESS.getCode().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].type").value(ParamTypeEnum.PROCESS.getCode()))
+                .andExpect(jsonPath("$.data[0].relation").value("FLOW-01"))
+                .andExpect(jsonPath("$.data[0].version").value("1.0.0"))
+                .andExpect(jsonPath("$.data[0].description").value("描述"));
     }
 
 //    @Test

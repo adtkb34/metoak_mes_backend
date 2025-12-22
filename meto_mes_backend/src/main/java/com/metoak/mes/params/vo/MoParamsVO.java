@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel(value = "MoParamsBaseVO", description = "参数集展示对象")
-public class MoParamsBaseVO {
+@ApiModel(value = "MoParamsVO", description = "参数集展示对象")
+public class MoParamsVO {
 
     @ApiModelProperty("参数集类型：0-工程，1-工艺")
     private Integer type;

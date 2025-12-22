@@ -1,36 +1,22 @@
 package com.metoak.mes.params.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.metoak.mes.common.ResultBean;
-import com.metoak.mes.common.result.Result;
-import com.metoak.mes.dto.ParamsBaseDto;
-import com.metoak.mes.dto.ParamsDetailDto;
-import com.metoak.mes.entity.MoBeamInfo;
-import com.metoak.mes.entity.MoProduceOrder;
-import com.metoak.mes.entity.MoTagInfo;
-import com.metoak.mes.params.dto.ParamsUploadRequest;
-import com.metoak.mes.params.entity.MoParamsBase;
-import com.metoak.mes.params.entity.MoParamsDetail;
-import com.metoak.mes.params.enums.ParamTypeEnum;
+import com.metoak.mes.params.dto.ParamBaseCreateDto;
+import com.metoak.mes.params.dto.ParamDetailCreateDto;
 import com.metoak.mes.params.service.IMoParamsBaseService;
 import com.metoak.mes.params.service.IMoParamsDetailService;
 import com.metoak.mes.params.vo.MoParamsVO;
-import com.metoak.mes.service.IMoBeamInfoService;
-import com.metoak.mes.service.IMoProduceOrderService;
-import com.metoak.mes.service.IMoTagInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -51,54 +37,22 @@ public class ParamsController {
     @Autowired
     private IMoParamsDetailService paramsDetailService;
 
-    @Autowired
-    private IMoTagInfoService tagInfoService;
-
-    @Autowired
-    private IMoBeamInfoService beamInfoService;
-
-    @Autowired
-    private IMoProduceOrderService produceOrderService;
-
-//    @Operation(summary = "参数集上传并自动管理版本")
-//    @PostMapping
-//    public Result<Long> uploadParams(@RequestBody ParamsUploadRequest request) {
-//        return paramsDetailService.uploadParams(request);
-//    }
-
-
-
     @Operation(summary = "根据类型获取参数集列表")
     @GetMapping
     public ResultBean<List<MoParamsVO>> listByType(@RequestParam Integer type) {
-        List<MoParamsBase> paramsBases = paramsBaseService.list(new LambdaQueryWrapper<MoParamsBase>()
-                .eq(MoParamsBase::getType, type));
-        if (paramsBases.isEmpty()) {
-            return ResultBean.ok(Collections.emptyList());
-        }
+        return paramsBaseService.listByType(type);
+    }
 
-        List<Long> baseIds = paramsBases.stream()
-                .map(MoParamsBase::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+    @Operation(summary = "保存参数集基础信息")
+    @PostMapping("/base")
+    public ResultBean<Long> saveBase(@RequestBody ParamBaseCreateDto createDto) {
+        return paramsBaseService.saveBase(createDto);
+    }
 
-        if (baseIds.isEmpty()) {
-            return ResultBean.ok(Collections.emptyList());
-        }
-
-        Map<Long, MoParamsDetail> detailMap = paramsDetailService.list(new LambdaQueryWrapper<MoParamsDetail>()
-                        .in(MoParamsDetail::getBaseId, baseIds))
-                .stream()
-                .collect(Collectors.groupingBy(MoParamsDetail::getBaseId))
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> selectDetail(entry.getValue())));
-
-        List<MoParamsVO> result = paramsBases.stream()
-                .map(base -> buildParamsVO(base, detailMap.get(base.getId())))
-                .collect(Collectors.toList());
-
-        return ResultBean.ok(result);
+    @Operation(summary = "保存参数集详情并自动生成版本")
+    @PostMapping("/detail")
+    public ResultBean<Long> saveDetail(@RequestBody ParamDetailCreateDto createDto) {
+        return paramsDetailService.saveDetail(createDto);
     }
 //
 //    @Operation(Operationsummary = "创建参数集基础信息")

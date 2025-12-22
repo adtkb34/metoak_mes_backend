@@ -1,6 +1,7 @@
 package com.metoak.mes.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.metoak.mes.common.result.Result;
 import com.metoak.mes.entity.MoCalibration;
 
 /**
@@ -13,4 +14,5 @@ import com.metoak.mes.entity.MoCalibration;
  */
 public interface IMoCalibrationService extends IService<MoCalibration> {
 
+    Result getLatestCustomAttrKey(String productSn, String attrKey);
 }

@@ -16,6 +16,9 @@ public class ParamsDetailDto {
     @ApiModelProperty("关联 param_base.id，多对一")
     private Long baseId;
 
+    @ApiModelProperty("参数集标题")
+    private String name;
+
     @ApiModelProperty("版本说明，可记录变更内容")
     private String description;
 

@@ -34,7 +34,7 @@ public class MoStepAttrKeysController {
     public Result<String> getLabel(@RequestParam String stepTypeNo, @RequestParam String attrNo) {
         String label = moStepAttrKeysService.getLabel(stepTypeNo, attrNo);
         if (label == null) {
-            return Result.fail(ResultCodeEnum.DATA_ERROR.getCode(), "未找到对应的标签");
+            return Result.fail(1, "未找到对应的标签");
         }
         return Result.ok(label);
     }

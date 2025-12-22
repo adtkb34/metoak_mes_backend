@@ -68,7 +68,7 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
         newDetail.setVersionMinor(versionResult.minor);
         newDetail.setVersionPatch(versionResult.patch);
         newDetail.setParams(request.getParams());
-        if (request.getType().equals(ParamTypeEnum.ENGINEERING.getCode())) {
+        if (request.getType()== null || request.getType().equals(ParamTypeEnum.ENGINEERING.getCode())) {
             newDetail.setIsActive(1);
         }
         newDetail.setCreatedBy(request.getUsername());

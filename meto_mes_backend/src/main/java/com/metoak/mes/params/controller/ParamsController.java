@@ -160,10 +160,12 @@ public class ParamsController {
         List<MoParamsDetail> list = paramsDetailService.list(queryWrapper);
         List<ParamsDetailDto> result = list.stream().map(item -> {
             ParamsDetailDto dto = new ParamsDetailDto();
+            MoParamsBase moParamsBase = paramsBaseService.getById(item.getBaseId());
             BeanUtils.copyProperties(item, dto);
+            dto.setName(moParamsBase.getName());
             return dto;
         }).collect(Collectors.toList());
-        
+        System.out.println(list.size());
         return ResultBean.ok(result);
     }
 
@@ -176,7 +178,10 @@ public class ParamsController {
         }
         
         ParamsDetailDto result = new ParamsDetailDto();
+        MoParamsBase moParamsBase = paramsBaseService.getById(paramsDetail.getBaseId());
         BeanUtils.copyProperties(paramsDetail, result);
+        result.setName(moParamsBase.getName());
+        System.out.println(result);
         return ResultBean.ok(result);
     }
 

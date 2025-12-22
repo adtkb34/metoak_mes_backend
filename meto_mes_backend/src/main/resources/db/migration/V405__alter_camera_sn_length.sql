@@ -1,0 +1,2 @@
+ALTER TABLE mo_packing_info
+MODIFY COLUMN camera_sn VARCHAR(48) NOT NULL;

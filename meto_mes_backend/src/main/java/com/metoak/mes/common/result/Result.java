@@ -48,6 +48,24 @@ public class Result<T> {
         return build(null, ResultCodeEnum.FAIL);
     }
 
+    public static <T> Result<T> fail(ResultCodeEnum resultCodeEnum) {
+        return fail(resultCodeEnum.getCode(), resultCodeEnum.getMessage());
+    }
+
+    public static <T> Result<T> fail(ResultCodeEnum resultCodeEnum, T data) {
+        Result<T> result = fail(resultCodeEnum);
+        result.setData(data);
+        return result;
+    }
+
+    public static <T> Result<T> fail(Integer code, String message, T data) {
+        Result<T> result = build(null);
+        result.setCode(code);
+        result.setData(data);
+        result.setMessage(message);
+        return result;
+    }
+
     public static <T> Result<T> fail(Integer code, String message) {
         Result<T> result = build(null);
         result.setCode(code);

@@ -85,11 +85,17 @@ public class ProductionRecordDto {
     @Schema(description = "结束时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private String endTime;
 
+    @Schema(description = "上传时间")
+    private String postTime;
+
     @Schema(description = "属性键值对")
     private List<AttrKeyValDto> attrKeyVals;
 
     @Schema(description = "产品物料编号")
     private List<MaterialDto> materials;
+
+    @Schema(description = "产量")
+    private OutputDto output;
 
     private Long engineeringParamsId;
 

@@ -1,0 +1,2 @@
+ALTER TABLE mo_imu_calib_results
+    MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT;

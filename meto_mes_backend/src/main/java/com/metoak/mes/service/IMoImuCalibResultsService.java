@@ -1,5 +1,6 @@
 package com.metoak.mes.service;
 
+import com.metoak.mes.common.result.Result;
 import com.metoak.mes.entity.MoImuCalibResults;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IMoImuCalibResultsService extends IService<MoImuCalibResults> {
 
+    Result getLatest(String productSn);
 }

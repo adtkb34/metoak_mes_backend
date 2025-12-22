@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,16 +109,18 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
     @Autowired
     private IMoFinalResultService moFinalResultService;
 
+    @Autowired
+    private IMoProcessStepYieldService moProcessStepYieldService;
+
     @Override
     public Long add(ProductionRecordDto productionRecordDto) {
-        System.out.println(productionRecordDto);
         MoProcessStepProductionResult moProcessStepProductionResult = MoProcessStepProductionResult.builder().
                 stepType(productionRecordDto.getStepType()).
                 stepTypeNo(productionRecordDto.getStepTypeNo()).
                 productSn(productionRecordDto.getProductSn()).
                 productBatchNo(productionRecordDto.getProductBatchNo()).
-                startTime(convertToDateTime(productionRecordDto.getStartTime())).
-                endTime(convertToDateTime(productionRecordDto.getEndTime())).
+                startTime(updateTimeByPostTime(productionRecordDto.getStartTime(), productionRecordDto.getPostTime())).
+                endTime(updateTimeByPostTime(productionRecordDto.getEndTime(), productionRecordDto.getPostTime())).
                 errorCode(Integer.parseInt(productionRecordDto.getErrorNo())).
                 ngReason(productionRecordDto.getError()).
                 softwareTool(productionRecordDto.getSoftwareTool()).
@@ -153,7 +157,8 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
             return 0L;
         }
         save_attr_vals(productionRecordDto, moProcessStepProductionResultId, null, null);
-
+        OutputDto output = productionRecordDto.getOutput();
+        if (output != null) save_yield(output, moProcessStepProductionResultId);
 
         return 0L;
     }
@@ -181,7 +186,9 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
         return add_material_binding(productionRecordDto, moProcessStepProductionResultId);
     }
     public <T> void save_attr_vals(ProductionRecordDto productionRecordDto, Long moProcessStepProductionResultId, T entity_, Class<?> service_) {
-        GroupingUtil.group(productionRecordDto.getAttrKeyVals()).forEach(items -> {
+        List<AttrKeyValDto> attrKeyVals = productionRecordDto.getAttrKeyVals();
+        if (attrKeyVals == null) return;
+        GroupingUtil.group(attrKeyVals).forEach(items -> {
             if (productionRecordDto.getStepTypeNo().equals(StepMappingEnum.AFTER_AA_FINAL_COMPREHENSIVE_INSPECTION.getCode())) {
                 String imgQualityColors = items.stream().filter(item -> item.getNo().equals("005")).map(AttrKeyValDto::getVal).collect(Collectors.joining(","));
                 String imgQualityColorUsls = items.stream().filter(item -> item.getNo().equals("005")).map(AttrKeyValDto::getUsl).collect(Collectors.joining(","));
@@ -213,6 +220,26 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
                 throw new MOException("", -1);
             }
         });
+    }
+
+    Boolean save_yield(OutputDto outputDto, Long moProcessStepProductionResultId) {
+        return moProcessStepYieldService.save(MoProcessStepYield.builder()
+                .inputNum(outputDto.getInputNum())
+                .goodNum(outputDto.getGoodNum())
+                .moProcessStepProductionResultId(moProcessStepProductionResultId)
+                .build());
+    }
+
+    public LocalDateTime updateTimeByPostTime(String startTime, String postTime) {
+        LocalDateTime serverCur = LocalDateTime.now();
+        if (startTime == null) return serverCur;
+        LocalDateTime start = convertToDateTime(startTime);
+
+        if (postTime == null) return start;
+        LocalDateTime post = convertToDateTime(postTime);
+
+        Duration diff = Duration.between(post, serverCur);
+        return start.plus(diff);
     }
 
     public Boolean add_auto_adjust(ProductionRecordDto productionRecordDto) {

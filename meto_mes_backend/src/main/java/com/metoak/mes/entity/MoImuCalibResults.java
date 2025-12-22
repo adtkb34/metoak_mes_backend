@@ -9,7 +9,10 @@ import java.time.LocalDateTime;
 import com.metoak.mes.common.annotate.FieldCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * <p>
@@ -20,6 +23,9 @@ import lombok.Data;
  * @since 2025-07-01 19:21:55
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @TableName("mo_imu_calib_results")
 @ApiModel(value = "MoImuCalibResults对象", description = "")
 public class MoImuCalibResults implements Serializable {
@@ -27,7 +33,7 @@ public class MoImuCalibResults implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     @FieldCode(no = "000", type = "val")
     private String sn;

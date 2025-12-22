@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.metoak.mes.common.result.ResultCodeEnum.*;
+
+
 /**
  * <p>
  *  前端控制器
@@ -34,60 +37,16 @@ public class MoImuCalibResultsController {
     @Autowired
     private IMoImuCalibResultsService moImuCalibResultsService;
 
-    @Autowired
-    private IMoCalibrationService moCalibrationService;
+
 
     @GetMapping
-    public Result getLast(@RequestParam String productSn) {
-        LambdaQueryWrapper<MoImuCalibResults> wrapper = new LambdaQueryWrapper<MoImuCalibResults>()
-                .eq(productSn != null, MoImuCalibResults::getSn, productSn)
-                .orderByDesc(MoImuCalibResults::getCreateTime)
-                .last("LIMIT 1");
-        MoImuCalibResults lastRecord = moImuCalibResultsService.getOne(wrapper);
-        if (lastRecord == null) {
-            return Result.ok();
-        }
-
-        LambdaQueryWrapper<MoCalibration> wrapper2 = new LambdaQueryWrapper<MoCalibration>()
-                .eq(MoCalibration::getId, lastRecord.getMoCalibrationId());
-        MoCalibration calibLastRecord = moCalibrationService.getOne(wrapper2);
-        if (calibLastRecord == null) {
-            return Result.ok();
-        }
-        Map<String, Object> result = new HashMap<>();
-        result.put("root", lastRecord.getRoot());
-        result.put("relative_path_yml_imu", lastRecord.getRelativePathYmlImu());
-        result.put("relative_path_yml_imucam", lastRecord.getRelativePathYmlImucam());
-        result.put("yml_filename", calibLastRecord.getYmlFilename());
-
-        return Result.ok(result);
+    public Result getLatest(@RequestParam String productSn) {
+        return moImuCalibResultsService.getLatest(productSn);
     }
 
-    @GetMapping("latestSuccess")
-    public Result getLatestSuccess(@RequestParam String productSn) {
-        LambdaQueryWrapper<MoImuCalibResults> wrapper = new LambdaQueryWrapper<MoImuCalibResults>()
-                .eq(MoImuCalibResults::getSn, productSn)
-                .eq(MoImuCalibResults::getErrorCode, 0)
-                .orderByDesc(MoImuCalibResults::getCreateTime)
-                .last("LIMIT 1");
-        MoImuCalibResults lastRecord = moImuCalibResultsService.getOne(wrapper);
-        if (lastRecord == null) {
-            return Result.ok();
-        }
-
-        LambdaQueryWrapper<MoCalibration> wrapper2 = new LambdaQueryWrapper<MoCalibration>()
-                .eq(MoCalibration::getId, lastRecord.getMoCalibrationId());
-        MoCalibration calibLastRecord = moCalibrationService.getOne(wrapper2);
-        if (calibLastRecord == null) {
-            return Result.ok();
-        }
-        Map<String, Object> result = new HashMap<>();
-        result.put("root", lastRecord.getRoot());
-        result.put("relative_path_yml_imu", lastRecord.getRelativePathYmlImu());
-        result.put("relative_path_yml_imucam", lastRecord.getRelativePathYmlImucam());
-        result.put("yml_filename", calibLastRecord.getYmlFilename());
-
-        return Result.ok(result);
+    @GetMapping("latest/filePath")
+    public Result getLatest2(@RequestParam String productSn) {
+        return moImuCalibResultsService.getLatest(productSn);
     }
 
 

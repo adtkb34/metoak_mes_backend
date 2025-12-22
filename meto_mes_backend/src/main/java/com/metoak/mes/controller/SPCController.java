@@ -57,7 +57,7 @@ public class SPCController {
 
 
     @GetMapping
-    @Operation(summary = "通过工序获取属性")
+    @Operation(summary = "通过工序获取属性值")
     public Result<List<Object>> fetch(@RequestParam String stepNo,
                                          @RequestParam String field,
                                       @RequestParam(required = false) String start,

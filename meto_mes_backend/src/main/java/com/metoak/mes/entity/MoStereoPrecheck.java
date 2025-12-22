@@ -5,8 +5,14 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
+import com.metoak.mes.common.annotate.FieldCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * <p>
@@ -16,6 +22,10 @@ import io.swagger.annotations.ApiModelProperty;
  * @author kevin
  * @since 2025-08-11 15:34:00
  */
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @TableName("mo_stereo_precheck")
 @ApiModel(value = "MoStereoPrecheck对象", description = "")
 public class MoStereoPrecheck implements Serializable {
@@ -31,557 +41,162 @@ public class MoStereoPrecheck implements Serializable {
 
     private Integer errorCode;
 
+    @FieldCode(no = "000", type = "val", label = "是否启用脏污检测")
     private Boolean isDirtyDetectEnabled;
 
+    @FieldCode(no = "001", type = "val", label = "左目脏污计数")
     private Integer dirtyCountLeft;
 
+    @FieldCode(no = "002", type = "val", label = "右目脏污计数")
     private Integer dirtyCountRight;
 
+    @FieldCode(no = "003", type = "val", label = "脏污判定系数")
     private Double dirtyStandardCof;
 
+    @FieldCode(no = "004", type = "val", label = "是否启用清晰度检测")
     private Boolean isClarityDetectEnabled;
 
+    @FieldCode(no = "005", type = "val", label = "左目清晰度")
     private Double clarityLeft;
 
+    @FieldCode(no = "006", type = "val", label = "右目清晰度")
     private Double clarityRight;
 
+    @FieldCode(no = "007", type = "val", label = "清晰度标准值")
     private Double clarityStandardVal;
 
+    @FieldCode(no = "008", type = "val", label = "清晰度最大偏差")
     private Double clarityStandardMdiff;
 
+    @FieldCode(no = "009", type = "val", label = "是否启用亮度检测")
     private Boolean isLoDetectEnabled;
 
+    @FieldCode(no = "010", type = "val", label = "亮度中值")
     private Double loMedium;
 
+    @FieldCode(no = "011", type = "val", label = "亮度均值")
     private Double loMean;
 
+    @FieldCode(no = "012", type = "val", label = "亮度最大值")
     private Double loMax;
 
+    @FieldCode(no = "013", type = "val", label = "亮度最小值")
     private Double loMin;
 
+    @FieldCode(no = "014", type = "val", label = "亮度标准差")
     private Double loStddev;
 
+    @FieldCode(no = "015", type = "val", label = "亮度标准值")
     private Double loStandardVal;
 
+    @FieldCode(no = "016", type = "val", label = "X偏移中值")
     private Double xOffsetMedium;
 
+    @FieldCode(no = "017", type = "val", label = "X偏移均值")
     private Double xOffsetMean;
 
+    @FieldCode(no = "018", type = "val", label = "X偏移最大值")
     private Double xOffsetMax;
 
+    @FieldCode(no = "019", type = "val", label = "X偏移最小值")
     private Double xOffsetMin;
 
+    @FieldCode(no = "020", type = "val", label = "X偏移标准差")
     private Double xOffsetStddev;
 
+    @FieldCode(no = "021", type = "val", label = "X偏移标准值")
     private Double xOffsetStandardVal;
 
+    @FieldCode(no = "022", type = "val", label = "X偏移标准容差")
     private Double xOffsetStandardTolerance;
 
+    @FieldCode(no = "023", type = "val", label = "是否启用偏色检测")
     private Boolean isColorCastDetectEnabled;
 
+    @FieldCode(no = "024", type = "val", label = "左目R通道均值")
     private Double colorCastRMeanLeft;
 
+    @FieldCode(no = "025", type = "val", label = "左目G通道均值")
     private Double colorCastGMeanLeft;
 
+    @FieldCode(no = "026", type = "val", label = "左目B通道均值")
     private Double colorCastBMeanLeft;
 
+    @FieldCode(no = "027", type = "val", label = "右目R通道均值")
     private Double colorCastRMeanRight;
 
+    @FieldCode(no = "028", type = "val", label = "右目G通道均值")
     private Double colorCastGMeanRight;
 
+    @FieldCode(no = "029", type = "val", label = "右目B通道均值")
     private Double colorCastBMeanRight;
 
+    @FieldCode(no = "030", type = "val", label = "左目R通道标准差")
     private Double colorCastRStddevLeft;
 
+    @FieldCode(no = "031", type = "val", label = "左目G通道标准差")
     private Double colorCastGStddevLeft;
 
+    @FieldCode(no = "032", type = "val", label = "左目B通道标准差")
     private Double colorCastBStddevLeft;
 
+    @FieldCode(no = "033", type = "val", label = "右目R通道标准差")
     private Double colorCastRStddevRight;
 
+    @FieldCode(no = "034", type = "val", label = "右目G通道标准差")
     private Double colorCastGStddevRight;
 
+    @FieldCode(no = "035", type = "val", label = "右目B通道标准差")
     private Double colorCastBStddevRight;
 
+    @FieldCode(no = "036", type = "val", label = "偏色R通道标准中心值")
     private Double colorCastStandardRCenter;
 
+    @FieldCode(no = "037", type = "val", label = "偏色R通道标准容差")
     private Double colorCastStandardRTolerance;
 
+    @FieldCode(no = "038", type = "val", label = "偏色G通道标准中心值")
     private Double colorCastStandardGCenter;
 
+    @FieldCode(no = "039", type = "val", label = "偏色G通道标准容差")
     private Double colorCastStandardGTolerance;
 
+    @FieldCode(no = "040", type = "val", label = "偏色B通道标准中心值")
     private Double colorCastStandardBCenter;
 
+    @FieldCode(no = "041", type = "val", label = "偏色B通道标准容差")
     private Double colorCastStandardBTolerance;
 
+    @FieldCode(no = "042", type = "val", label = "是否启用COD检测")
     private Boolean isCodDetectEnabled;
 
+    @FieldCode(no = "043", type = "val", label = "左目COD X值")
     private Double codXLeft;
 
+    @FieldCode(no = "044", type = "val", label = "左目COD Y值")
     private Double codYLeft;
 
+    @FieldCode(no = "045", type = "val", label = "右目COD X值")
     private Double codXRight;
 
+    @FieldCode(no = "046", type = "val", label = "右目COD Y值")
     private Double codYRight;
 
+    @FieldCode(no = "047", type = "val", label = "COD X标准中心值")
     private Double codStandardXCenter;
 
+    @FieldCode(no = "048", type = "val", label = "COD X标准容差")
     private Double codStandardXTolerance;
 
+    @FieldCode(no = "049", type = "val", label = "COD Y标准中心值")
     private Double codStandardYCenter;
 
+    @FieldCode(no = "050", type = "val", label = "COD Y标准容差")
     private Double codStandardYTolerance;
 
+    @FieldCode(no = "051", type = "val", label = "IMU数据是否有效")
     private Boolean isImuValid;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public LocalDateTime getDatetime() {
-        return datetime;
-    }
-
-    public void setDatetime(LocalDateTime datetime) {
-        this.datetime = datetime;
-    }
-
-    public String getSn() {
-        return sn;
-    }
-
-    public void setSn(String sn) {
-        this.sn = sn;
-    }
-
-    public Integer getErrorCode() {
-        return errorCode;
-    }
-
-    public void setErrorCode(Integer errorCode) {
-        this.errorCode = errorCode;
-    }
-
-    public Boolean getIsDirtyDetectEnabled() {
-        return isDirtyDetectEnabled;
-    }
-
-    public void setIsDirtyDetectEnabled(Boolean isDirtyDetectEnabled) {
-        this.isDirtyDetectEnabled = isDirtyDetectEnabled;
-    }
-
-    public Integer getDirtyCountLeft() {
-        return dirtyCountLeft;
-    }
-
-    public void setDirtyCountLeft(Integer dirtyCountLeft) {
-        this.dirtyCountLeft = dirtyCountLeft;
-    }
-
-    public Integer getDirtyCountRight() {
-        return dirtyCountRight;
-    }
-
-    public void setDirtyCountRight(Integer dirtyCountRight) {
-        this.dirtyCountRight = dirtyCountRight;
-    }
-
-    public Double getDirtyStandardCof() {
-        return dirtyStandardCof;
-    }
-
-    public void setDirtyStandardCof(Double dirtyStandardCof) {
-        this.dirtyStandardCof = dirtyStandardCof;
-    }
-
-    public Boolean getIsClarityDetectEnabled() {
-        return isClarityDetectEnabled;
-    }
-
-    public void setIsClarityDetectEnabled(Boolean isClarityDetectEnabled) {
-        this.isClarityDetectEnabled = isClarityDetectEnabled;
-    }
-
-    public Double getClarityLeft() {
-        return clarityLeft;
-    }
-
-    public void setClarityLeft(Double clarityLeft) {
-        this.clarityLeft = clarityLeft;
-    }
-
-    public Double getClarityRight() {
-        return clarityRight;
-    }
-
-    public void setClarityRight(Double clarityRight) {
-        this.clarityRight = clarityRight;
-    }
-
-    public Double getClarityStandardVal() {
-        return clarityStandardVal;
-    }
-
-    public void setClarityStandardVal(Double clarityStandardVal) {
-        this.clarityStandardVal = clarityStandardVal;
-    }
-
-    public Double getClarityStandardMdiff() {
-        return clarityStandardMdiff;
-    }
-
-    public void setClarityStandardMdiff(Double clarityStandardMdiff) {
-        this.clarityStandardMdiff = clarityStandardMdiff;
-    }
-
-    public Boolean getIsLoDetectEnabled() {
-        return isLoDetectEnabled;
-    }
-
-    public void setIsLoDetectEnabled(Boolean isLoDetectEnabled) {
-        this.isLoDetectEnabled = isLoDetectEnabled;
-    }
-
-    public Double getLoMedium() {
-        return loMedium;
-    }
-
-    public void setLoMedium(Double loMedium) {
-        this.loMedium = loMedium;
-    }
-
-    public Double getLoMean() {
-        return loMean;
-    }
-
-    public void setLoMean(Double loMean) {
-        this.loMean = loMean;
-    }
-
-    public Double getLoMax() {
-        return loMax;
-    }
-
-    public void setLoMax(Double loMax) {
-        this.loMax = loMax;
-    }
-
-    public Double getLoMin() {
-        return loMin;
-    }
-
-    public void setLoMin(Double loMin) {
-        this.loMin = loMin;
-    }
-
-    public Double getLoStddev() {
-        return loStddev;
-    }
-
-    public void setLoStddev(Double loStddev) {
-        this.loStddev = loStddev;
-    }
-
-    public Double getLoStandardVal() {
-        return loStandardVal;
-    }
-
-    public void setLoStandardVal(Double loStandardVal) {
-        this.loStandardVal = loStandardVal;
-    }
-
-    public Double getxOffsetMedium() {
-        return xOffsetMedium;
-    }
-
-    public void setxOffsetMedium(Double xOffsetMedium) {
-        this.xOffsetMedium = xOffsetMedium;
-    }
-
-    public Double getxOffsetMean() {
-        return xOffsetMean;
-    }
-
-    public void setxOffsetMean(Double xOffsetMean) {
-        this.xOffsetMean = xOffsetMean;
-    }
-
-    public Double getxOffsetMax() {
-        return xOffsetMax;
-    }
-
-    public void setxOffsetMax(Double xOffsetMax) {
-        this.xOffsetMax = xOffsetMax;
-    }
-
-    public Double getxOffsetMin() {
-        return xOffsetMin;
-    }
-
-    public void setxOffsetMin(Double xOffsetMin) {
-        this.xOffsetMin = xOffsetMin;
-    }
-
-    public Double getxOffsetStddev() {
-        return xOffsetStddev;
-    }
-
-    public void setxOffsetStddev(Double xOffsetStddev) {
-        this.xOffsetStddev = xOffsetStddev;
-    }
-
-    public Double getxOffsetStandardVal() {
-        return xOffsetStandardVal;
-    }
-
-    public void setxOffsetStandardVal(Double xOffsetStandardVal) {
-        this.xOffsetStandardVal = xOffsetStandardVal;
-    }
-
-    public Double getxOffsetStandardTolerance() {
-        return xOffsetStandardTolerance;
-    }
-
-    public void setxOffsetStandardTolerance(Double xOffsetStandardTolerance) {
-        this.xOffsetStandardTolerance = xOffsetStandardTolerance;
-    }
-
-    public Boolean getIsColorCastDetectEnabled() {
-        return isColorCastDetectEnabled;
-    }
-
-    public void setIsColorCastDetectEnabled(Boolean isColorCastDetectEnabled) {
-        this.isColorCastDetectEnabled = isColorCastDetectEnabled;
-    }
-
-    public Double getColorCastRMeanLeft() {
-        return colorCastRMeanLeft;
-    }
-
-    public void setColorCastRMeanLeft(Double colorCastRMeanLeft) {
-        this.colorCastRMeanLeft = colorCastRMeanLeft;
-    }
-
-    public Double getColorCastGMeanLeft() {
-        return colorCastGMeanLeft;
-    }
-
-    public void setColorCastGMeanLeft(Double colorCastGMeanLeft) {
-        this.colorCastGMeanLeft = colorCastGMeanLeft;
-    }
-
-    public Double getColorCastBMeanLeft() {
-        return colorCastBMeanLeft;
-    }
-
-    public void setColorCastBMeanLeft(Double colorCastBMeanLeft) {
-        this.colorCastBMeanLeft = colorCastBMeanLeft;
-    }
-
-    public Double getColorCastRMeanRight() {
-        return colorCastRMeanRight;
-    }
-
-    public void setColorCastRMeanRight(Double colorCastRMeanRight) {
-        this.colorCastRMeanRight = colorCastRMeanRight;
-    }
-
-    public Double getColorCastGMeanRight() {
-        return colorCastGMeanRight;
-    }
-
-    public void setColorCastGMeanRight(Double colorCastGMeanRight) {
-        this.colorCastGMeanRight = colorCastGMeanRight;
-    }
-
-    public Double getColorCastBMeanRight() {
-        return colorCastBMeanRight;
-    }
-
-    public void setColorCastBMeanRight(Double colorCastBMeanRight) {
-        this.colorCastBMeanRight = colorCastBMeanRight;
-    }
-
-    public Double getColorCastRStddevLeft() {
-        return colorCastRStddevLeft;
-    }
-
-    public void setColorCastRStddevLeft(Double colorCastRStddevLeft) {
-        this.colorCastRStddevLeft = colorCastRStddevLeft;
-    }
-
-    public Double getColorCastGStddevLeft() {
-        return colorCastGStddevLeft;
-    }
-
-    public void setColorCastGStddevLeft(Double colorCastGStddevLeft) {
-        this.colorCastGStddevLeft = colorCastGStddevLeft;
-    }
-
-    public Double getColorCastBStddevLeft() {
-        return colorCastBStddevLeft;
-    }
-
-    public void setColorCastBStddevLeft(Double colorCastBStddevLeft) {
-        this.colorCastBStddevLeft = colorCastBStddevLeft;
-    }
-
-    public Double getColorCastRStddevRight() {
-        return colorCastRStddevRight;
-    }
-
-    public void setColorCastRStddevRight(Double colorCastRStddevRight) {
-        this.colorCastRStddevRight = colorCastRStddevRight;
-    }
-
-    public Double getColorCastGStddevRight() {
-        return colorCastGStddevRight;
-    }
-
-    public void setColorCastGStddevRight(Double colorCastGStddevRight) {
-        this.colorCastGStddevRight = colorCastGStddevRight;
-    }
-
-    public Double getColorCastBStddevRight() {
-        return colorCastBStddevRight;
-    }
-
-    public void setColorCastBStddevRight(Double colorCastBStddevRight) {
-        this.colorCastBStddevRight = colorCastBStddevRight;
-    }
-
-    public Double getColorCastStandardRCenter() {
-        return colorCastStandardRCenter;
-    }
-
-    public void setColorCastStandardRCenter(Double colorCastStandardRCenter) {
-        this.colorCastStandardRCenter = colorCastStandardRCenter;
-    }
-
-    public Double getColorCastStandardRTolerance() {
-        return colorCastStandardRTolerance;
-    }
-
-    public void setColorCastStandardRTolerance(Double colorCastStandardRTolerance) {
-        this.colorCastStandardRTolerance = colorCastStandardRTolerance;
-    }
-
-    public Double getColorCastStandardGCenter() {
-        return colorCastStandardGCenter;
-    }
-
-    public void setColorCastStandardGCenter(Double colorCastStandardGCenter) {
-        this.colorCastStandardGCenter = colorCastStandardGCenter;
-    }
-
-    public Double getColorCastStandardGTolerance() {
-        return colorCastStandardGTolerance;
-    }
-
-    public void setColorCastStandardGTolerance(Double colorCastStandardGTolerance) {
-        this.colorCastStandardGTolerance = colorCastStandardGTolerance;
-    }
-
-    public Double getColorCastStandardBCenter() {
-        return colorCastStandardBCenter;
-    }
-
-    public void setColorCastStandardBCenter(Double colorCastStandardBCenter) {
-        this.colorCastStandardBCenter = colorCastStandardBCenter;
-    }
-
-    public Double getColorCastStandardBTolerance() {
-        return colorCastStandardBTolerance;
-    }
-
-    public void setColorCastStandardBTolerance(Double colorCastStandardBTolerance) {
-        this.colorCastStandardBTolerance = colorCastStandardBTolerance;
-    }
-
-    public Boolean getIsCodDetectEnabled() {
-        return isCodDetectEnabled;
-    }
-
-    public void setIsCodDetectEnabled(Boolean isCodDetectEnabled) {
-        this.isCodDetectEnabled = isCodDetectEnabled;
-    }
-
-    public Double getCodXLeft() {
-        return codXLeft;
-    }
-
-    public void setCodXLeft(Double codXLeft) {
-        this.codXLeft = codXLeft;
-    }
-
-    public Double getCodYLeft() {
-        return codYLeft;
-    }
-
-    public void setCodYLeft(Double codYLeft) {
-        this.codYLeft = codYLeft;
-    }
-
-    public Double getCodXRight() {
-        return codXRight;
-    }
-
-    public void setCodXRight(Double codXRight) {
-        this.codXRight = codXRight;
-    }
-
-    public Double getCodYRight() {
-        return codYRight;
-    }
-
-    public void setCodYRight(Double codYRight) {
-        this.codYRight = codYRight;
-    }
-
-    public Double getCodStandardXCenter() {
-        return codStandardXCenter;
-    }
-
-    public void setCodStandardXCenter(Double codStandardXCenter) {
-        this.codStandardXCenter = codStandardXCenter;
-    }
-
-    public Double getCodStandardXTolerance() {
-        return codStandardXTolerance;
-    }
-
-    public void setCodStandardXTolerance(Double codStandardXTolerance) {
-        this.codStandardXTolerance = codStandardXTolerance;
-    }
-
-    public Double getCodStandardYCenter() {
-        return codStandardYCenter;
-    }
-
-    public void setCodStandardYCenter(Double codStandardYCenter) {
-        this.codStandardYCenter = codStandardYCenter;
-    }
-
-    public Double getCodStandardYTolerance() {
-        return codStandardYTolerance;
-    }
-
-    public void setCodStandardYTolerance(Double codStandardYTolerance) {
-        this.codStandardYTolerance = codStandardYTolerance;
-    }
-
-    public Boolean getIsImuValid() {
-        return isImuValid;
-    }
-
-    public void setIsImuValid(Boolean isImuValid) {
-        this.isImuValid = isImuValid;
-    }
 
     @Override
     public String toString() {

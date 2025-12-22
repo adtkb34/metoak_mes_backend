@@ -37,13 +37,16 @@ public class MoParamsBase implements Serializable {
     @ApiModelProperty("参数集名称，含目的信息")
     private String name;
 
-    @ApiModelProperty("参数集类型：0-工程，1-工艺")
+    @ApiModelProperty("参数集类型")
     private Integer type;
 
-    @ApiModelProperty("产品物料编号")
-    private String materialCode;
+    @ApiModelProperty("工艺编号")
+    private String flowNo;
 
-    @ApiModelProperty("工序编号，参数集归属的工序")
+    @ApiModelProperty("工单ID")
+    private Long orderId;
+
+    @ApiModelProperty("工序编号，参数集归属的工序（可为空）")
     private String stepTypeNo;
 
     @ApiModelProperty("创建人，用于审计")

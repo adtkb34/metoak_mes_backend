@@ -1,0 +1,2 @@
+ALTER TABLE mo_params_base
+MODIFY COLUMN type INT NOT NULL DEFAULT 0 COMMENT '参数集类型';

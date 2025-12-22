@@ -26,6 +26,8 @@ public enum StepMappingEnum {
     DUAL_TARGET_CALIB("020", "双目标定"),
     REAR_LENS_ASSEMBLY("022", "后群组装"),
     REAR_LENS_CAP_FASTENING("023", "后镜头盖固定"),
+    S316L_FINAL_CHECK("024", "316L终检"),
+    S316L_PERFORMANCE_TEST("025", "316L性能检"),
     S315_FINAL_CHECK("027", "S315终检"),
     IMU_CALIB("028", "IMU计算"),
     FQC_M55H_STEREO("032", "双目M55H终测"),

@@ -80,7 +80,7 @@ public <T> List<Object> getFieldValuesByNo(ProcessMappingRegistry.ProcessMapping
     }
 
     // 排序和限制
-    queryWrapper.orderByDesc("add_time")
+    queryWrapper.orderByDesc("id")
             .last("LIMIT " + (limit * 10));
 
     Object service = null;

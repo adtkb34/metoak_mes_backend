@@ -31,7 +31,6 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
                 .singleProductWeight(createDto.getSingleProductWeight())
                 .fullBoxPackageWeight(createDto.getFullBoxPackageWeight())
                 .allowedDeviation(createDto.getAllowedDeviation())
-                .unit(createDto.getUnit())
                 .build();
         this.save(rule);
         return rule.getId();
@@ -49,7 +48,6 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
                 .singleProductWeight(updateDto.getSingleProductWeight())
                 .fullBoxPackageWeight(updateDto.getFullBoxPackageWeight())
                 .allowedDeviation(updateDto.getAllowedDeviation())
-                .unit(updateDto.getUnit())
                 .build();
         return this.updateById(rule);
     }
@@ -73,7 +71,6 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
                 .singleProductWeight(rule.getSingleProductWeight())
                 .fullBoxPackageWeight(rule.getFullBoxPackageWeight())
                 .allowedDeviation(rule.getAllowedDeviation())
-                .unit(rule.getUnit())
                 .createdAt(rule.getCreatedAt())
                 .updatedAt(rule.getUpdatedAt())
                 .build();

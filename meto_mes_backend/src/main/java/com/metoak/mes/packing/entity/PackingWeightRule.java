@@ -37,9 +37,6 @@ public class PackingWeightRule {
     @TableField("allowed_deviation")
     private BigDecimal allowedDeviation;
 
-    @TableField("unit")
-    private String unit;
-
     @TableField("created_at")
     private LocalDateTime createdAt;
 

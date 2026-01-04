@@ -22,8 +22,6 @@ public class PackingWeightRuleVO {
 
     private BigDecimal allowedDeviation;
 
-    private String unit;
-
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

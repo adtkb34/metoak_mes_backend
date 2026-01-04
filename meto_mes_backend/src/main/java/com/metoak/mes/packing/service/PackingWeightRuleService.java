@@ -15,4 +15,6 @@ public interface PackingWeightRuleService extends IService<PackingWeightRule> {
     Long createRule(PackingWeightRuleCreateDto createDto);
 
     boolean updateRule(PackingWeightRuleUpdateDto updateDto);
+
+    PackingWeightRuleVO getRuleByProductCode(String productCode);
 }

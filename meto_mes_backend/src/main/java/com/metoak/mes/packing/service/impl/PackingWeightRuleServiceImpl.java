@@ -26,7 +26,7 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
     @Override
     public Long createRule(PackingWeightRuleCreateDto createDto) {
         PackingWeightRule rule = PackingWeightRule.builder()
-                .productModel(createDto.getProductModel())
+                .productCode(createDto.getProductCode())
                 .fullBoxQuantity(createDto.getFullBoxQuantity())
                 .singleProductWeight(createDto.getSingleProductWeight())
                 .fullBoxPackageWeight(createDto.getFullBoxPackageWeight())
@@ -44,7 +44,7 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
         }
         PackingWeightRule rule = PackingWeightRule.builder()
                 .id(updateDto.getId())
-                .productModel(updateDto.getProductModel())
+                .productCode(updateDto.getProductCode())
                 .fullBoxQuantity(updateDto.getFullBoxQuantity())
                 .singleProductWeight(updateDto.getSingleProductWeight())
                 .fullBoxPackageWeight(updateDto.getFullBoxPackageWeight())
@@ -54,10 +54,21 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
         return this.updateById(rule);
     }
 
+    @Override
+    public PackingWeightRuleVO getRuleByProductCode(String productCode) {
+        PackingWeightRule rule = this.lambdaQuery()
+                .eq(PackingWeightRule::getProductCode, productCode)
+                .one();
+        if (rule == null) {
+            return null;
+        }
+        return convertToVo(rule);
+    }
+
     private PackingWeightRuleVO convertToVo(PackingWeightRule rule) {
         return PackingWeightRuleVO.builder()
                 .id(rule.getId())
-                .productModel(rule.getProductModel())
+                .productCode(rule.getProductCode())
                 .fullBoxQuantity(rule.getFullBoxQuantity())
                 .singleProductWeight(rule.getSingleProductWeight())
                 .fullBoxPackageWeight(rule.getFullBoxPackageWeight())

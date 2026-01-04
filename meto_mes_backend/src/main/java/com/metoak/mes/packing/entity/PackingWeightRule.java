@@ -22,8 +22,8 @@ public class PackingWeightRule {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @TableField("product_model")
-    private String productModel;
+    @TableField("product_code")
+    private String productCode;
 
     @TableField("full_box_quantity")
     private Integer fullBoxQuantity;

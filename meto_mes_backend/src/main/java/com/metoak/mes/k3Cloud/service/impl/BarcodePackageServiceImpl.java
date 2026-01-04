@@ -30,7 +30,7 @@ public class BarcodePackageServiceImpl implements IBarcodePackageService {
 
 
     @Override
-    public void saveBarcodePackage(String packingCode) throws Exception {
+    public void saveBarcodePackage(String packingCode, String productCode) throws Exception {
         LambdaQueryWrapper<MoPackingInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MoPackingInfo::getPackingCode, packingCode);
         List<MoPackingInfo> list = moPackingInfoService.list(wrapper);
@@ -58,6 +58,13 @@ public class BarcodePackageServiceImpl implements IBarcodePackageService {
         // ========== Model ==========
         JsonObject model = new JsonObject();
         model.addProperty("Fpackaging", packingCode);
+
+        // ========== Model ==========
+        JsonObject FBoxMaterialId = new JsonObject();
+        FBoxMaterialId.addProperty("FNUMBER", productCode);
+
+        model.add("FBoxMaterialId", FBoxMaterialId);
+
 
         // ========== FEntity ==========
         JsonArray fEntityArray = new JsonArray();

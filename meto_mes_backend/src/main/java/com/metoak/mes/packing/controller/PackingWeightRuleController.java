@@ -47,6 +47,10 @@ public class PackingWeightRuleController {
     @PostMapping
     @Operation(summary = "新建装箱重量规则")
     public Result<Long> createRule(@RequestBody @Valid PackingWeightRuleCreateDto createDto) {
+        PackingWeightRuleVO rule = packingWeightRuleService.getRuleByProductCode(createDto.getProductCode());
+        if (rule != null) {
+            return Result.fail(ResultCodeEnum.PRODUCT_ALREADY_EXISTS);
+        }
         return Result.ok(packingWeightRuleService.createRule(createDto));
     }
 

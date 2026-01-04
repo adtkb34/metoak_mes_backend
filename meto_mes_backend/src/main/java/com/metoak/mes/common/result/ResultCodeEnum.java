@@ -45,6 +45,9 @@ public enum ResultCodeEnum {
     FAILED_TO_SAVE_BARCODE_MASTER(2004001, "保存条码主档失败"),
     FAILED_TO_SAVE_PACKING_RELATION(2004002, "保存装箱关系失败"),
 
+    // packing
+    PRODUCT_ALREADY_EXISTS(2005001, "此产品已添加记录，不能重复添加"),
+
 
     ;
 

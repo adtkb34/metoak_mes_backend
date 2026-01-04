@@ -1,0 +1,354 @@
+stages:          # List of stages for jobs, and their order of execution
+  - build
+  - test
+  - quality
+  - security
+  - package
+  - deploy
+
+variables:
+  ARTIFACT_COMDIR: "artifacts"
+# -Dhttps.protocols=TLSv1.2                         # 强制使用 TLSv1.2 协议，增强 HTTPS 连接安全性
+# -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository # 设置本地 Maven 仓库路径为项目目录下的 .m2/repository，实现仓库隔离
+# -Dorg.slf4j.simpleLogger.showDateTime=true        # 启用 SLF4J 简单日志记录器的时间戳显示
+# -Djava.awt.headless=true                          # 启用无头模式，避免 GUI 依赖（在 CI 服务器上很重要）
+#-XX:+TieredCompilation  # 启用分层编译
+#-XX:TieredStopAtLevel=1  # 只做C1编译，加快启动
+#-Xms512m  # 设置最小堆内存
+#-Xmx2g    # 设置最大堆内存
+  MAVEN_OPTS: >-
+    -Dhttps.protocols=TLSv1.2
+    -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+    -Dorg.slf4j.simpleLogger.showDateTime=true
+    -Djava.awt.headless=true
+    -XX:+TieredCompilation
+    -XX:TieredStopAtLevel=1
+    -Xms512m
+    -Xmx2g
+
+# --batch-mode           # 启用批处理模式，非交互式执行，避免用户输入提示
+# --errors               # 在构建失败时打印错误信息
+# --fail-at-end          # 即使部分模块失败也继续构建，最后汇总报告所有失败
+# --show-version         # 在构建开始时显示 Maven 版本信息
+# --no-transfer-progress # 禁用依赖下载的进度显示，减少日志输出
+# -DinstallAtEnd=true    # 推迟 install 阶段到所有模块构建完成后执行
+# -DdeployAtEnd=true     # 推迟 deploy 阶段到所有模块构建完成后执行
+#-T 1C  # 根据CPU核心数并行构建（重要！）
+#-DskipTests=true  # 在build阶段跳过测试
+#-DskipITs=true    # 在build阶段跳过集成测试
+  MAVEN_CLI_OPTS: >-
+    --batch-mode
+    --errors
+    --fail-at-end
+    --show-version
+    --no-transfer-progress
+    -DinstallAtEnd=true
+    -DdeployAtEnd=true
+    -T 1C
+    -DskipTests=true
+    -DskipITs=true
+
+  MES_DB_IP: "11.11.11.34"
+  MES_DB_NAME: "mo_mes_db_SZ_test"
+  MES_DB_USERNAME: "root"
+  MES_DB_PASSWORD: "momeshou"
+
+#Risk Categories Explained:
+#0-3.9: Low Risk​
+#(Low Risk)
+#4.0-6.9: Moderate Risk​
+#(Moderate Risk)
+#7.0-8.9: High Risk​
+#(High Risk)
+#9.0-10.0: Severe Risk
+  OWASP_CVSS_RIST_LOW: 1
+  OWASP_CVSS_RIST_MODERATE: 4
+  OWASP_CVSS_RIST_HIGH: 7
+  OWASP_CVSS_RIST_SEVERE: 9
+
+  MES_DB_IP: "11.11.11.34"
+  MES_DB_NAME: "mo_mes_db_SZ_test"
+  MES_DB_USERNAME: "root"
+  MES_DB_PASSWORD: "momeshou"
+
+#Risk Categories Explained:
+#0-3.9: Low Risk​
+#(Low Risk)
+#4.0-6.9: Moderate Risk​
+#(Moderate Risk)
+#7.0-8.9: High Risk​
+#(High Risk)
+#9.0-10.0: Severe Risk
+  OWASP_CVSS_RIST_LOW: 1
+  OWASP_CVSS_RIST_MODERATE: 4
+  OWASP_CVSS_RIST_HIGH: 7
+  OWASP_CVSS_RIST_SEVERE: 9
+
+
+cache:
+  key: "${CI_COMMIT_REF_SLUG}"
+  paths:
+    - .m2/repository/
+  policy: pull-push  # 明确指定缓存策略
+  when: 'always'
+
+# 定义作业模板
+.maven-jobs-common-settings: &maven_jobs_settings
+  tags:
+    - JR1
+  before_script: 
+    - |
+      mvn --version
+      java --version
+      /moak/opt/deploy/maven/install-k3cloud-sdk.sh
+      if [ ! -d "$ARTIFACT_COMDIR" ]; then mkdir -p "$ARTIFACT_COMDIR"; fi
+
+
+# 所有后续阶段
+.test-stage-base: &test_stage_base
+  <<: *maven_jobs_settings
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository/
+    policy: pull
+  before_script:
+    - |
+      echo "Using pre-compiled artifacts from build stage"
+      mvn --version
+
+# 构建阶段
+build:
+  stage: build
+  <<: *maven_jobs_settings
+  script:
+    - |
+      mvn $MAVEN_CLI_OPTS clean compile
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository/
+    policy: push  # 明确指定缓存策略
+    when: on_success
+  artifacts:
+    paths:
+      - target/classes/
+      - .m2/repository/
+    expire_in: 2 hour
+
+
+# 单元测试阶段
+unit-test:
+  <<: *test_stage_base
+  dependencies:
+    - build  # 复用build产物
+  stage: test
+  script:
+    - |
+      mvn $MAVEN_CLI_OPTS test -Dspring.profiles.active=test -DforkCount=2
+      if ls target/surefire-reports >/dev/null 2>&1; then cp -rf target/surefire-reports ${ARTIFACT_COMDIR}/; fi
+  artifacts:
+    reports:
+      junit:
+        - ${ARTIFACT_COMDIR}/surefire-reports/TEST-*.xml
+    paths:
+      - "$ARTIFACT_COMDIR"
+    expire_in: 1 week
+  coverage: '/Total.*?([0-9]{1,3})%/'
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository/
+    policy: pull  # test阶段只拉取缓存
+
+
+# 集成测试阶段
+integration-test:
+  <<: *test_stage_base
+  dependencies:
+    - build  # 复用build产物
+  stage: test
+  script:
+    - |
+      mvn $MAVEN_CLI_OPTS verify -DskipUnitTests -Dspring.profiles.active=test
+      if ls target/failsafe-reports >/dev/null 2>&1; then cp -rf target/failsafe-reports ${ARTIFACT_COMDIR}/; fi
+  needs: ["build"]
+  artifacts:
+    reports:
+      junit:
+        - ${ARTIFACT_COMDIR}/failsafe-reports/TEST-*.xml
+    paths:
+      - ${ARTIFACT_COMDIR}
+    expire_in: 1 week
+
+# 代码质量检查 - SonarQube
+sonarqube-check:
+  <<: *test_stage_base
+  stage: quality
+  script:
+    - |
+      mvn $MAVEN_CLI_OPTS sonar:sonar  -Dspring.profiles.active=test -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+  needs:
+    - job: unit-test
+      optional: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"
+      when: always
+    - when: manual
+  interruptible: true  # 允许中断
+  allow_failure: true
+
+# 静态代码分析 - PMD/Checkstyle
+static-analysis:
+  <<: *test_stage_base
+  stage: quality
+  script:
+    - |
+      mvn $MAVEN_CLI_OPTS pmd:check checkstyle:check
+  needs:
+    - job: build
+      optional: true
+  rules:
+    - when: manual
+  allow_failure: true
+
+# OWASP依赖检查
+dependency-check:
+  <<: *test_stage_base
+  stage: security
+  script:
+    - |
+      mvn $MAVEN_CLI_OPTS org.owasp:dependency-check-maven:check org.owasp:dependency-check-maven:check -Danalyzer.retirejs.enabled=false
+      if ls target/dependency-check-report.* >/dev/null 2>&1; then cp -rf target/dependency-check-report.* ${ARTIFACT_COMDIR}/; fi
+  needs:
+    - job: build
+      optional: true
+  rules:
+    - when: manual
+  artifacts:
+    reports:
+      dependency_scanning:
+        - ${ARTIFACT_COMDIR}/dependency-check-report.html
+    paths:
+      - "$ARTIFACT_COMDIR"
+    expire_in: 1 week
+  interruptible: true  # 允许中断
+  allow_failure: true
+
+# 打包阶段
+package:
+  tags:
+    - JR1
+  stage: package
+  needs: ["unit-test", "integration-test"]
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}"
+    paths:
+      - .m2/repository/
+    policy: pull
+  script:
+    - |
+      export MES_RELEASE_VERSION="$(git describe --tags --dirty --always | sed 's/^v//')"
+      mvn versions:set -DnewVersion="$MES_RELEASE_VERSION"
+      mvn $MAVEN_CLI_OPTS clean package -DskipTests -T 1C -Dmaven.test.skip=true -Dmaven.install.skip=true
+      if [ ! -d "$ARTIFACT_COMDIR" ]; then mkdir -p "$ARTIFACT_COMDIR"; fi
+      if ls target/*.jar >/dev/null 2>&1; then cp -rf target/*.jar ${ARTIFACT_COMDIR}/; fi
+      if ls target/*.war >/dev/null 2>&1; then cp -rf target/*.war ${ARTIFACT_COMDIR}/; fi
+  artifacts:
+    paths:
+      - "$ARTIFACT_COMDIR"
+    expire_in: 2 week
+  allow_failure: false
+
+
+# 部署到测试环境
+deploy-test:
+  tags:
+    - JR1
+  stage: deploy
+  script:
+    - |
+      echo "Cached artifacts:"
+      ls -al "$ARTIFACT_COMDIR"
+      JAR_FILE=$(find "$ARTIFACT_COMDIR" -name "*.jar" -type f 2>/dev/null | head -1)
+      GD_VER="$(git describe --long --always --tags)"
+      /moak/opt/deploy/maven/deploy.sh -j "${JAR_FILE}" -l test -r "${GD_VER}" -e test -f
+  needs: ["package"]
+  only:
+    - main
+    - develop
+    - tags
+  when: always
+
+
+# 部署到生产环境
+deploy-prod-sz:
+  tags:
+    - JR1
+  stage: deploy
+  script:
+    - |
+      echo "Cached artifacts:"
+      ls -al "$ARTIFACT_COMDIR"
+      JAR_FILE=$(find "$ARTIFACT_COMDIR" -name "*.jar" -type f 2>/dev/null | head -1)
+      GD_VER="$(git describe --long --always --tags)"
+      /moak/opt/deploy/maven/deploy.sh -j "${JAR_FILE}" -l sz -r "${GD_VER}" -e prod
+  needs: ["package"]
+  only:
+    - main
+    - develop
+    - tags
+  when: manual
+
+# 部署到生产环境
+deploy-prod-my:
+  tags:
+    - JR1
+  stage: deploy
+  script:
+    - |
+      echo "Cached artifacts:"
+      ls -al "$ARTIFACT_COMDIR"
+      JAR_FILE=$(find "$ARTIFACT_COMDIR" -name "*.jar" -type f 2>/dev/null | head -1)
+      GD_VER="$(git describe --long --always --tags)"
+      /moak/opt/deploy/maven/deploy.sh -j "${JAR_FILE}" -l my -r "${GD_VER}" -e prod
+  needs: ["package"]
+  only:
+    - main
+    - develop
+    - tags
+  when: manual
+
+
+# 部署到生产环境
+deploy-prod-ja:
+  tags:
+    - JR1
+  stage: deploy
+  script:
+    - |
+      echo "Cached artifacts:"
+      ls -al "$ARTIFACT_COMDIR"
+      JAR_FILE=$(find "$ARTIFACT_COMDIR" -name "*.jar" -type f 2>/dev/null | head -1)
+      GD_VER="$(git describe --long --always --tags)"
+      /moak/opt/deploy/maven/deploy.sh -j "${JAR_FILE}" -l ja -r "${GD_VER}" -e prod
+  needs: ["package"]
+  only:
+    - main
+    - develop
+    - tags
+  when: manual
+
+cleanup:
+  stage: .post  # 最后阶段
+  tags:
+    - JR1
+  script:
+    - |
+      echo "Cleaning up workspace..."
+      # 清理Maven本地仓库中的临时文件
+      find ~/.m2/repository -name "*.lastUpdated" -delete
+      find ~/.m2/repository -name "*.repositories" -delete
+      # 清理项目目录
+      rm -rf target/ .tmp/ 2>/dev/null || true
+  when: always

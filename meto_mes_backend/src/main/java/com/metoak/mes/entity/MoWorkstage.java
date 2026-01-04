@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -47,6 +48,9 @@ public class MoWorkstage implements Serializable {
     private Boolean showPtype;
 
     private Boolean manualResult;
+
+    @ApiModelProperty("参数集详情ID")
+    private Long paramsDetailId;
 
     @Override
     public String toString() {

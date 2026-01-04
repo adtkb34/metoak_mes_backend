@@ -1,7 +1,7 @@
 package com.metoak.mes.common.util;
 
 import com.metoak.mes.common.MOException;
-import com.metoak.mes.enums.ResultCodeEnum;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;

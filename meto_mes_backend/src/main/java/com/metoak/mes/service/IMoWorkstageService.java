@@ -13,5 +13,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IMoWorkstageService extends IService<MoWorkstage> {
 
-    String getByCode(String stageCode);
+    String getNameByCode(String stageCode);
+
+    MoWorkstage getByCode(String stageCode);
+
+    MoWorkstage getByNo(String stepNo);
 }

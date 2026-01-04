@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ApiModel(value = "ParamBaseCreateDto", description = "参数集创建请求对象")
+@ApiModel(value = "ParamDetailCreateDto", description = "参数集创建请求对象")
 public class ParamDetailCreateDto {
 
     @ApiModelProperty(value = "Base ID")
@@ -22,5 +22,7 @@ public class ParamDetailCreateDto {
 
     @ApiModelProperty(value = "参数集")
     private String params;
+
+    private String createdBy;
 
 }

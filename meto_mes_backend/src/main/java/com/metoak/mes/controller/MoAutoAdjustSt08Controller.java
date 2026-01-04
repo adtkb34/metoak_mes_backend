@@ -6,7 +6,7 @@ import com.metoak.mes.common.util.SortUtil;
 import com.metoak.mes.dto.LoginDto;
 import com.metoak.mes.dto.LoginResponseDto;
 import com.metoak.mes.entity.MoAutoAdjustSt08;
-import com.metoak.mes.enums.ResultCodeEnum;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.service.IMoAutoAdjustSt08Service;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;

@@ -6,7 +6,7 @@ import com.metoak.mes.dto.LoginDto;
 import com.metoak.mes.dto.LoginResponseDto;
 import com.metoak.mes.dto.LogoutDto;
 import com.metoak.mes.dto.UserDto;
-import com.metoak.mes.enums.ResultCodeEnum;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.enums.UserRoleLevel;
 import com.metoak.mes.service.IMoUserInfoService;
 import io.swagger.v3.oas.annotations.Operation;

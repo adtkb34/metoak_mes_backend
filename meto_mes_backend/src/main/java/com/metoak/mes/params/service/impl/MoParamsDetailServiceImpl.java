@@ -1,12 +1,16 @@
 package com.metoak.mes.params.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metoak.mes.common.result.Result;
 import com.metoak.mes.common.result.ResultCodeEnum;
+import com.metoak.mes.entity.MoProcessFlow;
+import com.metoak.mes.entity.MoProduceOrder;
+import com.metoak.mes.entity.MoWorkstage;
 import com.metoak.mes.params.dto.ParamDetailCreateDto;
 import com.metoak.mes.params.dto.ParamsUploadRequest;
 import com.metoak.mes.params.entity.MoParamsBase;
@@ -15,6 +19,9 @@ import com.metoak.mes.params.enums.ParamTypeEnum;
 import com.metoak.mes.params.mapper.MoParamsDetailMapper;
 import com.metoak.mes.params.service.IMoParamsBaseService;
 import com.metoak.mes.params.service.IMoParamsDetailService;
+import com.metoak.mes.service.IMoProcessFlowService;
+import com.metoak.mes.service.IMoProduceOrderService;
+import com.metoak.mes.service.IMoWorkstageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,14 +47,19 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
     @Autowired
     private IMoParamsBaseService paramsBaseService;
 
+    @Autowired
+    private IMoProcessFlowService moProcessFlowService;
+
+    @Autowired
+    private IMoWorkstageService moWorkstageService;
+
+    @Autowired
+    private IMoProduceOrderService moProduceOrderService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public Result<Long> saveDetail(ParamDetailCreateDto createDto) {
-        MoParamsBase paramsBase = paramsBaseService.getById(createDto.getBaseId());
-        if (paramsBase == null) {
-            return Result.fail(ResultCodeEnum.PARAM_BASE_NOT_FOUND);
-        }
         JsonNode currentParams;
         try {
             currentParams = objectMapper.readTree(createDto.getParams());
@@ -55,7 +67,7 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
             return Result.fail(ResultCodeEnum.PARAMS_INVALID_JSON);
         }
         List<MoParamsDetail> detailList = lambdaQuery()
-                .eq(MoParamsDetail::getBaseId, paramsBase.getId())
+                .eq(MoParamsDetail::getBaseId, createDto.getBaseId())
                 .list();
         VersionResult versionResult = determineVersion(detailList, currentParams);
 
@@ -66,10 +78,34 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
         paramsDetail.setVersionMinor(versionResult.minor);
         paramsDetail.setVersionPatch(versionResult.patch);
         paramsDetail.setParams(createDto.getParams());
-        paramsDetail.setIsActive(ACTIVE_FLAG);
+        paramsDetail.setIsActive(1);
         paramsDetail.setCreatedAt(LocalDateTime.now());
+        paramsDetail.setCreatedBy(createDto.getCreatedBy());
         save(paramsDetail);
+        bindParamsDetailToTarget(createDto.getBaseId(), paramsDetail.getId());
         return Result.ok(paramsDetail.getId());
+    }
+
+    private Boolean bindParamsDetailToTarget(Long baseId, Long detailId) {
+        MoParamsBase base = paramsBaseService.getById(baseId);
+        if (base.getType().equals(ParamTypeEnum.STEP.getCode())) {
+            LambdaUpdateWrapper<MoWorkstage> wrapper = new LambdaUpdateWrapper<>();
+            wrapper.eq(MoWorkstage::getStepTypeNo, base.getStepTypeNo())
+                    .set(MoWorkstage::getParamsDetailId, detailId);
+            return moWorkstageService.update(wrapper);
+        } else if (base.getType().equals(ParamTypeEnum.FLOW.getCode())) {
+            LambdaUpdateWrapper<MoProcessFlow> wrapper = new LambdaUpdateWrapper<>();
+            wrapper.eq(MoProcessFlow::getProcessCode, base.getFlowNo())
+                    .set(MoProcessFlow::getParamsDetailId, detailId);
+            return moProcessFlowService.update(wrapper);
+        } else if (base.getType().equals(ParamTypeEnum.WORK_ORDER.getCode())) {
+            LambdaUpdateWrapper<MoProduceOrder> wrapper = new LambdaUpdateWrapper<>();
+            wrapper.eq(MoProduceOrder::getId, base.getOrderId())
+                    .set(MoProduceOrder::getParamsDetailId, detailId);
+            return moProduceOrderService.update(wrapper);
+        }
+
+        return false;
     }
 
     @Override
@@ -112,28 +148,6 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
 
         // 返回新创建记录的ID
         return Result.ok(newDetail.getId());
-    }
-
-    private VersionResult generateNextVersion(Long baseId) {
-        List<MoParamsDetail> details = lambdaQuery().eq(MoParamsDetail::getBaseId, baseId).list();
-        if (details.isEmpty()) {
-            return new VersionResult(INITIAL_VERSION_MAJOR, INITIAL_VERSION_MINOR, INITIAL_VERSION_PATCH, null);
-        }
-        MoParamsDetail latest = details.stream()
-                .filter(Objects::nonNull)
-                .max(Comparator
-                        .comparing(MoParamsDetail::getVersionMajor, Comparator.nullsFirst(Integer::compareTo))
-                        .thenComparing(MoParamsDetail::getVersionMinor, Comparator.nullsFirst(Integer::compareTo))
-                        .thenComparing(MoParamsDetail::getVersionPatch, Comparator.nullsFirst(Integer::compareTo))
-                        .thenComparing(MoParamsDetail::getCreatedAt, Comparator.nullsLast(LocalDateTime::compareTo)))
-                .orElse(null);
-        if (latest == null) {
-            return new VersionResult(INITIAL_VERSION_MAJOR, INITIAL_VERSION_MINOR, INITIAL_VERSION_PATCH, null);
-        }
-        int nextPatch = latest.getVersionPatch() == null ? 1 : latest.getVersionPatch() + 1;
-        int major = latest.getVersionMajor() == null ? INITIAL_VERSION_MAJOR : latest.getVersionMajor();
-        int minor = latest.getVersionMinor() == null ? INITIAL_VERSION_MINOR : latest.getVersionMinor();
-        return new VersionResult(major, minor, nextPatch, null);
     }
 
     private MoParamsBase findOrCreateParamsBase(ParamsUploadRequest request) {

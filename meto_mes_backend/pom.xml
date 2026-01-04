@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.metoak</groupId>
 	<artifactId>mes</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>V1.5.0.MES.alpha</version>
 	<name>mes</name>
 	<description>mes project for Spring Boot</description>
 	<url/>

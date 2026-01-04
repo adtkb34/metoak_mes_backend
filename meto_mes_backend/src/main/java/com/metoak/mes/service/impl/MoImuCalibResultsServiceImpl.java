@@ -44,7 +44,7 @@ public class MoImuCalibResultsServiceImpl extends ServiceImpl<MoImuCalibResultsM
         }
         Integer errorCode = lastRecord.getErrorCode();
         if (!errorCode.equals(0)) {
-            return Result.fail(errorCode, LATEST_IMU_CALCULATION_FAILED.getMessage());
+            return Result.fail(errorCode, LATEST_IMU_CALCULATION_FAILED.getName());
         }
 
         if (lastRecord.getMoCalibrationId() == null) {

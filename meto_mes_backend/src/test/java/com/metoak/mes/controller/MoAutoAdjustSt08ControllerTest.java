@@ -5,7 +5,7 @@ import com.metoak.mes.common.util.MD5Util;
 import com.metoak.mes.dto.LoginDto;
 import com.metoak.mes.dto.LoginResponseDto;
 import com.metoak.mes.entity.MoAutoAdjustSt08;
-import com.metoak.mes.enums.ResultCodeEnum;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

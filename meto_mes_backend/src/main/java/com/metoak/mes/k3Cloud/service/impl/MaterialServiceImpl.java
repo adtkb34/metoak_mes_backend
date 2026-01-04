@@ -4,10 +4,12 @@ import com.kingdee.bos.webapi.sdk.K3CloudApi;
 import com.metoak.mes.k3Cloud.service.IMaterialService;
 import com.metoak.mes.mapper.MoMaterialBindingMapper;
 import com.metoak.mes.service.IMoMaterialBindingService;
+import com.metoak.mes.traceability.vo.MaterialBindVo;
 import com.metoak.mes.traceability.vo.MaterialVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,9 @@ public class MaterialServiceImpl implements IMaterialService {
 
     @Autowired
     private IMoMaterialBindingService moMaterialBindingService;
+
+    @Autowired
+    private MoMaterialBindingMapper moMaterialBindingMapper;
 
     @Override
     public List<MaterialVo> listMaterialsFromWorkOrder() throws Exception {
@@ -82,5 +87,12 @@ public class MaterialServiceImpl implements IMaterialService {
     @Override
     public boolean deleteById(Long id) {
         return moMaterialBindingService.removeById(id);
+    }
+
+    @Override
+    public List<MaterialBindVo> getBindings(String materialCode, String cameraSn,
+                                            LocalDateTime startTime, LocalDateTime endTime) throws Exception {
+        return moMaterialBindingMapper.getBindings(materialCode, cameraSn,
+                startTime, endTime);
     }
 }

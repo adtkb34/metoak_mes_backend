@@ -2,12 +2,16 @@ package com.metoak.mes.traceability.controller;
 
 import com.metoak.mes.common.result.Result;
 import com.metoak.mes.k3Cloud.service.IMaterialService;
+import com.metoak.mes.traceability.vo.MaterialBindVo;
 import com.metoak.mes.traceability.vo.MaterialVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -45,5 +49,29 @@ public class MaterialController {
         boolean isDeleted = materialService.deleteById(id);
 
         return Result.ok(isDeleted);
+    }
+
+    @Operation(summary = "获取所有绑定记录")
+    @GetMapping("/materialBindings")
+    public Result<List<MaterialBindVo>> getBindings(
+            @RequestParam(required = false) String materialCode,
+            @RequestParam(required = false) String cameraSn,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime startTime,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime endTime
+    ) throws Exception {
+        // 验证至少有一个查询条件
+        if (materialCode == null && cameraSn == null && startTime == null && endTime == null) {
+            return Result.fail(400, "至少需要提供一个查询条件");
+        }
+
+        // 验证时间范围合理性
+        if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
+            return Result.fail(400, "开始时间不能晚于结束时间");
+        }
+
+        List<MaterialBindVo> materialVos = materialService.getBindings(
+                materialCode, cameraSn, startTime, endTime);
+
+        return Result.ok(materialVos);
     }
 }

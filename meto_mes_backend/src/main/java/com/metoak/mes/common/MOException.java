@@ -1,6 +1,6 @@
 package com.metoak.mes.common;
 
-import com.metoak.mes.enums.ResultCodeEnum;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

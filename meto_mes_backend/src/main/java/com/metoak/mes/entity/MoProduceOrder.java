@@ -30,7 +30,7 @@ public class MoProduceOrder implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     @ApiModelProperty("工单编号")
     private String workOrderCode;
@@ -97,11 +97,11 @@ public class MoProduceOrder implements Serializable {
     @ApiModelProperty("参数集详情ID")
     private Long paramsDetailId;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

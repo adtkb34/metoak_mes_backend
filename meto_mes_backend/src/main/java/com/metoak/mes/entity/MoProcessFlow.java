@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
@@ -19,6 +20,7 @@ import lombok.NoArgsConstructor;
  * @author kevin
  * @since 2025-06-17 18:02:42
  */
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -47,6 +49,9 @@ public class MoProcessFlow implements Serializable {
     private LocalDateTime addTime;
 
     private Boolean isRequired;
+
+    @ApiModelProperty("参数集详情ID")
+    private Long paramsDetailId;
 
     public Integer getId() {
         return id;

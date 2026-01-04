@@ -16,7 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static com.metoak.mes.enums.ResultCodeEnum.PRO_PRODUCT_SN_NOT_FOUND_BY_WORKORDER_NO;
+import static com.metoak.mes.common.result.ResultCodeEnum.PRO_PRODUCT_SN_NOT_FOUND_BY_WORKORDER_NO;
+
 
 @RestController
 @RequestMapping("/api/mes/v1/production")

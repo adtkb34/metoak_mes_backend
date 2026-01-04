@@ -5,7 +5,7 @@ import com.metoak.mes.common.config.DatabaseConfig;
 import com.metoak.mes.common.config.MesDatabaseProperties;
 import com.metoak.mes.entity.MoCalibration;
 import com.metoak.mes.enums.OriginEnum;
-import com.metoak.mes.enums.ResultCodeEnum;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.enums.StepMappingEnum;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

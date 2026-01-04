@@ -5,7 +5,7 @@ import com.metoak.mes.common.ResultBean;
 import com.metoak.mes.common.result.Result;
 import com.metoak.mes.dto.*;
 import com.metoak.mes.entity.*;
-import com.metoak.mes.enums.ResultCodeEnum;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.service.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

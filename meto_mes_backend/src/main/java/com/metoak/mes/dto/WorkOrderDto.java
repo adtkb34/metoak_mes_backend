@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WorkOrderDto {
-    private Integer id;
+    private Long id;
     private String no;
     private String spuProductNo;
     private Integer productCount;

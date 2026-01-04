@@ -31,7 +31,7 @@ public class Result<T> {
     private static <T> Result<T> build(T body, ResultCodeEnum resultCodeEnum) {
         Result<T> result = build(body);
         result.setCode(resultCodeEnum.getCode());
-        result.setMessage(resultCodeEnum.getMessage());
+        result.setMessage(resultCodeEnum.getName());
         return result;
     }
 
@@ -49,7 +49,7 @@ public class Result<T> {
     }
 
     public static <T> Result<T> fail(ResultCodeEnum resultCodeEnum) {
-        return fail(resultCodeEnum.getCode(), resultCodeEnum.getMessage());
+        return fail(resultCodeEnum.getCode(), resultCodeEnum.getName());
     }
 
     public static <T> Result<T> fail(ResultCodeEnum resultCodeEnum, T data) {

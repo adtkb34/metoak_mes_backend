@@ -29,4 +29,6 @@ public class ParamBaseCreateDto {
     @ApiModelProperty(value = "工序编号")
     private String stepTypeNo;
 
+    private String createdBy;
+
 }

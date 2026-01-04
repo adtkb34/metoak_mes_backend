@@ -36,7 +36,7 @@ public class ResultBean<T> implements Serializable {
     public static <T> ResultBean<T> build(T body, ResultCodeEnum resultCodeEnum) {
         ResultBean<T> result = build(body);
         result.setCode(resultCodeEnum.getCode());
-        result.setMessage(resultCodeEnum.getMessage());
+        result.setMessage(resultCodeEnum.getName());
         return result;
     }
 

@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+#export MES_RELEASE_VERSION="local.test.version@$(git describe --long --always --tags)"
+#export MES_DB_HOST="11.11.11.34"
+#export MES_DB_PORT="3306"
+#export MES_DB_NAME="mo_mes_db_SZ_test"
+#export MES_DB_USERNAME="root"
+#export MES_DB_PASSWORD="momeshou"
+
 # =====================================================
 # 必要的环境变量检查
 # =====================================================
@@ -29,14 +36,12 @@ init() {
     JAR_PATH=""
     PORT_CANDIDATES=(8081 8082)
     REQUIRED_ENV_VARS=(
-        TEST_STAGE_DB_IP
-        TEST_STAGE_DB_NAME
-        TEST_STAGE_DB_USERNAME
-        TEST_STAGE_DB_PASSWORD
-        DEPLOY_STAGE_DB_IP
-        DEPLOY_STAGE_DB_NAME
-        DEPLOY_STAGE_DB_USERNAME
-        DEPLOY_STAGE_DB_PASSWORD
+        MES_RELEASE_VERSION
+        MES_DB_HOST
+        MES_DB_PORT
+        MES_DB_NAME
+        MES_DB_USERNAME
+        MES_DB_PASSWORD
     )
 
     echo "📁 脚本目录: $SCRIPT_DIR"
@@ -110,9 +115,9 @@ run_package() {
     cd "$PROJECT_DIR"
     local version
     version=$(git describe --tags --dirty --always | sed 's/^v//')
-    export SOFTWARE_VERSION="$version"
+    export MES_RELEASE_VERSION="$version"
     mvn versions:set -DnewVersion="$version"
-    mvn clean package -Dspring.profiles.active=prod -DskipTests
+    mvn clean package -DskipTests
     JAR_PATH="$PROJECT_DIR/target/$(ls target/*.jar | xargs -n 1 basename | head -n 1)"
 
     echo "🏗️  [PACKAGE] 构建完成"
@@ -126,6 +131,7 @@ run_deploy() {
 
     cd "$PROJECT_DIR"
 
+    check_env
     select_free_port
     start_new_app
     health_check
@@ -155,7 +161,6 @@ start_new_app() {
     echo "🚀 启动新版本 (port=$DEPLOY_PORT)"
     CMD="nohup java -jar \"$JAR_PATH\" \
     --server.port=$DEPLOY_PORT \
-    --spring.profiles.active=prod \
     > app_${DEPLOY_PORT}.out 2>&1 &"
 
     echo "🚀 执行启动命令："
@@ -229,7 +234,6 @@ dispatch() {
 main() {
     parse_args "$@"
     init
-    check_env
     dispatch
 
     echo "✅ pipeline 执行完成 (mode=$MODE)"

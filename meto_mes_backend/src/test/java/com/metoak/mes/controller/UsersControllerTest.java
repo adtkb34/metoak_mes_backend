@@ -10,7 +10,7 @@ import com.metoak.mes.dto.LoginDto;
 import com.metoak.mes.dto.LoginResponseDto;
 import com.metoak.mes.entity.MoBeamInfo;
 import com.metoak.mes.entity.MoUserInfo;
-import com.metoak.mes.enums.ResultCodeEnum;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.service.IMoUserInfoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

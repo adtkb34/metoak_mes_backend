@@ -3,8 +3,6 @@ package com.metoak.mes.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metoak.mes.dto.ParamsBaseDto;
-import com.metoak.mes.entity.MoProduceOrder;
-import com.metoak.mes.entity.MoTagInfo;
 import com.metoak.mes.params.controller.ParamsController;
 import com.metoak.mes.params.entity.MoParamsBase;
 import com.metoak.mes.params.entity.MoParamsDetail;
@@ -101,7 +99,7 @@ public class ParamsControllerTest {
         MoParamsBase paramsBase = new MoParamsBase();
         paramsBase.setId(1L);
         paramsBase.setName("工艺参数");
-        paramsBase.setType(ParamTypeEnum.PROCESS.getCode());
+        paramsBase.setType(ParamTypeEnum.FLOW.getCode());
         paramsBase.setFlowNo("FLOW-01");
         paramsBase.setCreatedBy("user");
         paramsBase.setCreatedAt(LocalDateTime.now());
@@ -119,9 +117,9 @@ public class ParamsControllerTest {
         when(paramsBaseService.list(any(LambdaQueryWrapper.class))).thenReturn(Collections.singletonList(paramsBase));
         when(paramsDetailService.list(any(LambdaQueryWrapper.class))).thenReturn(Collections.singletonList(paramsDetail));
 
-        mockMvc.perform(get("/api/mes/v1/params/list").param("type", ParamTypeEnum.PROCESS.getCode().toString()))
+        mockMvc.perform(get("/api/mes/v1/params/list").param("type", ParamTypeEnum.FLOW.getCode().toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].type").value(ParamTypeEnum.PROCESS.getCode()))
+                .andExpect(jsonPath("$.data[0].type").value(ParamTypeEnum.FLOW.getCode()))
                 .andExpect(jsonPath("$.data[0].relation").value("FLOW-01"))
                 .andExpect(jsonPath("$.data[0].version").value("1.0.0"))
                 .andExpect(jsonPath("$.data[0].description").value("描述"));

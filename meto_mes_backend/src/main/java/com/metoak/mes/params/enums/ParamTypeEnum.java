@@ -4,7 +4,7 @@ import com.metoak.mes.enums.BaseEnum;
 
 public enum ParamTypeEnum implements BaseEnum {
     STEP(1, "工序"),
-    PROCESS(2, "工艺"),
+    FLOW(2, "工艺"),
     WORK_ORDER(3, "工单"),
     ENGINEERING(4, "工程"),
     USER(5, "用户");

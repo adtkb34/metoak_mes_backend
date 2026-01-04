@@ -2,4 +2,101 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.metoak.mes.mapper.MoMaterialBindingMapper">
 
+    <resultMap id="MaterialBindResultMap" type="com.metoak.mes.traceability.vo.MaterialBindVo">
+        <result column="material_code" property="materialCode"/>
+        <result column="material_name" property="materialName"/>
+        <result column="camera_sn" property="cameraSn"/>
+        <result column="category" property="category"/>
+        <result column="category_no" property="categoryNo"/>
+        <result column="material_batch_no" property="materialBatchNo"/>
+        <result column="material_serial_no" property="materialSerialNo"/>
+        <result column="create_time" property="createTime"/>
+        <result column="operator" property="operator"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <select id="getBindings" resultMap="MaterialBindResultMap">
+        WITH base_data AS (
+            SELECT
+                a.camera_sn,
+                a.category,
+                a.category_no,
+                a.material_batch_no,
+                a.material_serial_no,
+                a.create_time,
+                a.is_deleted,
+                b.work_order_code,
+                b.material_code,
+                d.operator
+            FROM mo_material_binding a
+            JOIN mo_beam_info b ON a.camera_sn = b.beam_sn
+            JOIN mo_process_step_production_result d
+                ON a.mo_process_step_production_result_id = d.id
+                AND d.step_type_no = '004'
+            WHERE a.is_deleted = 0
+            <if test="cameraSn != null and cameraSn != ''">
+                AND a.camera_sn = #{cameraSn}
+            </if>
+        )
+        SELECT
+            c.material_code,
+            c.material_name,
+            bd.camera_sn,
+            bd.category,
+            bd.category_no,
+            bd.material_batch_no,
+            bd.material_serial_no,
+            bd.create_time,
+            bd.operator,
+            bd.is_deleted
+        FROM base_data bd
+        JOIN mo_produce_order c
+            ON bd.work_order_code = c.work_order_code
+            AND bd.material_code = c.material_code
+        <where>
+            <if test="materialCode != null and materialCode != ''">
+                AND c.material_code = #{materialCode}
+            </if>
+            <if test="startTime != null">
+                AND bd.create_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND bd.create_time &lt;= #{endTime}
+            </if>
+        </where>
+
+        UNION ALL
+
+        SELECT
+            c.material_code,
+            c.material_name,
+            bd.camera_sn,
+            e.category,
+            e.category_no,
+            e.material_batch_no,
+            e.material_serial_no,
+            e.create_time,
+            bd.operator,
+            e.is_deleted
+        FROM base_data bd
+        JOIN mo_produce_order c
+            ON bd.work_order_code = c.work_order_code
+            AND bd.material_code = c.material_code
+        JOIN mo_material_binding e
+            ON bd.material_serial_no = e.camera_sn
+            AND e.is_deleted = 0
+        <where>
+            <if test="materialCode != null and materialCode != ''">
+                AND c.material_code = #{materialCode}
+            </if>
+            <if test="startTime != null">
+                AND bd.create_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND bd.create_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
 </mapper>

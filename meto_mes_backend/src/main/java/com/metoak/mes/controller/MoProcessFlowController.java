@@ -1,11 +1,8 @@
 package com.metoak.mes.controller;
 
-import com.metoak.mes.common.ResultBean;
 import com.metoak.mes.common.result.Result;
 import com.metoak.mes.dto.ProcessFlowDto;
 import com.metoak.mes.entity.MoProcessFlow;
-import com.metoak.mes.entity.MoWorkstage;
-import com.metoak.mes.enums.ResultCodeEnum;
 import com.metoak.mes.service.IMoProcessFlowService;
 import com.metoak.mes.service.IMoWorkstageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,7 +10,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +57,7 @@ public class MoProcessFlowController {
                     dto.setStageNames(
                             list.stream()
                                     .map(MoProcessFlow::getStageCode)
-                                    .map(stageCode -> moWorkstageService.getByCode(stageCode)) // 或你自定义的查法
+                                    .map(stageCode -> moWorkstageService.getNameByCode(stageCode)) // 或你自定义的查法
                                     .collect(Collectors.toList())
                     );
                     return dto;

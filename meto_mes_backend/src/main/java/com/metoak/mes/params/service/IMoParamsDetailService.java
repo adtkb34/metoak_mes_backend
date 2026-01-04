@@ -19,4 +19,5 @@ public interface IMoParamsDetailService extends IService<MoParamsDetail> {
     Result<Long> uploadParams(ParamsUploadRequest request);
 
     Result<Long> saveDetail(ParamDetailCreateDto createDto);
+
 }

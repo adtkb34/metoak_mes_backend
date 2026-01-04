@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,6 +46,9 @@ public class MoBeamInfo implements Serializable {
     private Integer produceOrderId;
 
     private Integer isUsed;
+
+    @ApiModelProperty("物料编号")
+    private String materialCode;
 
     public Integer getId() {
         return id;

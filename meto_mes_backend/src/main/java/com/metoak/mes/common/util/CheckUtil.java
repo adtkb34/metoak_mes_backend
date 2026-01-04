@@ -2,7 +2,7 @@ package com.metoak.mes.common.util;
 
 
 import com.metoak.mes.common.MOException;
-import com.metoak.mes.enums.ResultCodeEnum;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import jakarta.validation.ConstraintViolation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,11 +32,11 @@ public class CheckUtil {
         }
     }
 
-    public static void notNull(Object obj, String msg, Object... args) {
-        if (obj == null) {
-            fail(msg, ResultCodeEnum.NULL, args);
-        }
-    }
+//    public static void notNull(Object obj, String msg, Object... args) {
+//        if (obj == null) {
+//            fail(msg, ResultCodeEnum.NULL, args);
+//        }
+//    }
 
     public static void notEmpty(Collection<?> obj, String msg, Object... args) {
         if (obj == null || obj.isEmpty()) {

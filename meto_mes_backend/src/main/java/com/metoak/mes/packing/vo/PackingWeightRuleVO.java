@@ -12,7 +12,7 @@ public class PackingWeightRuleVO {
 
     private Long id;
 
-    private String productModel;
+    private String productCode;
 
     private Integer fullBoxQuantity;
 

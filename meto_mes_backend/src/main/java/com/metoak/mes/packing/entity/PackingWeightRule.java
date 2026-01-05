@@ -25,17 +25,17 @@ public class PackingWeightRule {
     @TableField("product_code")
     private String productCode;
 
-    @TableField("full_box_quantity")
-    private Integer fullBoxQuantity;
+    @TableField("spec_quantity")
+    private Integer specQuantity;
 
-    @TableField("single_product_weight")
-    private BigDecimal singleProductWeight;
+    @TableField("unit_weight")
+    private BigDecimal unitWeight;
 
-    @TableField("full_box_package_weight")
-    private BigDecimal fullBoxPackageWeight;
+    @TableField("tare_weight")
+    private BigDecimal tareWeight;
 
-    @TableField("allowed_deviation")
-    private BigDecimal allowedDeviation;
+    @TableField("weight_tolerance")
+    private BigDecimal weightTolerance;
 
     @TableField("created_at")
     private LocalDateTime createdAt;

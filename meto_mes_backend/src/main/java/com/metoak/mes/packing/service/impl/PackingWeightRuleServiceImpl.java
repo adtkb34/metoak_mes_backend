@@ -27,10 +27,10 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
     public Long createRule(PackingWeightRuleCreateDto createDto) {
         PackingWeightRule rule = PackingWeightRule.builder()
                 .productCode(createDto.getProductCode())
-                .fullBoxQuantity(createDto.getFullBoxQuantity())
-                .singleProductWeight(createDto.getSingleProductWeight())
-                .fullBoxPackageWeight(createDto.getFullBoxPackageWeight())
-                .allowedDeviation(createDto.getAllowedDeviation())
+                .specQuantity(createDto.getSpecQuantity())
+                .unitWeight(createDto.getUnitWeight())
+                .tareWeight(createDto.getTareWeight())
+                .weightTolerance(createDto.getWeightTolerance())
                 .build();
         this.save(rule);
         return rule.getId();
@@ -44,10 +44,10 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
         PackingWeightRule rule = PackingWeightRule.builder()
                 .id(updateDto.getId())
                 .productCode(updateDto.getProductCode())
-                .fullBoxQuantity(updateDto.getFullBoxQuantity())
-                .singleProductWeight(updateDto.getSingleProductWeight())
-                .fullBoxPackageWeight(updateDto.getFullBoxPackageWeight())
-                .allowedDeviation(updateDto.getAllowedDeviation())
+                .specQuantity(updateDto.getSpecQuantity())
+                .unitWeight(updateDto.getUnitWeight())
+                .tareWeight(updateDto.getTareWeight())
+                .weightTolerance(updateDto.getWeightTolerance())
                 .build();
         return this.updateById(rule);
     }
@@ -67,10 +67,10 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
         return PackingWeightRuleVO.builder()
                 .id(rule.getId())
                 .productCode(rule.getProductCode())
-                .fullBoxQuantity(rule.getFullBoxQuantity())
-                .singleProductWeight(rule.getSingleProductWeight())
-                .fullBoxPackageWeight(rule.getFullBoxPackageWeight())
-                .allowedDeviation(rule.getAllowedDeviation())
+                .specQuantity(rule.getSpecQuantity())
+                .unitWeight(rule.getUnitWeight())
+                .tareWeight(rule.getTareWeight())
+                .weightTolerance(rule.getWeightTolerance())
                 .createdAt(rule.getCreatedAt())
                 .updatedAt(rule.getUpdatedAt())
                 .build();

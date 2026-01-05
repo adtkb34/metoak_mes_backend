@@ -14,13 +14,13 @@ public class PackingWeightRuleVO {
 
     private String productCode;
 
-    private Integer fullBoxQuantity;
+    private Integer specQuantity;
 
-    private BigDecimal singleProductWeight;
+    private BigDecimal unitWeight;
 
-    private BigDecimal fullBoxPackageWeight;
+    private BigDecimal tareWeight;
 
-    private BigDecimal allowedDeviation;
+    private BigDecimal weightTolerance;
 
     private LocalDateTime createdAt;
 

@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("packing_weight_rule")
+@TableName("mo_packing_weight_rule")
 public class PackingWeightRule {
 
     @TableId(value = "id", type = IdType.AUTO)

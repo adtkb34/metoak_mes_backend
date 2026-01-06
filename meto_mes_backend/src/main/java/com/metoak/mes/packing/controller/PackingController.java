@@ -24,7 +24,7 @@ public class PackingController {
     @Autowired
     private IBarcodePackageService barcodePackageService;
 
-    @PostMapping("/barcode-packages")
+    @PostMapping("/k3cloud/barcode-packages")
     @Operation(summary = SAVE_BARCODE_PACKAGE_OPERATION)
     public Result<Void> saveBarcodePackage(@RequestBody @Valid BarcodePackageSaveDto saveDto) throws Exception {
         barcodePackageService.saveBarcodePackage(saveDto.getPackingCode(), saveDto.getProductCode());

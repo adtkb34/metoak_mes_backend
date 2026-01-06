@@ -35,6 +35,7 @@ public class BarcodePackageServiceImpl implements IBarcodePackageService {
         wrapper.eq(MoPackingInfo::getPackingCode, packingCode);
         List<MoPackingInfo> list = moPackingInfoService.list(wrapper);
         kingdeeBarcodeMasterService.saveBarcode(packingCode, BarcodeType.PACKING);
+        System.out.println(list.size());
         list.forEach(o ->
         {
             try {

@@ -22,8 +22,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.metoak.mes.common.util.TimestampUtils.convertToDateTime;
@@ -293,41 +291,18 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
 
         if (productionRecordDto.getMaterials() != null) {
             productionRecordDto.getMaterials().forEach(item -> {
-                String originSn = productionRecordDto.getProductSn(); // 例如 ABC0007
-
-// 1. 拆前缀 + 数字流水号
-                Pattern pattern = Pattern.compile("^(.*?)(\\d+)$");
-                Matcher matcher = pattern.matcher(originSn);
-
-                if (!matcher.matches()) {
-                    throw new IllegalArgumentException("Invalid SN format: " + originSn);
-                }
-
-                String snPrefix = matcher.group(1);     // ABC
-                String snNumberStr = matcher.group(2);  // 0007
-                int snStart = Integer.parseInt(snNumberStr);
-                int snLength = snNumberStr.length();    // 位数，用于补0
-
-// 2. 按 count 递增生成
-                for (int i = 0; i < productionRecordDto.getCount(); i++) {
-                    int currentSnNumber = snStart + i;
-                    String currentSn = snPrefix + String.format("%0" + snLength + "d", currentSnNumber);
-
-                    MoMaterialBinding m = MoMaterialBinding.builder()
-                            .cameraSn(currentSn)
-                            .cameraBatch(productionRecordDto.getProductBatchNo())
-                            .category(item.getCategory())
-                            .categoryNo(item.getCategoryNo())
-                            .materialBatchNo(item.getBatchNo())
-                            .materialSerialNo(item.getSerialNo())
-                            .moProcessStepProductionResultId(moProcessStepProductionResultId)
-                            .position(item.getPosition())
-                            .build();
-
-                    moMaterialBindingService.save(m);
-                    Ids.add(m.getId());
-                }
-
+                MoMaterialBinding m = MoMaterialBinding.builder().
+                        cameraSn(productionRecordDto.getProductSn()).
+                        cameraBatch(productionRecordDto.getProductBatchNo()).
+                        category(item.getCategory()).
+                        categoryNo(item.getCategoryNo()).
+                        materialBatchNo(item.getBatchNo()).
+                        materialSerialNo(item.getSerialNo()).
+                        moProcessStepProductionResultId(moProcessStepProductionResultId).
+                        position(item.getPosition()).
+                        build();
+                moMaterialBindingService.save(m);
+                Ids.add(m.getId());
             });
         }
         return Ids;

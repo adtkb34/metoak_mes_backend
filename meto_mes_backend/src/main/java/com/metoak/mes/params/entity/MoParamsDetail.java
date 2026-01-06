@@ -49,9 +49,6 @@ public class MoParamsDetail implements Serializable {
     @ApiModelProperty("版本：修订号")
     private Integer versionPatch;
 
-    @ApiModelProperty("参数内容哈希")
-    private String paramHash;
-
     @ApiModelProperty("参数内容（JSON），完整参数")
     private String params;
 

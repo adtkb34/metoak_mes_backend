@@ -1,7 +1,6 @@
 package com.metoak.mes.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
@@ -58,9 +57,6 @@ public class MoProcessStepProductionResult implements Serializable {
     private Long engineeringParamsId;
 
     private Long flowParamsId;
-
-    @TableField("param_set_id")
-    private String paramSetId;
 
     public Long getId() {
         return id;
@@ -166,14 +162,6 @@ public class MoProcessStepProductionResult implements Serializable {
         this.softwareToolVersion = softwareToolVersion;
     }
 
-    public String getParamSetId() {
-        return paramSetId;
-    }
-
-    public void setParamSetId(String paramSetId) {
-        this.paramSetId = paramSetId;
-    }
-
     @Override
     public String toString() {
         return "MoProcess＿step＿production＿result{" +
@@ -190,7 +178,6 @@ public class MoProcessStepProductionResult implements Serializable {
             ", operator = " + operator +
             ", softwareTool = " + softwareTool +
             ", softwareToolVersion = " + softwareToolVersion +
-            ", paramSetId = " + paramSetId +
         "}";
     }
 }

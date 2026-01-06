@@ -40,7 +40,7 @@ public enum ResultCodeEnum {
     FAILED_TO_FIND_PROCESS_BY_PROCESS_ID(2003010, "通过工艺编号没找到对应的工艺"),
     PARAMETER_NOT_PROVIDED(2003011, "参数没有传"),
     STEP_NOT_FOUND_BY_NO(2003012, "通过编号未找到工序"),
-
+    PARAMS_DETAIL_BIND_FAILED(2003013, "参数详情绑定失败"),
     // k3
     FAILED_TO_SAVE_BARCODE_MASTER(2004001, "保存条码主档失败"),
     FAILED_TO_SAVE_PACKING_RELATION(2004002, "保存装箱关系失败"),

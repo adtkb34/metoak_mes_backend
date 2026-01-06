@@ -6,8 +6,10 @@ import com.metoak.mes.common.MOException;
 import com.metoak.mes.common.result.Result;
 import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.entity.*;
+import com.metoak.mes.params.dto.ParamBaseCreateDto;
 import com.metoak.mes.params.entity.MoParamsBase;
 import com.metoak.mes.params.entity.MoParamsDetail;
+import com.metoak.mes.params.enums.ParamTypeEnum;
 import com.metoak.mes.params.mapper.MoParamsBaseMapper;
 import com.metoak.mes.params.service.IMoParamsDetailService;
 import com.metoak.mes.params.service.impl.MoParamsBaseServiceImpl;
@@ -479,5 +481,441 @@ public class MoParamsBaseServiceImplTest {
         assertTrue(result.getData().getParams().getSteps().isEmpty());
     }
 
+    @Test
+    void should_throw_exception_when_order_not_found_() {
+        when(moProduceOrderService.getById(1L)).thenReturn(null);
+
+        MOException ex = assertThrows(
+                MOException.class,
+                () -> moParamsBaseService.getByOrderId(1L)
+        );
+
+        assertEquals(
+                ResultCodeEnum.WORK_ORDER_QUERY_BY_ID_FAILED.getCode(),
+                ex.getCode()
+        );
+    }
+
+    @Test
+    void should_return_payload_with_order_params_when_paramsDetailId_exists() {
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        MoProduceOrder order = new MoProduceOrder();
+        order.setId(1L);
+        order.setParamsDetailId(100L);
+
+        ParamsNode orderNode = new ParamsNode();
+        orderNode.setId("100");
+        orderNode.setName("order-params");
+
+        when(moProduceOrderService.getById(1L)).thenReturn(order);
+        doReturn(orderNode).when(spy).buildNodeByDetailId(100L);
+
+        Result<ParamsPayload> result = spy.getByOrderId(1L);
+
+        assertNotNull(result);
+//        assertTrue(result.isSuccess());
+
+        ParamsContainer params = result.getData().getParams();
+        assertNotNull(params);
+        assertNotNull(params.getOrder());
+        assertEquals("100", params.getOrder().getId());
+    }
+
+    @Test
+    void should_skip_order_params_when_paramsDetailId_is_null() {
+        MoProduceOrder order = new MoProduceOrder();
+        order.setId(1L);
+        order.setParamsDetailId(null);
+
+        when(moProduceOrderService.getById(1L)).thenReturn(order);
+
+        Result<ParamsPayload> result = moParamsBaseService.getByOrderId(1L);
+
+        assertNotNull(result);
+//        assertTrue(result.isSuccess());
+
+        ParamsContainer params = result.getData().getParams();
+        assertNotNull(params);
+        assertNull(params.getOrder());
+    }
+
+    @Test
+    void should_skip_flow_params_when_flow_detail_id_is_null_() {
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        doReturn(null)
+                .when(spy)
+                .getDetailIdByFlowNo("FLOW_001");
+
+        Result<ParamsPayload> result = spy.getByFlowNo("FLOW_001");
+
+        assertNotNull(result);
+
+        ParamsContainer params = result.getData().getParams();
+        assertNotNull(params);
+        assertNull(params.getFlow());
+    }
+
+    @Test
+    void should_return_flow_params_when_flow_detail_id_exists() {
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        ParamsNode flowNode = new ParamsNode();
+        flowNode.setId("200");
+        flowNode.setName("flow-params");
+
+        doReturn(200L)
+                .when(spy)
+                .getDetailIdByFlowNo("FLOW_001");
+
+        doReturn(flowNode)
+                .when(spy)
+                .buildNodeByDetailId(200L);
+
+        Result<ParamsPayload> result = spy.getByFlowNo("FLOW_001");
+
+        assertNotNull(result);
+
+        ParamsContainer params = result.getData().getParams();
+        assertNotNull(params);
+        assertNotNull(params.getFlow());
+        assertEquals("200", params.getFlow().getId());
+    }
+
+    @Test
+    void should_allow_null_flow_node_when_buildNode_returns_null() {
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        doReturn(200L)
+                .when(spy)
+                .getDetailIdByFlowNo("FLOW_001");
+
+        doReturn(null)
+                .when(spy)
+                .buildNodeByDetailId(200L);
+
+        Result<ParamsPayload> result = spy.getByFlowNo("FLOW_001");
+
+        ParamsContainer params = result.getData().getParams();
+        assertNull(params.getFlow());
+    }
+
+    @Test
+    void should_throw_exception_when_stage_not_found() {
+        when(moWorkstageService.getByNo("STEP_001"))
+                .thenReturn(null);
+
+        MOException ex = assertThrows(
+                MOException.class,
+                () -> moParamsBaseService.getByStepNo("STEP_001")
+        );
+
+        assertEquals(
+                ResultCodeEnum.STEP_NOT_FOUND_BY_NO.getCode(),
+                ex.getCode()
+        );
+    }
+
+    @Test
+    void should_ruturn_null_when_paramsDetailId_is_null() {
+        MoWorkstage stage = new MoWorkstage();
+        stage.setParamsDetailId(null);
+
+        when(moWorkstageService.getByNo("STEP_001"))
+                .thenReturn(stage);
+
+        Result<ParamsPayload> result = moParamsBaseService.getByStepNo("STEP_001");
+
+        assertEquals(
+                0,
+                result.getData().getParams().getSteps().size()
+        );
+    }
+
+    @Test
+    void should_return_step_node_when_paramsDetailId_exists() {
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        MoWorkstage stage = new MoWorkstage();
+        stage.setParamsDetailId(10L);
+
+        ParamsNode node = new ParamsNode();
+        node.setId("10");
+
+        when(moWorkstageService.getByNo("STEP_001"))
+                .thenReturn(stage);
+        doReturn(node)
+                .when(spy)
+                .buildNodeByDetailId(10L);
+
+        Result<ParamsPayload> result = spy.getByStepNo("STEP_001");
+
+        assertNotNull(result);
+
+        ParamsContainer params = result.getData().getParams();
+        assertNotNull(params.getSteps());
+        assertEquals(1, params.getSteps().size());
+        assertEquals("10", params.getSteps().get(0).getId());
+    }
+
+    @Test
+    void should_return_empty_steps_when_buildNode_returns_null() {
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        MoWorkstage stage = new MoWorkstage();
+        stage.setParamsDetailId(10L);
+
+        when(moWorkstageService.getByNo("STEP_001"))
+                .thenReturn(stage);
+        doReturn(null)
+                .when(spy)
+                .buildNodeByDetailId(10L);
+
+        Result<ParamsPayload> result = spy.getByStepNo("STEP_001");
+
+        ParamsContainer params = result.getData().getParams();
+        assertNotNull(params.getSteps());
+        assertTrue(params.getSteps().isEmpty());
+    }
+
+    @Test
+    void should_skip_flow_params_when_detail_id_is_null() {
+        Result<ParamsPayload> result = moParamsBaseService.getByDetailId(null);
+
+        assertNotNull(result);
+
+        ParamsContainer params = result.getData().getParams();
+        assertNotNull(params);
+        assertNull(params.getFlow());
+    }
+
+    @Test
+    void should_return_flow_params_when_detail_id_exists() {
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        ParamsNode flowNode = new ParamsNode();
+        flowNode.setId("100");
+        flowNode.setName("flow-params");
+
+        doReturn(flowNode)
+                .when(spy)
+                .buildNodeByDetailId(100L);
+
+        Result<ParamsPayload> result = spy.getByDetailId(100L);
+
+        assertNotNull(result);
+
+        ParamsContainer params = result.getData().getParams();
+        assertNotNull(params.getFlow());
+        assertEquals("100", params.getFlow().getId());
+    }
+
+    @Test
+    void should_allow_null_flow_node_when_buildNode_returns_null_() {
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        doReturn(null)
+                .when(spy)
+                .buildNodeByDetailId(100L);
+
+        Result<ParamsPayload> result = spy.getByDetailId(100L);
+
+        ParamsContainer params = result.getData().getParams();
+        assertNull(params.getFlow());
+    }
+
+    @Test
+    void saveBase_stepType_exists_returnExistingId() {
+        ParamBaseCreateDto dto = new ParamBaseCreateDto();
+        dto.setType(ParamTypeEnum.STEP.getCode());
+        dto.setStepTypeNo("S100");
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        MoParamsBase existing = new MoParamsBase();
+        existing.setId(1L);
+
+        doReturn(List.of(existing))
+                .when(spy)
+                .list(any(LambdaQueryWrapper.class));
+
+        Result<Long> result = spy.saveBase(dto);
+
+        assertEquals(1L, (long) result.getData());
+        verify(spy, never()).save(any());
+    }
+
+    @Test
+    void saveBase_stepType_notExists_createNew() {
+        ParamBaseCreateDto dto = new ParamBaseCreateDto();
+        dto.setType(ParamTypeEnum.STEP.getCode());
+        dto.setStepTypeNo("S100");
+
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        // 1️⃣ 不存在：list 返回空
+        doReturn(Collections.emptyList())
+                .when(spy)
+                .list(any(LambdaQueryWrapper.class));
+
+        // 2️⃣ mock save：模拟 MyBatis-Plus 插入后回写 ID
+        doAnswer(invocation -> {
+            MoParamsBase entity = invocation.getArgument(0);
+            entity.setId(2L);
+            return true;
+        }).when(spy).save(any(MoParamsBase.class));
+
+        // 3️⃣ 调用
+        Result<Long> result = spy.saveBase(dto);
+
+        // 4️⃣ 断言返回的是新 ID
+        assertEquals(2L, (long) result.getData());
+
+        // 5️⃣ save 一定被调用了一次
+        verify(spy).save(any(MoParamsBase.class));
+    }
+
+
+    @Test
+    void saveBase_flowType_notExists_createNew() {
+        ParamBaseCreateDto dto = new ParamBaseCreateDto();
+        dto.setType(ParamTypeEnum.FLOW.getCode());
+        dto.setFlowNo("FLOW-A");
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+        doReturn(Collections.emptyList())
+                .when(spy)
+                .list(any(LambdaQueryWrapper.class));
+
+        doAnswer(invocation -> {
+            MoParamsBase entity = invocation.getArgument(0);
+            entity.setId(2L);
+            return true;
+        }).when(spy).save(any(MoParamsBase.class));
+
+        Result<Long> result = spy.saveBase(dto);
+
+        assertEquals(2L, (long) result.getData());
+    }
+
+    @Test
+    void saveBase_flowType_exists_returnExistingId() {
+        ParamBaseCreateDto dto = new ParamBaseCreateDto();
+        dto.setType(ParamTypeEnum.FLOW.getCode());
+        dto.setFlowNo("FLOW-A");
+
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        // 1️⃣ 已存在：list 返回已有记录
+        MoParamsBase existing = new MoParamsBase();
+        existing.setId(3L);
+
+        doReturn(List.of(existing))
+                .when(spy)
+                .list(any(LambdaQueryWrapper.class));
+
+        // 2️⃣ 调用
+        Result<Long> result = spy.saveBase(dto);
+
+        // 3️⃣ 断言：直接返回已有 ID
+        assertEquals(3L, (long) result.getData());
+
+        // 4️⃣ 不应触发 save
+        verify(spy, never()).save(any());
+    }
+
+    @Test
+    void saveBase_workOrder_exists() {
+        ParamBaseCreateDto dto = new ParamBaseCreateDto();
+        dto.setType(ParamTypeEnum.WORK_ORDER.getCode());
+        dto.setOrderId(1001L);
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+        MoParamsBase existing = new MoParamsBase();
+        existing.setId(3L);
+
+        doReturn(List.of(existing))
+                .when(spy)
+                .list(any(Wrapper.class));
+
+        Result<Long> result = spy.saveBase(dto);
+
+        assertEquals(3L, (long) result.getData());
+    }
+
+    @Test
+    void saveBase_workOrder_notExists_createNew() {
+        ParamBaseCreateDto dto = new ParamBaseCreateDto();
+        dto.setType(ParamTypeEnum.WORK_ORDER.getCode());
+        dto.setOrderId(1001L);
+
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        // 1️⃣ 不存在：list 返回空
+        doReturn(Collections.emptyList())
+                .when(spy)
+                .list(any(Wrapper.class));
+
+        // 2️⃣ mock save：模拟插入后回写 ID
+        doAnswer(invocation -> {
+            MoParamsBase entity = invocation.getArgument(0);
+            entity.setId(4L);
+            return true;
+        }).when(spy).save(any(MoParamsBase.class));
+
+        // 3️⃣ 调用
+        Result<Long> result = spy.saveBase(dto);
+
+        // 4️⃣ 断言返回新 ID
+        assertEquals(4L, (long) result.getData());
+
+        // 5️⃣ save 必须被调用一次
+        verify(spy).save(any(MoParamsBase.class));
+    }
+
+    @Test
+    void saveBase_engineering_notExists() {
+        ParamBaseCreateDto dto = new ParamBaseCreateDto();
+        dto.setType(ParamTypeEnum.ENGINEERING.getCode());
+        dto.setName("ENG-PARAM");
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+        doReturn(Collections.emptyList())
+                .when(spy)
+                .list(any(Wrapper.class));
+
+        doAnswer(invocation -> {
+            MoParamsBase entity = invocation.getArgument(0);
+            entity.setId(4L);
+            return true;
+        }).when(spy).save(any());
+
+        Result<Long> result = spy.saveBase(dto);
+
+        assertEquals(4L, (long) result.getData());
+    }
+
+    @Test
+    void saveBase_engineering_exists_returnExistingId() {
+        ParamBaseCreateDto dto = new ParamBaseCreateDto();
+        dto.setType(ParamTypeEnum.ENGINEERING.getCode());
+        dto.setName("ENG-PARAM");
+
+        MoParamsBaseServiceImpl spy = Mockito.spy(moParamsBaseService);
+
+        MoParamsBase existing = new MoParamsBase();
+        existing.setId(5L);
+
+        // 1️⃣ 已存在：list 返回已有记录
+        doReturn(List.of(existing))
+                .when(spy)
+                .list(any(Wrapper.class));
+
+        // 2️⃣ 调用
+        Result<Long> result = spy.saveBase(dto);
+
+        // 3️⃣ 断言
+        assertEquals(5L, (long) result.getData());
+
+        // 4️⃣ 不应触发 save
+        verify(spy, never()).save(any());
+    }
 
 }

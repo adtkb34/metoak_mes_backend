@@ -20,4 +20,6 @@ public interface IMoParamsDetailService extends IService<MoParamsDetail> {
 
     Result<Long> saveDetail(ParamDetailCreateDto createDto);
 
+    Result<Long> saveParamsWithHash(String params, String paramHash);
+
 }

@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `mo_params_detail` (
   `version_major` INT NOT NULL COMMENT '版本：主号',
   `version_minor` INT NOT NULL COMMENT '版本：副号',
   `version_patch` INT NOT NULL COMMENT '版本：修订号',
+  `param_hash` VARCHAR(128) NULL COMMENT '参数内容哈希',
   `params` JSON NOT NULL COMMENT '参数内容（JSON），完整参数',
   `is_active` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否是当前启用版本，工艺参数集对每个 name 仅允许一个 active',
   `created_by` VARCHAR(200) NOT NULL COMMENT '创建人，用于审计',
@@ -23,5 +24,6 @@ CREATE TABLE IF NOT EXISTS `mo_params_detail` (
   PRIMARY KEY (`id`),
   KEY `idx_base_id` (`base_id`),
   KEY `idx_is_active` (`is_active`),
+  KEY `idx_param_hash` (`param_hash`),
   CONSTRAINT `fk_params_detail_base_id` FOREIGN KEY (`base_id`) REFERENCES `mo_params_base` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='参数集详情表';

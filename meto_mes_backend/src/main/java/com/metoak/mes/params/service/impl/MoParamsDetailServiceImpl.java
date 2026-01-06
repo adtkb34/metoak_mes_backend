@@ -24,6 +24,7 @@ import com.metoak.mes.service.IMoProduceOrderService;
 import com.metoak.mes.service.IMoWorkstageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -58,6 +59,8 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private static final int DEFAULT_INACTIVE_STATUS = 0;
+
     @Override
     public Result<Long> saveDetail(ParamDetailCreateDto createDto) {
         JsonNode currentParams;
@@ -83,6 +86,33 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
         paramsDetail.setCreatedBy(createDto.getCreatedBy());
         save(paramsDetail);
         bindParamsDetailToTarget(createDto.getBaseId(), paramsDetail.getId());
+        return Result.ok(paramsDetail.getId());
+    }
+
+    @Override
+    public Result<Long> saveParamsWithHash(String params, String paramHash) {
+        try {
+            objectMapper.readTree(params);
+        } catch (JsonProcessingException e) {
+            return Result.fail(ResultCodeEnum.PARAMS_INVALID_JSON);
+        }
+
+        if (StringUtils.hasText(paramHash)) {
+            MoParamsDetail existingDetail = lambdaQuery()
+                    .eq(MoParamsDetail::getParamHash, paramHash)
+                    .one();
+            if (existingDetail != null) {
+                return Result.ok(existingDetail.getId());
+            }
+        }
+
+        MoParamsDetail paramsDetail = new MoParamsDetail();
+        paramsDetail.setParams(params);
+        paramsDetail.setParamHash(paramHash);
+        paramsDetail.setIsActive(DEFAULT_INACTIVE_STATUS);
+        paramsDetail.setCreatedAt(LocalDateTime.now());
+        save(paramsDetail);
+
         return Result.ok(paramsDetail.getId());
     }
 

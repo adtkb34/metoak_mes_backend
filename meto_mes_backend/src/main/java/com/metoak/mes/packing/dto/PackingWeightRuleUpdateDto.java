@@ -22,6 +22,8 @@ public class PackingWeightRuleUpdateDto {
     private static final String WEIGHT_TOLERANCE_REQUIRED_MESSAGE = "允许的误差不能为空";
     private static final String WEIGHT_TOLERANCE_MIN_MESSAGE = "允许的误差必须大于0";
 
+    private String username;
+
     @NotNull(message = ID_REQUIRED_MESSAGE)
     private Long id;
 

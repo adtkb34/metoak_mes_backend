@@ -37,6 +37,12 @@ public class PackingWeightRule {
     @TableField("weight_tolerance")
     private BigDecimal weightTolerance;
 
+    @TableField("create_by")
+    private String createBy;
+
+    @TableField("update_by")
+    private String updateBy;
+
     @TableField("created_at")
     private LocalDateTime createdAt;
 

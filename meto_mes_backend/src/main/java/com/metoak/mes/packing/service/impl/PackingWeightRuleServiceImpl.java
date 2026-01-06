@@ -31,6 +31,7 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
                 .unitWeight(createDto.getUnitWeight())
                 .tareWeight(createDto.getTareWeight())
                 .weightTolerance(createDto.getWeightTolerance())
+                .createBy(createDto.getUsername())
                 .build();
         this.save(rule);
         return rule.getId();
@@ -48,6 +49,7 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
                 .unitWeight(updateDto.getUnitWeight())
                 .tareWeight(updateDto.getTareWeight())
                 .weightTolerance(updateDto.getWeightTolerance())
+                .updateBy(updateDto.getUsername())
                 .build();
         return this.updateById(rule);
     }

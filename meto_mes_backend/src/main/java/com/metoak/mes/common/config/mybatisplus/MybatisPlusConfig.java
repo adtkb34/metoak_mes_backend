@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan({"com.metoak.mes.mapper", "com.metoak.mes.params.mapper", "com.metoak.mes.packing.mapper"})
+@MapperScan({"com.metoak.mes.mapper", "com.metoak.mes.params.mapper"})
 public class MybatisPlusConfig {
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {

@@ -1,2 +1,0 @@
-ALTER TABLE mo_beam_info
-    MODIFY COLUMN beam_sn VARCHAR(30) NOT NULL;

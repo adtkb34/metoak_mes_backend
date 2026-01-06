@@ -101,4 +101,6 @@ public class ProductionRecordDto {
 
     private Long flowParamsId;
 
+    private Integer count = 1;
+
 }

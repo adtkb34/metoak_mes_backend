@@ -3,6 +3,7 @@ package com.metoak.mes.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.metoak.mes.common.annotate.FieldCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
@@ -38,6 +39,7 @@ public class MoProgramRecord implements Serializable {
     private String operator;
 
     @ApiModelProperty("参数标识")
+    @FieldCode(no = "001", type = "val")
     private Long paramsId;
 
     @ApiModelProperty("软件工具名称")
@@ -47,24 +49,31 @@ public class MoProgramRecord implements Serializable {
     private String softwareToolVersion;
 
     @ApiModelProperty("固件名称")
+    @FieldCode(no = "002", type = "val")
     private String firmwareName;
 
     @ApiModelProperty("固件类型")
+    @FieldCode(no = "003", type = "val")
     private Byte firmwareType;
 
     @ApiModelProperty("固件版本")
+    @FieldCode(no = "004", type = "val")
     private String firmwareVersion;
 
     @ApiModelProperty("SN类型")
+    @FieldCode(no = "005", type = "val")
     private Integer snType;
 
     @ApiModelProperty("工单号")
+    @FieldCode(no = "006", type = "val")
     private String workOrderId;
 
     @ApiModelProperty("物料编码")
+    @FieldCode(no = "007", type = "val")
     private String materialCode;
 
     @ApiModelProperty("序列号")
+    @FieldCode(no = "008", type = "val")
     private String sn;
 
     public Integer getId() {

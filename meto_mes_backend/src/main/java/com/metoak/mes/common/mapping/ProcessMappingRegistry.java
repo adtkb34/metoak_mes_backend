@@ -69,6 +69,8 @@ public class ProcessMappingRegistry {
 
         put(StepMappingEnum.S316L_FINAL_CHECK, MoStereoPostcheck.class,    IMoStereoPostcheckService.class);
         put(StepMappingEnum.S316L_PERFORMANCE_TEST, MoStereoPrecheck.class,    IMoStereoPrecheckService.class);
+
+        put(StepMappingEnum.FIRMWARE_FLASHING, MoProgramRecord.class,    IMoProgramRecordService.class);
     }
 
     private static void put(StepMappingEnum step, Class<?> entity, Class<?> service) {

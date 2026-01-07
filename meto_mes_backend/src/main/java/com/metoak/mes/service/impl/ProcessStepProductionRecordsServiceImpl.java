@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metoak.mes.common.annotate.FieldCodeMapper;
 import com.metoak.mes.common.MOException;
 import com.metoak.mes.common.mapping.*;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.common.util.GroupingUtil;
 import com.metoak.mes.dto.*;
 import com.metoak.mes.entity.*;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.metoak.mes.common.util.ProductionRecordValidator.parseIntOrThrow;
 import static com.metoak.mes.common.util.TimestampUtils.convertToDateTime;
 
 
@@ -114,24 +116,28 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
 
     @Override
     public Long add(ProductionRecordDto productionRecordDto) {
-        MoProcessStepProductionResult moProcessStepProductionResult = MoProcessStepProductionResult.builder().
-                stepType(productionRecordDto.getStepType()).
-                stepTypeNo(productionRecordDto.getStepTypeNo()).
-                productSn(productionRecordDto.getProductSn()).
-                productBatchNo(productionRecordDto.getProductBatchNo()).
-                startTime(updateTimeByPostTime(productionRecordDto.getStartTime(), productionRecordDto.getPostTime())).
-                endTime(updateTimeByPostTime(productionRecordDto.getEndTime(), productionRecordDto.getPostTime())).
-                errorCode(Integer.parseInt(productionRecordDto.getErrorNo())).
-                ngReason(productionRecordDto.getError()).
-                softwareTool(productionRecordDto.getSoftwareTool()).
-                softwareToolVersion(productionRecordDto.getSoftwareToolVersion()).
-                stationNum(Integer.parseInt(productionRecordDto.getDeviceNo())).
-                operator(productionRecordDto.getOperator()).
-                engineeringParamsId(productionRecordDto.getEngineeringParamsId()).
-                flowParamsId(productionRecordDto.getFlowParamsId()).
-                build();
-        moProcessStepProductionResultService.save(moProcessStepProductionResult);
-        Long moProcessStepProductionResultId = moProcessStepProductionResult.getId();
+        Long moProcessStepProductionResultId = null;
+        if (!productionRecordDto.getSkipCommonRecord()) {
+            MoProcessStepProductionResult moProcessStepProductionResult = MoProcessStepProductionResult.builder().
+                    stepType(productionRecordDto.getStepType()).
+                    stepTypeNo(productionRecordDto.getStepTypeNo()).
+                    productSn(productionRecordDto.getProductSn()).
+                    productBatchNo(productionRecordDto.getProductBatchNo()).
+                    startTime(updateTimeByPostTime(productionRecordDto.getStartTime(), productionRecordDto.getPostTime())).
+                    endTime(updateTimeByPostTime(productionRecordDto.getEndTime(), productionRecordDto.getPostTime())).
+                    errorCode(parseIntOrThrow(productionRecordDto.getErrorNo(), ResultCodeEnum.INVALID_ERROR_NO)).
+                    ngReason(productionRecordDto.getError()).
+                    softwareTool(productionRecordDto.getSoftwareTool()).
+                    softwareToolVersion(productionRecordDto.getSoftwareToolVersion()).
+                    stationNum(parseIntOrThrow(productionRecordDto.getDeviceNo(), ResultCodeEnum.INVALID_DEVICE_NO)).
+                    operator(productionRecordDto.getOperator()).
+                    engineeringParamsId(productionRecordDto.getEngineeringParamsId()).
+                    flowParamsId(productionRecordDto.getFlowParamsId()).
+                    build();
+            moProcessStepProductionResultService.save(moProcessStepProductionResult);
+            moProcessStepProductionResultId = moProcessStepProductionResult.getId();
+        }
+
         add_material_binding(productionRecordDto, moProcessStepProductionResultId);
         if (StepMappingEnum.AUTO_ADJUST.getCode().equals(productionRecordDto.getStepTypeNo())) add_auto_adjust(productionRecordDto);
         if (List.of(
@@ -202,10 +208,12 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
                 entity = entity_ != null ? entity_ : processMapping.getEntityClass().getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new MOException("", -1);
+                throw new MOException(e.getMessage(), -1);
             }
             // 设置静态字段（每个 group 相同）
-            ReflectionMapper.setField(entity, "moProcessStepProductionResultId", moProcessStepProductionResultId.toString());
+            if (moProcessStepProductionResultId != null) {
+                ReflectionMapper.setField(entity, "moProcessStepProductionResultId", moProcessStepProductionResultId.toString());
+            }
             CommonAttrMapping.mapDtoFields(entity, productionRecordDto, CommonAttrMapping.FIELD_TO_FIELD);
             CommonAttrMapping.mapDtoFields(entity, items.get(0), CommonAttrMapping.FIELD_TO_FIELD2);
             FieldCodeMapper.applyAttrListToObject(entity, items);

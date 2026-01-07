@@ -16,7 +16,6 @@ public enum ResultCodeEnum {
     PRO_PROCESS_TYPE_NO_NOT_FOUND(102, "PRO_PROCESS_TYPE_NO_NOT_FOUND"),
     PRO_PRODUCT_SN_NOT_FOUND_BY_WORKORDER_NO(104, "PRO_PRODUCT_SN_NOT_FOUND_BY_WORKORDER_NO"),
 
-
     // IMU CALIB
     NO_IMU_CALCULATION_RECORD(2001001, "没有IMU计算记录"),
     LATEST_IMU_CALCULATION_FAILED(2001002, "最近的IMU计算记录失败"),
@@ -41,17 +40,13 @@ public enum ResultCodeEnum {
     FAILED_TO_FIND_PROCESS_BY_PROCESS_ID(2003010, "通过工艺编号没找到对应的工艺"),
     PARAMETER_NOT_PROVIDED(2003011, "参数没有传"),
     STEP_NOT_FOUND_BY_NO(2003012, "通过编号未找到工序"),
-    PARAMS_DETAIL_BIND_FAILED(2003013, "参数详情绑定失败"),
+
     // k3
     FAILED_TO_SAVE_BARCODE_MASTER(2004001, "保存条码主档失败"),
     FAILED_TO_SAVE_PACKING_RELATION(2004002, "保存装箱关系失败"),
 
-    // production
-    INVALID_ERROR_NO(2005001, "错误码解析失败，需要是字符型数值"),
-    INVALID_DEVICE_NO(2005002, "设备编号解析失败，需要是字符型数值"),
-    INVALID_OPERATOR(2005003, "操作员名称异常"),
-
-
+    // material bind
+    SN_SEQUENCE_EXCEEDS_MAX_LENGTH(2005001, "输入的数量太大，SN流水号超出设定长度"),
     ;
 
 

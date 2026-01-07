@@ -253,15 +253,13 @@ public class MoParamsBaseServiceImpl extends ServiceImpl<MoParamsBaseMapper, MoP
 
         List<ParamsNode> stepNodes = new ArrayList<>();
         MoWorkstage stage = moWorkstageService.getByNo(stepNo);
-        if (stage == null) {
+        if (stage == null || stage.getParamsDetailId() == null) {
             throw new MOException(ResultCodeEnum.STEP_NOT_FOUND_BY_NO);
         }
 
-        if (stage.getParamsDetailId() != null) {
-            ParamsNode node = buildNodeByDetailId(stage.getParamsDetailId());
-            if (node != null) {
-                stepNodes.add(node);
-            }
+        ParamsNode node = buildNodeByDetailId(stage.getParamsDetailId());
+        if (node != null) {
+            stepNodes.add(node);
         }
 
         container.setSteps(stepNodes);

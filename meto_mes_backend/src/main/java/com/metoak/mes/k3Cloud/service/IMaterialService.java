@@ -14,7 +14,7 @@ public interface IMaterialService {
 
     List<String> getBatchesByMaterialCode(String materialCode) throws Exception;
 
-    boolean deleteById(Long id);
+    boolean deleteBySNAndMaterialID(List<String> cameraSNs, String categoryNo) throws Exception;
 
     List<MaterialBindVo> getBindings(String materialCode, String cameraSn,
                                      LocalDateTime startTime, LocalDateTime endTime) throws Exception;

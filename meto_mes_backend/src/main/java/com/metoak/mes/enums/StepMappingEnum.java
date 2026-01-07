@@ -33,10 +33,7 @@ public enum StepMappingEnum {
     FQC_M55H_STEREO("032", "双目M55H终测"),
     FQC_M55H("033", "单目M55H终测"),
     QC_S316("034", "316检测"),
-    LENS_SIDE_DISPENSING("035", "镜头侧面点胶"),
-    FIRMWARE_FLASHING("038", "固件刷写"),
-
-    ;
+    LENS_SIDE_DISPENSING("035", "镜头侧面点胶");
 
     private final String code;
     private final String description;

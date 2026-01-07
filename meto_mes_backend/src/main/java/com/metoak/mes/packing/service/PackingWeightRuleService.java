@@ -1,6 +1,7 @@
 package com.metoak.mes.packing.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.metoak.mes.common.result.Result;
 import com.metoak.mes.packing.dto.PackingWeightRuleCreateDto;
 import com.metoak.mes.packing.dto.PackingWeightRuleUpdateDto;
 import com.metoak.mes.packing.entity.PackingWeightRule;
@@ -10,11 +11,11 @@ import java.util.List;
 
 public interface PackingWeightRuleService extends IService<PackingWeightRule> {
 
-    List<PackingWeightRuleVO> listRules();
+    Result<List<PackingWeightRuleVO>> listRules();
 
-    Long createRule(PackingWeightRuleCreateDto createDto);
+    Result<Long> createRule(PackingWeightRuleCreateDto createDto);
 
-    boolean updateRule(PackingWeightRuleUpdateDto updateDto);
+    Result<Boolean> updateRule(PackingWeightRuleUpdateDto updateDto);
 
-    PackingWeightRuleVO getRuleByProductCode(String productCode);
+    Result<PackingWeightRuleVO> getRuleByProductCode(String productCode);
 }

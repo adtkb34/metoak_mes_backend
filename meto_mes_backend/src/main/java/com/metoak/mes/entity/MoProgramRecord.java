@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
  * @author kevin
  * @since 2025-02-11 10:00:00
  */
-@TableName("mo_program_record")
+@TableName("mo_flash_record")
 @ApiModel(value = "MoProgramRecord对象", description = "程序记录表")
 public class MoProgramRecord implements Serializable {
 

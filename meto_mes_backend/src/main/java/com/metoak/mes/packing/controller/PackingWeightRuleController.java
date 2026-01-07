@@ -1,7 +1,6 @@
 package com.metoak.mes.packing.controller;
 
 import com.metoak.mes.common.result.Result;
-import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.packing.dto.PackingWeightRuleCreateDto;
 import com.metoak.mes.packing.dto.PackingWeightRuleUpdateDto;
 import com.metoak.mes.packing.service.PackingWeightRuleService;
@@ -30,28 +29,20 @@ public class PackingWeightRuleController {
     @GetMapping
     @Operation(summary = "装箱重量规则列表")
     public Result<List<PackingWeightRuleVO>> listRules() {
-        return Result.ok(packingWeightRuleService.listRules());
+        return packingWeightRuleService.listRules();
     }
 
     @GetMapping("/by-product-code")
     @Operation(summary = "根据产品编码获取装箱重量规则")
     public Result<PackingWeightRuleVO> getRuleByProductCode(
             @RequestParam("productCode") @NotBlank(message = PRODUCT_CODE_REQUIRED_MESSAGE) String productCode) {
-        PackingWeightRuleVO rule = packingWeightRuleService.getRuleByProductCode(productCode);
-        if (rule == null) {
-            return Result.fail(ResultCodeEnum.RECORD_NOT_FOUND);
-        }
-        return Result.ok(rule);
+        return packingWeightRuleService.getRuleByProductCode(productCode);
     }
 
     @PostMapping
     @Operation(summary = "新建装箱重量规则")
     public Result<Long> createRule(@RequestBody @Valid PackingWeightRuleCreateDto createDto) {
-        PackingWeightRuleVO rule = packingWeightRuleService.getRuleByProductCode(createDto.getProductCode());
-        if (rule != null) {
-            return Result.fail(ResultCodeEnum.PRODUCT_ALREADY_EXISTS);
-        }
-        return Result.ok(packingWeightRuleService.createRule(createDto));
+        return packingWeightRuleService.createRule(createDto);
     }
 
     @PutMapping("/{id}")
@@ -59,10 +50,6 @@ public class PackingWeightRuleController {
     public Result<Boolean> updateRule(@PathVariable("id") Long id,
                                       @RequestBody @Valid PackingWeightRuleUpdateDto updateDto) {
         updateDto.setId(id);
-        boolean updated = packingWeightRuleService.updateRule(updateDto);
-        if (!updated) {
-            return Result.fail(ResultCodeEnum.RECORD_NOT_FOUND);
-        }
-        return Result.ok(true);
+        return packingWeightRuleService.updateRule(updateDto);
     }
 }

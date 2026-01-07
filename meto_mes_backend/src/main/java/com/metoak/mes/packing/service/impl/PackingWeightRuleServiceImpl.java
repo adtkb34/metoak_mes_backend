@@ -1,6 +1,8 @@
 package com.metoak.mes.packing.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.metoak.mes.common.result.Result;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.packing.dto.PackingWeightRuleCreateDto;
 import com.metoak.mes.packing.dto.PackingWeightRuleUpdateDto;
 import com.metoak.mes.packing.entity.PackingWeightRule;
@@ -17,14 +19,19 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
         implements PackingWeightRuleService {
 
     @Override
-    public List<PackingWeightRuleVO> listRules() {
-        return this.list().stream()
+    public Result<List<PackingWeightRuleVO>> listRules() {
+        List<PackingWeightRuleVO> rules = this.list().stream()
                 .map(this::convertToVo)
                 .collect(Collectors.toList());
+        return Result.ok(rules);
     }
 
     @Override
-    public Long createRule(PackingWeightRuleCreateDto createDto) {
+    public Result<Long> createRule(PackingWeightRuleCreateDto createDto) {
+        PackingWeightRuleVO existingRule = findRuleByProductCode(createDto.getProductCode());
+        if (existingRule != null) {
+            return Result.fail(ResultCodeEnum.PRODUCT_ALREADY_EXISTS);
+        }
         PackingWeightRule rule = PackingWeightRule.builder()
                 .productCode(createDto.getProductCode())
                 .specQuantity(createDto.getSpecQuantity())
@@ -34,13 +41,13 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
                 .createBy(createDto.getUsername())
                 .build();
         this.save(rule);
-        return rule.getId();
+        return Result.ok(rule.getId());
     }
 
     @Override
-    public boolean updateRule(PackingWeightRuleUpdateDto updateDto) {
+    public Result<Boolean> updateRule(PackingWeightRuleUpdateDto updateDto) {
         if (updateDto.getId() == null) {
-            return false;
+            return Result.fail(ResultCodeEnum.RECORD_NOT_FOUND);
         }
         PackingWeightRule rule = PackingWeightRule.builder()
                 .id(updateDto.getId())
@@ -51,11 +58,23 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
                 .weightTolerance(updateDto.getWeightTolerance())
                 .updateBy(updateDto.getUsername())
                 .build();
-        return this.updateById(rule);
+        boolean updated = this.updateById(rule);
+        if (!updated) {
+            return Result.fail(ResultCodeEnum.RECORD_NOT_FOUND);
+        }
+        return Result.ok(true);
     }
 
     @Override
-    public PackingWeightRuleVO getRuleByProductCode(String productCode) {
+    public Result<PackingWeightRuleVO> getRuleByProductCode(String productCode) {
+        PackingWeightRuleVO rule = findRuleByProductCode(productCode);
+        if (rule == null) {
+            return Result.fail(ResultCodeEnum.RECORD_NOT_FOUND);
+        }
+        return Result.ok(rule);
+    }
+
+    private PackingWeightRuleVO findRuleByProductCode(String productCode) {
         PackingWeightRule rule = this.lambdaQuery()
                 .eq(PackingWeightRule::getProductCode, productCode)
                 .one();

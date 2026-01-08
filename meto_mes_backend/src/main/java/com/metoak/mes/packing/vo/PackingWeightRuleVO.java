@@ -23,6 +23,4 @@ public class PackingWeightRuleVO {
     private BigDecimal weightTolerance;
 
     private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
 }

@@ -25,6 +25,8 @@ public class MaterialDto {
 
     private Boolean isBatchNoContainsMaterialNo;
 
+
+
     @Override
     public String toString() {
         return "MaterialDto{" +

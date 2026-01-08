@@ -1,11 +1,16 @@
 package com.metoak.mes.k3Cloud.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kingdee.bos.webapi.sdk.K3CloudApi;
-import com.metoak.mes.k3Cloud.service.IMaterialService;
+import com.metoak.mes.common.MOException;
+import com.metoak.mes.common.result.ResultCodeEnum;
+import com.metoak.mes.entity.MoMaterialBinding;
+import com.metoak.mes.k3Cloud.service.IK3MaterialService;
 import com.metoak.mes.mapper.MoMaterialBindingMapper;
 import com.metoak.mes.service.IMoMaterialBindingService;
 import com.metoak.mes.traceability.vo.MaterialBindVo;
 import com.metoak.mes.traceability.vo.MaterialVo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+@Slf4j
 @Service
-public class MaterialServiceImpl implements IMaterialService {
+public class K3MaterialServiceImpl implements IK3MaterialService {
 
     private K3CloudApi api;
 
@@ -56,7 +64,6 @@ public class MaterialServiceImpl implements IMaterialService {
                 "  \"FilterString\": \"FMaterialId.Fnumber='" + materialCode + "'\",\n" +
                 "}"
         );
-        System.out.println(lists);
         Map<String, MaterialVo> materialMap = lists.stream()
                 .collect(Collectors.toMap(
                         item -> (String) item.get(0),  // key: materialCode
@@ -84,15 +91,4 @@ public class MaterialServiceImpl implements IMaterialService {
                 .toList();
     }
 
-    @Override
-    public boolean deleteById(Long id) {
-        return moMaterialBindingService.removeById(id);
-    }
-
-    @Override
-    public List<MaterialBindVo> getBindings(String materialCode, String cameraSn,
-                                            LocalDateTime startTime, LocalDateTime endTime) throws Exception {
-        return moMaterialBindingMapper.getBindings(materialCode, cameraSn,
-                startTime, endTime);
-    }
 }

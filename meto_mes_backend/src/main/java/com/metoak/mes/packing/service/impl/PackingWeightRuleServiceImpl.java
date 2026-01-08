@@ -74,7 +74,7 @@ public class PackingWeightRuleServiceImpl extends ServiceImpl<PackingWeightRuleM
         return Result.ok(rule);
     }
 
-    private PackingWeightRuleVO findRuleByProductCode(String productCode) {
+    public PackingWeightRuleVO findRuleByProductCode(String productCode) {
         PackingWeightRule rule = this.lambdaQuery()
                 .eq(PackingWeightRule::getProductCode, productCode)
                 .one();

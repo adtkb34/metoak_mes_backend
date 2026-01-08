@@ -3,17 +3,8 @@ package com.metoak.mes.k3Cloud.service.impl;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.kingdee.bos.webapi.sdk.K3CloudApi;
-import com.metoak.mes.k3Cloud.service.IMaterialService;
 import com.metoak.mes.k3Cloud.service.IProdcutionReportAppService;
-import com.metoak.mes.service.IMoMaterialBindingService;
-import com.metoak.mes.traceability.vo.MaterialVo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductionReportAppServiceImpl implements IProdcutionReportAppService {

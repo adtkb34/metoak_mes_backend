@@ -2,10 +2,12 @@ package com.metoak.mes.params.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.metoak.mes.common.MOException;
 import com.metoak.mes.common.result.Result;
 import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.entity.MoProcessFlow;
@@ -66,9 +68,7 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
         } catch (JsonProcessingException e) {
             return Result.fail(ResultCodeEnum.PARAMS_INVALID_JSON);
         }
-        List<MoParamsDetail> detailList = lambdaQuery()
-                .eq(MoParamsDetail::getBaseId, createDto.getBaseId())
-                .list();
+        List<MoParamsDetail> detailList = listByBaseId(createDto.getBaseId());
         VersionResult versionResult = determineVersion(detailList, currentParams);
 
         MoParamsDetail paramsDetail = new MoParamsDetail();
@@ -82,30 +82,60 @@ public class MoParamsDetailServiceImpl extends ServiceImpl<MoParamsDetailMapper,
         paramsDetail.setCreatedAt(LocalDateTime.now());
         paramsDetail.setCreatedBy(createDto.getCreatedBy());
         save(paramsDetail);
-        bindParamsDetailToTarget(createDto.getBaseId(), paramsDetail.getId());
+        if (bindParamsDetailToTarget(createDto.getBaseId(), paramsDetail.getId()).equals(false)) {
+            throw new MOException(ResultCodeEnum.PARAMS_DETAIL_BIND_FAILED);
+        }
         return Result.ok(paramsDetail.getId());
     }
 
-    private Boolean bindParamsDetailToTarget(Long baseId, Long detailId) {
+    public List<MoParamsDetail> listByBaseId(Long baseId) {
+        return lambdaQuery()
+                .eq(MoParamsDetail::getBaseId, baseId)
+                .list();
+    }
+
+
+    public Boolean bindParamsDetailToTarget(Long baseId, Long detailId) {
         MoParamsBase base = paramsBaseService.getById(baseId);
-        if (base.getType().equals(ParamTypeEnum.STEP.getCode())) {
-            LambdaUpdateWrapper<MoWorkstage> wrapper = new LambdaUpdateWrapper<>();
-            wrapper.eq(MoWorkstage::getStepTypeNo, base.getStepTypeNo())
-                    .set(MoWorkstage::getParamsDetailId, detailId);
-            return moWorkstageService.update(wrapper);
-        } else if (base.getType().equals(ParamTypeEnum.FLOW.getCode())) {
-            LambdaUpdateWrapper<MoProcessFlow> wrapper = new LambdaUpdateWrapper<>();
-            wrapper.eq(MoProcessFlow::getProcessCode, base.getFlowNo())
-                    .set(MoProcessFlow::getParamsDetailId, detailId);
-            return moProcessFlowService.update(wrapper);
-        } else if (base.getType().equals(ParamTypeEnum.WORK_ORDER.getCode())) {
-            LambdaUpdateWrapper<MoProduceOrder> wrapper = new LambdaUpdateWrapper<>();
-            wrapper.eq(MoProduceOrder::getId, base.getOrderId())
-                    .set(MoProduceOrder::getParamsDetailId, detailId);
-            return moProduceOrderService.update(wrapper);
+        if (base == null || base.getType() == null) {
+            return false;
         }
 
+        Integer type = base.getType();
+
+        if (ParamTypeEnum.STEP.getCode().equals(type)) {
+            return bindStep(base, detailId);
+        }
+        if (ParamTypeEnum.FLOW.getCode().equals(type)) {
+            return bindFlow(base, detailId);
+        }
+        if (ParamTypeEnum.WORK_ORDER.getCode().equals(type)) {
+            return bindWorkOrder(base, detailId);
+        }
         return false;
+    }
+
+    private Boolean bindStep(MoParamsBase base, Long detailId) {
+        UpdateWrapper<MoWorkstage> wrapper = new UpdateWrapper<>();
+        wrapper.eq("step_type_no", base.getStepTypeNo())
+                .set("params_detail_id", detailId);
+
+        return moWorkstageService.update(wrapper);
+
+    }
+
+    private Boolean bindFlow(MoParamsBase base, Long detailId) {
+        UpdateWrapper<MoProcessFlow> wrapper = new UpdateWrapper<>();
+        wrapper.eq("process_code", base.getFlowNo())
+                .set("params_detail_id", detailId);
+        return moProcessFlowService.update(wrapper);
+    }
+
+    private Boolean bindWorkOrder(MoParamsBase base, Long detailId) {
+        UpdateWrapper<MoProduceOrder> wrapper = new UpdateWrapper<>();
+        wrapper.eq("id", base.getOrderId())
+                .set("params_detail_id", detailId);
+        return moProduceOrderService.update(wrapper);
     }
 
     @Override

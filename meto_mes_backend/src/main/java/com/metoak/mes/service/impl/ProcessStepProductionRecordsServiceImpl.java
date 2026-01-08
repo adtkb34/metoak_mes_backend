@@ -6,8 +6,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metoak.mes.common.annotate.FieldCodeMapper;
 import com.metoak.mes.common.MOException;
+import com.metoak.mes.common.dto.SnSequence;
 import com.metoak.mes.common.mapping.*;
+import com.metoak.mes.common.result.ResultCodeEnum;
 import com.metoak.mes.common.util.GroupingUtil;
+import com.metoak.mes.common.util.SnParseUtil;
 import com.metoak.mes.dto.*;
 import com.metoak.mes.entity.*;
 import com.metoak.mes.enums.StepMappingEnum;
@@ -22,8 +25,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.metoak.mes.common.util.SnParseUtil.parseAndValidateSnSequence;
 import static com.metoak.mes.common.util.TimestampUtils.convertToDateTime;
 
 
@@ -291,18 +297,28 @@ public class ProcessStepProductionRecordsServiceImpl implements IProcessStepProd
 
         if (productionRecordDto.getMaterials() != null) {
             productionRecordDto.getMaterials().forEach(item -> {
-                MoMaterialBinding m = MoMaterialBinding.builder().
-                        cameraSn(productionRecordDto.getProductSn()).
-                        cameraBatch(productionRecordDto.getProductBatchNo()).
-                        category(item.getCategory()).
-                        categoryNo(item.getCategoryNo()).
-                        materialBatchNo(item.getBatchNo()).
-                        materialSerialNo(item.getSerialNo()).
-                        moProcessStepProductionResultId(moProcessStepProductionResultId).
-                        position(item.getPosition()).
-                        build();
-                moMaterialBindingService.save(m);
-                Ids.add(m.getId());
+                String originSn = productionRecordDto.getProductSn(); // 例如 ABC0007
+
+// 1. 拆前缀 + 数字流水号
+                SnSequence snSequence = parseAndValidateSnSequence(originSn, productionRecordDto.getCount());
+
+// 2. 按 count 递增生成
+                for (int i = 0; i < productionRecordDto.getCount(); i++) {
+                    MoMaterialBinding m = MoMaterialBinding.builder()
+                            .cameraSn(SnParseUtil.generateSn(snSequence, i))
+                            .cameraBatch(productionRecordDto.getProductBatchNo())
+                            .category(item.getCategory())
+                            .categoryNo(item.getCategoryNo())
+                            .materialBatchNo(item.getBatchNo())
+                            .materialSerialNo(item.getSerialNo())
+                            .moProcessStepProductionResultId(moProcessStepProductionResultId)
+                            .position(item.getPosition())
+                            .build();
+
+                    moMaterialBindingService.save(m);
+                    Ids.add(m.getId());
+                }
+
             });
         }
         return Ids;

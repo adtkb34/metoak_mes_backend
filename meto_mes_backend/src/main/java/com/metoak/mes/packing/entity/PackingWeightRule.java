@@ -40,12 +40,6 @@ public class PackingWeightRule {
     @TableField("create_by")
     private String createBy;
 
-    @TableField("update_by")
-    private String updateBy;
-
     @TableField("created_at")
     private LocalDateTime createdAt;
-
-    @TableField("updated_at")
-    private LocalDateTime updatedAt;
 }

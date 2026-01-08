@@ -2,7 +2,6 @@ package com.metoak.mes.packing.controller;
 
 import com.metoak.mes.common.result.Result;
 import com.metoak.mes.packing.dto.PackingWeightRuleCreateDto;
-import com.metoak.mes.packing.dto.PackingWeightRuleUpdateDto;
 import com.metoak.mes.packing.service.PackingWeightRuleService;
 import com.metoak.mes.packing.vo.PackingWeightRuleVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,13 +42,5 @@ public class PackingWeightRuleController {
     @Operation(summary = "新建装箱重量规则")
     public Result<Long> createRule(@RequestBody @Valid PackingWeightRuleCreateDto createDto) {
         return packingWeightRuleService.createRule(createDto);
-    }
-
-    @PutMapping("/{id}")
-    @Operation(summary = "更新装箱重量规则")
-    public Result<Boolean> updateRule(@PathVariable("id") Long id,
-                                      @RequestBody @Valid PackingWeightRuleUpdateDto updateDto) {
-        updateDto.setId(id);
-        return packingWeightRuleService.updateRule(updateDto);
     }
 }
